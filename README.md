@@ -1,64 +1,128 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# ERPGo SaaS - Справочник Разработчика
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 🚀 Введение
+Добро пожаловать в кодовую базу ERPGo SaaS. Этот гайд написан **разработчиком для разработчика**. В отличие от стандартной документации, которая говорит *как пользоваться* софтом, этот гайд объясняет, *как он работает* под капотом, чтобы ты мог эффективно его менять, расширять и дебажить.
 
-## About Laravel
+**Сводка по Архитектуре:**
+*   **Тип:** Монолитное приложение Laravel с модульными возможностями.
+*   **Фреймворк:** Laravel 11.x
+*   **Фронтенд:** Blade Templates + Tailwind CSS + Vanilla JS/jQuery.
+*   **База данных:** MySQL.
+*   **Ключевой паттерн:** MVC (Model-View-Controller).
+*   **Мульти-тенантность:** Единая БД, разделение по колонкам (`created_by` field).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🗺️ Высокоуровневая Архитектура
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Приложение следует традиционному жизненному циклу запроса Laravel, но с сильной зависимостью от "God Model" (`User`) и огромного файла роутинга.
 
-## Learning Laravel
+```mermaid
+graph TD
+    User["Пользователь / Браузер"] -->|Запрос| WebRoutes["routes/web.php"]
+    WebRoutes -->|Middleware| MiddlewareLayer{"Слой Middleware"}
+    MiddlewareLayer -->|Auth, XSS, Revalidate| Controller["App\Http\Controllers\..."]
+    
+    subgraph "Ядро Приложения (app/)"
+        Controller -->|Бизнес Логика| Models["Eloquent Models"]
+        Models -->|Доступ к Данным| DB[("MySQL Database")]
+        Controller -->|Данные для View| Views["resources/views/*.blade.php"]
+    end
+    
+    subgraph "Система Модулей (Modules/)"
+        LandingPage["LandingPage Module"]
+        WebRoutes -.->|Route::module| LandingPage
+    end
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    subgraph "Ключевые Модели"
+        UserModel["User.php (Ядро)"]
+        Utility["Utility.php (Хелперы)"]
+    end
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+    Models -.-> UserModel
+    Controller -.-> Utility
+```
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## 📂 Разбор Структуры Проекта
 
-### Premium Partners
+Вот "Ментальная Карта", необходимая для навигации по файлам:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+### 1. Ядро (`app/`)
+Здесь живет 95% логики.
+*   **`Http/Controllers/`**: Содержит 160+ контроллеров. Большинство — стандартный CRUD.
+    *   *Ключевые контроллеры*: `DashboardController`, `UserController`, `InvoiceController`.
+*   **`Models/`**: 195+ Моделей.
+    *   🚨 **`User.php`**: Это самый критичный файл. Он обрабатывает авторизацию, роли, планы и даже форматирование. В нем 4000+ строк. **Изучи его первым.**
+    *   **`Utility.php`**: Массивный класс-хелпер со статическими методами для настроек, email, хранилища и т.д.
+*   **`Traits/`**: Переиспользуемая логика. Проверь `CanOffer.php` или подобные, если они есть (часто встречается в стиле этого разработчика).
 
-## Contributing
+### 2. Модули (`Modules/`)
+Использует `nwidart/laravel-modules`.
+*   На данный момент модулем является только **`LandingPage`**.
+*   Если хочешь добавить *новую* большую фичу (например, "HelpDesk"), создавай её здесь, чтобы не засорять ядро.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 3. Фронтенд (`resources/`)
+*   **`views/`**: 700+ Blade файлов.
+    *   `layouts/`: Мастер-шаблоны (`admin.blade.php`, `auth.blade.php`).
+    *   `partials/`: Переиспользуемые куски (сайдбар, хедер).
+*   **`assets/`**: Процесс сборки использует Vite.
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🔍 Глубокое Погружение: Ключевые Концепции
 
-## Security Vulnerabilities
+### 1. Мульти-Тенантность (Часть "SaaS")
+Система использует **Single Database Multi-Tenancy**.
+*   **Концепт**: Все юзеры делят одни и те же таблицы.
+*   **Разделение**: Колонка `created_by` почти в каждой таблице связывает данные с "Компанией" (User).
+*   **Логика**:
+    *   Когда Юзер логинится, система проверяет его `type`.
+    *   Если он `company`, он видит свои данные.
+    *   Если он `employee`, код часто проверяет `Auth::user()->creatorId()`, чтобы найти ID Компании и отфильтровать данные по нему.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Пример Кода (Концептуальный):**
+```php
+// В Контроллере
+$invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
+```
 
-## License
+### 2. Хелпер "Utility"
+Вместо использования конфигов Laravel `config()` для всего, это приложение хранит динамические настройки (лого, цвета, ключи платежек) в базе данных и достает их через класс `Utility`.
+*   **Плюсы**: Админы могут менять настройки без редеплоя.
+*   **Минусы**: Может быть медленнее, если не кэшировать; усложняет тестирование кода.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 3. Платежные Шлюзы
+Файл `routes/web.php` забит роутами платежек.
+*   **Паттерн**: `Route::post('/invoice-pay-with-paypal', ...)`
+*   **Контроллер**: У каждого шлюза свой контроллер (напр. `PaypalController`, `StripePaymentController`).
+*   **Поток**:
+    1.  Юзер жмет "Pay" -> Роут бьет в Контроллер.
+    2.  Контроллер инициализирует Шлюз (используя ключи из `Utility`).
+    3.  Редиректит юзера на Провайдера Платежей.
+    4.  Callback роут обрабатывает ответ и обновляет статус `Invoice`.
+
+---
+
+## 🛠️ Советы Разработчику
+
+*   **Дебаггинг**: Так как `User.php` огромный, `dd($user)` может быть перебором. Используй `dd($user->toArray())` или инспектируй конкретные атрибуты.
+*   **Производительность**: Следи за N+1 запросами. Код использует много связей. Установи "Laravel Debugbar" немедленно, если его нет.
+*   **Расширение**:
+    *   **Мелкое изменение**: Правь Контроллер/View напрямую.
+    *   **Новая Фича**: **НЕ** захламляй `app/`. Создай новый Модуль в `Modules/MyNewFeature`. Это держит твой код отдельно от "спагетти" основного приложения.
+
+## ⚠️ Красные Флаги / Технический Долг
+*   **Размер `User.php`**: Он нарушает Single Responsibility Principle. Будь осторожен, когда правишь его.
+*   **Прямые запросы в БД**: Ты можешь найти сырой SQL или тяжелую логику во View. Выноси это в Сервисы или Scopes, когда находишь.
+*   **Файл Роутов**: Он слишком большой. Если добавляешь много роутов, подумай о разделении `web.php` на файлы поменьше и их подключении.
+
+---
+
+## 📝 Следующие Шаги для Тебя
+1.  Открой `app/Models/User.php` и прочитай метод `creatorId()`.
+2.  Открой `routes/web.php` и найди роут `dashboard`.
+3.  Проследи путь роута `dashboard` к его Контроллеру и View.
+
+Удачи! У тебя в руках мощная, хоть и сложная система.
