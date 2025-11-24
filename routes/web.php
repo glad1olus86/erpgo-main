@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\HotelController;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\AamarpayController;
 use App\Http\Controllers\AiTemplateController;
 use App\Http\Controllers\AllowanceController;
@@ -279,20 +281,20 @@ Route::get('invoice-fedapay-status/', [FedapayController::class, 'getInvociePaym
 Route::post('invoice-with-payhere/', [PayHereController::class, 'invoicePayWithPayHere'])->name('customer.with.payhere');
 Route::get('invoice-payhere-status/', [PayHereController::class, 'getInvociePaymentStatus'])->name('invoice.payhere.status');
 
-Route::post('/invoice-pay-with/tap',[TapController::class,'invoicePayWithtap'])->name('invoice.pay.with.tap');
-Route::get('/invoice/tap/{invoice_id}/{amount}',[TapController::class,'getInvoicePaymentStatus'])->name('invoice.tap');
+Route::post('/invoice-pay-with/tap', [TapController::class, 'invoicePayWithtap'])->name('invoice.pay.with.tap');
+Route::get('/invoice/tap/{invoice_id}/{amount}', [TapController::class, 'getInvoicePaymentStatus'])->name('invoice.tap');
 
 Route::any('/invoice-pay-with-authorize-net', [AuthorizeNetController::class, 'invoicePayWithAuthorizeNet'])->name('invoice.pay.with.authorizenet');
-Route::any('/invoice-get-authorizenet-status',[AuthorizeNetController::class,'getInvoicePaymentStatus'])->name('invoice.get.authorizenet.status');
+Route::any('/invoice-get-authorizenet-status', [AuthorizeNetController::class, 'getInvoicePaymentStatus'])->name('invoice.get.authorizenet.status');
 
-Route::post('/invoice-pay-khalti',[KhaltiController::class,'getInvoicePaymentStatus'])->name('invoice.pay.with.khalti');
+Route::post('/invoice-pay-khalti', [KhaltiController::class, 'getInvoicePaymentStatus'])->name('invoice.pay.with.khalti');
 
 Route::any('/invoice-pay-easebuzz', [EasebuzzController::class, 'invoicePayWitheasebuzz'])->name('invoice.pay.with.easebuzz');
-Route::match(['get','post'],'/invoice-easebuzz-payment-return', [EasebuzzController::class,'invoiceNotifyUrl'])->name('invoice.easebuzz.return');
-Route::match(['get','post'],'invoice-easebuzz-payment-notify', [EasebuzzController::class,'invoiceReturnUrl'])->name('invoice.get.easebuzz.notify');
+Route::match(['get', 'post'], '/invoice-easebuzz-payment-return', [EasebuzzController::class, 'invoiceNotifyUrl'])->name('invoice.easebuzz.return');
+Route::match(['get', 'post'], 'invoice-easebuzz-payment-notify', [EasebuzzController::class, 'invoiceReturnUrl'])->name('invoice.get.easebuzz.notify');
 
 Route::post('/invoice-pay-ozow', [OzowPaymentController::class, 'invoicePayWithOzow'])->name('invoice.pay.with.ozow');
-Route::get('/invoice-pay-ozow/{invoice_id}/',[OzowPaymentController::class,'getInvoicePaymentStatus'])->name('invoice.ozow.status');
+Route::get('/invoice-pay-ozow/{invoice_id}/', [OzowPaymentController::class, 'getInvoicePaymentStatus'])->name('invoice.ozow.status');
 
 
 /***********************************************************************************************************************************************/
@@ -529,7 +531,6 @@ Route::group(['middleware' => ['verified']], function () {
             Route::get('invoice/items', [InvoiceController::class, 'items'])->name('invoice.items');
             Route::resource('invoice', InvoiceController::class);
             Route::get('invoice/create/{cid}', [InvoiceController::class, 'create'])->name('invoice.create');
-
         }
     );
 
@@ -1439,7 +1440,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::any('/paiementpro/status', [PaiementProController::class, 'planGetPaiementProStatus'])->name('plan.get.paiementpro.status');
 
     Route::post('/plan/company/payment', [CinetPayController::class, 'planPayWithCinetPay'])->name('plan.pay.with.cinetpay');
-    Route::post('/plan/company/payment/return', [CinetPayController::class,'planCinetPayReturn'])->name('plan.cinetpay.return');
+    Route::post('/plan/company/payment/return', [CinetPayController::class, 'planCinetPayReturn'])->name('plan.cinetpay.return');
     Route::post('/plan/company/payment/notify/', [CinetPayController::class, 'planCinetPayNotify'])->name('plan.cinetpay.notify');
 
     Route::post('/fedapay', [FedapayController::class, 'planPayWithFedapay'])->name('plan.pay.with.fedapay');
@@ -1449,20 +1450,20 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/payhere/status', [PayHereController::class, 'planGetPayHereStatus'])->name('plan.get.payhere.status');
 
     Route::post('plan-pay-with/tap', [TapController::class, 'planPayWithTap'])->name('plan.pay.with.tap');
-    Route::get('plan-get-tap-status/{plan_id}',[TapController::class,'planGetTapStatus'])->name('plan.get.tap.status');
+    Route::get('plan-get-tap-status/{plan_id}', [TapController::class, 'planGetTapStatus'])->name('plan.get.tap.status');
 
     Route::any('/plan-pay-with-authorize-net', [AuthorizeNetController::class, 'planPayWithAuthorizeNet'])->name('plan.pay.with.authorizenet');
-    Route::post('/plan-get-authorizenet-status',[AuthorizeNetController::class,'planPayWithAuthorizeNetData'])->name('plan.get.authorizenet.status');
+    Route::post('/plan-get-authorizenet-status', [AuthorizeNetController::class, 'planPayWithAuthorizeNetData'])->name('plan.get.authorizenet.status');
 
     Route::post('plan-pay-with-khalti', [KhaltiController::class, 'planPayWithKhalti'])->name('plan.pay.with.khalti');
-    Route::post('plan-get-khalti-status',[KhaltiController::class,'planGetKhaltiStatus'])->name('plan.get.khalti.status');
+    Route::post('plan-get-khalti-status', [KhaltiController::class, 'planGetKhaltiStatus'])->name('plan.get.khalti.status');
 
-    Route::post('/plan-pay-with-easebuzz', [EasebuzzController::class,'planPayWithEasebuzz'])->name('plan.pay.with.easebuzz');
-    Route::match(['get','post'],'/plan-easebuzz-payment-return', [EasebuzzController::class,'return_url'])->name('plan.easebuzz.return');
-    Route::match(['get','post'],'plan-easebuzz-payment-notify', [EasebuzzController::class,'notify_url'])->name('plan.get.easebuzz.notify');
+    Route::post('/plan-pay-with-easebuzz', [EasebuzzController::class, 'planPayWithEasebuzz'])->name('plan.pay.with.easebuzz');
+    Route::match(['get', 'post'], '/plan-easebuzz-payment-return', [EasebuzzController::class, 'return_url'])->name('plan.easebuzz.return');
+    Route::match(['get', 'post'], 'plan-easebuzz-payment-notify', [EasebuzzController::class, 'notify_url'])->name('plan.get.easebuzz.notify');
 
     Route::post('plan-pay-with/ozow', [OzowPaymentController::class, 'planPayWithOzow'])->name('plan.pay.with.ozow');
-    Route::get('plan-get-ozow-status/{plan_id}',[OzowPaymentController::class,'planGetOzowStatus'])->name('plan.get.ozow.status');
+    Route::get('plan-get-ozow-status/{plan_id}', [OzowPaymentController::class, 'planGetOzowStatus'])->name('plan.get.ozow.status');
 
     // ---------------------********************************-----------------------
     //plan-order
@@ -1528,7 +1529,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('export/vender', [VenderController::class, 'export'])->name('vender.export');
     Route::get('import/vender/file', [VenderController::class, 'importFile'])->name('vender.file.import');
     Route::post('import/vender', [VenderController::class, 'venderImportdata'])->name('vender.import.data');
-// Route::post('import/vender', [VenderController::class, 'import'])->name('vender.import');
+    // Route::post('import/vender', [VenderController::class, 'import'])->name('vender.import');
 
     Route::get('export/invoice', [InvoiceController::class, 'export'])->name('invoice.export');
     Route::get('export/proposal', [ProposalController::class, 'export'])->name('proposal.export');
@@ -1802,6 +1803,10 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('request-amount/{id}/{status}', [ReferralProgramController::class, 'requestedAmount'])->name('amount.request');
 });
 
+
+// hotel controlers test
+Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS']);
+Route::resource('room', RoomController::class)->middleware(['auth', 'XSS']);
 
 Route::any('/cookie-consent', [SystemController::class, 'CookieConsent'])->name('cookie-consent');
 Route::get('payslip/payslipPdf/{id}/{month}', [PaySlipController::class, 'payslipPdf'])->name('payslip.payslipPdf')->middleware(['XSS']);

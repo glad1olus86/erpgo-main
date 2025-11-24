@@ -15,7 +15,7 @@ use Lab404\Impersonate\Models\Impersonate;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles ,Impersonate;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, Impersonate;
 
     protected $appends = ['profile'];
 
@@ -231,8 +231,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $plan = Plan::find($planID);
         if ($plan) {
             $this->plan = $plan->id;
-            if($this->trial_expire_date != null)
-            {
+            if ($this->trial_expire_date != null) {
                 $this->trial_expire_date = null;
             }
 
@@ -379,7 +378,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function countPaidCompany()
     {
         return User::where('type', '=', 'company')->whereNotIn(
-            'plan', [
+            'plan',
+            [
                 0,
                 1,
             ]
@@ -436,7 +436,6 @@ class User extends Authenticatable implements MustVerifyEmail
         $totalIncome = (!empty($revenue) ? $revenue : 0) + (!empty($invoiceTotal) ? ($invoiceTotal) : 0);
 
         return $totalIncome;
-
     }
     public function incomecat()
     {
@@ -476,10 +475,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         if ($month != '' && $date != '') {
             $InvoiceProducts = \DB::table('invoice_products')
-                ->select('invoice_products.invoice_id as invoice',
+                ->select(
+                    'invoice_products.invoice_id as invoice',
                     \DB::raw('SUM(quantity) as total_quantity'),
                     \DB::raw('SUM(discount) as total_discount'),
-                    \DB::raw('SUM(price * quantity)  as sub_total'))
+                    \DB::raw('SUM(price * quantity)  as sub_total')
+                )
                 ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM invoice_products
                     LEFT JOIN taxes ON FIND_IN_SET(taxes.id, invoice_products.tax) > 0
                     WHERE invoice_products.invoice_id = invoices.id) as tax_values')
@@ -492,10 +493,12 @@ class User extends Authenticatable implements MustVerifyEmail
                 ->keyBy('invoice');
         } elseif ($date != '') {
             $InvoiceProducts = \DB::table('invoice_products')
-                ->select('invoice_products.invoice_id as invoice',
+                ->select(
+                    'invoice_products.invoice_id as invoice',
                     \DB::raw('SUM(quantity) as total_quantity'),
                     \DB::raw('SUM(discount) as total_discount'),
-                    \DB::raw('SUM(price * quantity)  as sub_total'))
+                    \DB::raw('SUM(price * quantity)  as sub_total')
+                )
                 ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM invoice_products
                     LEFT JOIN taxes ON FIND_IN_SET(taxes.id, invoice_products.tax) > 0
                     WHERE invoice_products.invoice_id = invoices.id) as tax_values')
@@ -507,10 +510,12 @@ class User extends Authenticatable implements MustVerifyEmail
                 ->keyBy('invoice');
         } elseif ($month != '') {
             $InvoiceProducts = \DB::table('invoice_products')
-                ->select('invoice_products.invoice_id as invoice',
+                ->select(
+                    'invoice_products.invoice_id as invoice',
                     \DB::raw('SUM(quantity) as total_quantity'),
                     \DB::raw('SUM(discount) as total_discount'),
-                    \DB::raw('SUM(price * quantity)  as sub_total'))
+                    \DB::raw('SUM(price * quantity)  as sub_total')
+                )
                 ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM invoice_products
                     LEFT JOIN taxes ON FIND_IN_SET(taxes.id, invoice_products.tax) > 0
                     WHERE invoice_products.invoice_id = invoices.id) as tax_values')
@@ -539,10 +544,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         if ($month != '' && $date != '') {
             $BillProducts = \DB::table('bill_products')
-                ->select('bill_products.bill_id as bill',
+                ->select(
+                    'bill_products.bill_id as bill',
                     \DB::raw('SUM(bill_products.quantity) as total_quantity'),
                     \DB::raw('SUM(bill_products.discount) as total_discount'),
-                    \DB::raw('SUM(bill_products.price * bill_products.quantity)  as sub_total'))
+                    \DB::raw('SUM(bill_products.price * bill_products.quantity)  as sub_total')
+                )
                 ->selectRaw('(SELECT SUM(bill_accounts.price) FROM bill_accounts
                     WHERE bill_accounts.ref_id = bills.id) as acc_price')
                 ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM bill_products
@@ -557,10 +564,12 @@ class User extends Authenticatable implements MustVerifyEmail
                 ->keyBy('bill');
         } elseif ($date != '') {
             $BillProducts = \DB::table('bill_products')
-                ->select('bill_products.bill_id as bill',
+                ->select(
+                    'bill_products.bill_id as bill',
                     \DB::raw('SUM(quantity) as total_quantity'),
                     \DB::raw('SUM(discount) as total_discount'),
-                    \DB::raw('SUM(bill_products.price * bill_products.quantity)  as sub_total'))
+                    \DB::raw('SUM(bill_products.price * bill_products.quantity)  as sub_total')
+                )
                 ->selectRaw('(SELECT SUM(bill_accounts.price) FROM bill_accounts
                     WHERE bill_accounts.ref_id = bills.id) as acc_price')
                 ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM bill_products
@@ -574,10 +583,12 @@ class User extends Authenticatable implements MustVerifyEmail
                 ->keyBy('bill');
         } elseif ($month != '') {
             $BillProducts = \DB::table('bill_products')
-                ->select('bill_products.bill_id as bill',
+                ->select(
+                    'bill_products.bill_id as bill',
                     \DB::raw('SUM(quantity) as total_quantity'),
                     \DB::raw('SUM(discount) as total_discount'),
-                    \DB::raw('SUM(bill_products.price * bill_products.quantity)  as sub_total'))
+                    \DB::raw('SUM(bill_products.price * bill_products.quantity)  as sub_total')
+                )
                 ->selectRaw('(SELECT SUM(bill_accounts.price) FROM bill_accounts
                     WHERE bill_accounts.ref_id = bills.id) as acc_price')
                 ->selectRaw('(SELECT SUM((price * quantity - discount) * (taxes.rate / 100)) FROM bill_products
@@ -639,7 +650,6 @@ class User extends Authenticatable implements MustVerifyEmail
         $dataArr['expense'] = $expenseArr;
 
         return $dataArr;
-
     }
 
     public function getIncExpLineChartDate()
@@ -706,7 +716,6 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return DB::table('settings')->where('created_by', '=', $userId)->get()->pluck('value', 'name');
-
     }
 
     public function currentPlan()
@@ -1025,7 +1034,7 @@ class User extends Authenticatable implements MustVerifyEmail
         $userDetail = Employee::where('user_id', $this->id)->first();
         if (!empty($userDetail)) {
             if (!empty($userDetail->avatar)) {
-                return asset(\Storage::url('uploads/avatar/'.$userDetail->avatar));
+                return asset(\Storage::url('uploads/avatar/' . $userDetail->avatar));
             } else {
                 return asset(\Storage::url('uploads/avatar/avatar.png'));
             }
@@ -1106,7 +1115,6 @@ class User extends Authenticatable implements MustVerifyEmail
         } else {
             return ProjectTask::select('project_tasks.*', 'project_users.id as up_id')->join('project_users', 'project_users.project_id', '=', 'project_tasks.project_id')->where('project_users.user_id', '=', $this->authId())->count();
         }
-
     }
 
     public function project_complete_task($project_last_stage)
@@ -1132,7 +1140,8 @@ class User extends Authenticatable implements MustVerifyEmail
             return ProjectTask::whereIn('project_id', $user_projects)->join('projects', 'projects.id', '=', 'project_tasks.project_id')->where('project_tasks.end_date', '>', date('Y-m-d'))->limit(5)->get();
         } else {
             return ProjectTask::select('project_tasks.*', 'project_tasks.end_date as task_due_date', 'project_users.id as up_id', 'projects.project_name as project_name', 'projectstages.name as stage_name')->join('project_users', 'project_users.project_id', '=', 'project_tasks.project_id')->join('projects', 'project_users.project_id', '=', 'projects.id')->join('projectstages', 'project_tasks.stage_id', '=', 'projectstages.id')->where('project_users.user_id', '=', $this->authId())->where('project_tasks.end_date', '>', date('Y-m-d'))->limit(5)->orderBy(
-                'project_tasks.end_date', 'ASC'
+                'project_tasks.end_date',
+                'ASC'
             )->get();
         }
     }
@@ -1157,7 +1166,6 @@ class User extends Authenticatable implements MustVerifyEmail
 
         if ($user_type == 'company' || $user_type == 'super admin') {
             $user = User::where('id', \Auth::user()->id)->first();
-
         } else {
             $user = User::where('id', \Auth::user()->created_by)->first();
         }
@@ -1175,7 +1183,6 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return !empty($user->plan) ? Plan::find($user->plan)->hrm : '';
-
     }
 
     public static function show_account()
@@ -1199,7 +1206,6 @@ class User extends Authenticatable implements MustVerifyEmail
             $user = User::where('id', \Auth::user()->created_by)->first();
         }
         return !empty($user->plan) ? Plan::find($user->plan)->project : '';
-
     }
 
     public static function show_pos()
@@ -1211,7 +1217,6 @@ class User extends Authenticatable implements MustVerifyEmail
             $user = User::where('id', \Auth::user()->created_by)->first();
         }
         return !empty($user->plan) ? Plan::find($user->plan)->pos : '';
-
     }
 
     public function clientProjects()
@@ -3457,7 +3462,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>期待您的来信。</p>
                     <p><strong>敬敬, </strong></p>
                     <p>{company_name}</p>',
-                    'da' =>'<p><strong>Hej</strong> {project_user}</p>
+                    'da' => '<p><strong>Hej</strong> {project_user}</p>
                     <p><b>Projektnavn</b>&nbsp;: {project_name}</p>
                     <p><b>Startdato&nbsp;</b>: {project_start_date}</p>
                     <p><b>Slutdato&nbsp;</b>: {project_end_date}</p>
@@ -3465,7 +3470,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Jeg glæder mig til at høre fra dig.</p>
                     <p><strong>Kind Hilds, </strong></p>
                     <p>{company_name}</p>',
-                    'de' =>'<p><strong>Hi.</strong> {project_user}</p>
+                    'de' => '<p><strong>Hi.</strong> {project_user}</p>
                     <p><b>Projektname</b>&nbsp;: {project_name}</p>
                     <p><b>Startdatum&nbsp;</b>: {project_start_date}</p>
                     <p><b>Enddatum&nbsp;</b>: {project_end_date}</p>
@@ -3497,7 +3502,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Regard sur lavenir.</p>
                     <p><strong>Cordialement, </strong></p>
                     <p>{company_name}</p>',
-                    'he' =>'<p><strong>היי</strong> {project_user}</p>
+                    'he' => '<p><strong>היי</strong> {project_user}</p>
                     <p><b>שם הפרויקט</b>&nbsp;: {project_name}</p>
                     <p><b>תאריך התחלה&nbsp;</b>: {project_start_date}</p>
                     <p><b>תאריך סיום&nbsp;</b>: {project_end_date}</p>
@@ -3590,7 +3595,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>期待您的来信。</p>
                     <p><strong>敬敬, </strong></p>
                     <p>{company_name}</p>',
-                    'da' =>'<p><strong>Hej</strong> {project_user}</p>
+                    'da' => '<p><strong>Hej</strong> {project_user}</p>
                     <p><b>Projektnavn</b>&nbsp;: {project_name}</p>
                     <p><b>Startdato&nbsp;</b>: {project_start_date}</p>
                     <p><b>Slutdato&nbsp;</b>: {project_end_date}</p>
@@ -3598,7 +3603,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Jeg glæder mig til at høre fra dig.</p>
                     <p><strong>Kind Hilds, </strong></p>
                     <p>{company_name}</p>',
-                    'de' =>'<p><strong>Hi.</strong> {project_user}</p>
+                    'de' => '<p><strong>Hi.</strong> {project_user}</p>
                     <p><b>Projektname</b>&nbsp;: {project_name}</p>
                     <p><b>Startdatum&nbsp;</b>: {project_start_date}</p>
                     <p><b>Enddatum&nbsp;</b>: {project_end_date}</p>
@@ -3630,7 +3635,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Regard sur lavenir.</p>
                     <p><strong>Cordialement, </strong></p>
                     <p>{company_name}</p>',
-                    'he' =>'<p><strong>היי</strong> {project_user}</p>
+                    'he' => '<p><strong>היי</strong> {project_user}</p>
                     <p><b>שם הפרויקט</b>&nbsp;: {project_name}</p>
                     <p><b>תאריך התחלה&nbsp;</b>: {project_start_date}</p>
                     <p><b>תאריך סיום&nbsp;</b>: {project_end_date}</p>
@@ -3725,7 +3730,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>期待您的来信。</p>
                     <p><strong>敬敬, </strong></p>
                     <p>{company_name}</p>',
-                    'da' =>'<p><strong>Hej</strong> {task_user}</p>
+                    'da' => '<p><strong>Hej</strong> {task_user}</p>
                     <p><b>Navn på opgave</b>&nbsp;: {task_name}</p>
                     <p><b>Projektnavn</b>&nbsp;: {project_name}</p>
                     <p><b>Startdato&nbsp;</b>: {task_start_date}</p>
@@ -3734,7 +3739,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Jeg glæder mig til at høre fra dig.</p>
                     <p><strong>Kind Hilds, </strong></p>
                     <p>{company_name}</p>',
-                    'de' =>'<p><strong>Hi.</strong> {task_user}</p>
+                    'de' => '<p><strong>Hi.</strong> {task_user}</p>
                     <p><b>Taskname</b>&nbsp;: {task_name}</p>
                     <p><b>Projektname</b>&nbsp;: {project_name}</p>
                     <p><b>Startdatum&nbsp;</b>: {task_start_date}</p>
@@ -3770,7 +3775,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Regard sur lavenir.</p>
                     <p><strong>Cordialement, </strong></p>
                     <p>{company_name}</p>',
-                    'he' =>'<p><strong>היי</strong> {task_user}</p>
+                    'he' => '<p><strong>היי</strong> {task_user}</p>
                     <p><b>שם משימה</b>&nbsp;: {task_name}</p>
                     <p><b>שם הפרויקט</b>&nbsp;: {project_name}</p>
                     <p><b>תאריך התחלה&nbsp;</b>: {task_start_date}</p>
@@ -3864,11 +3869,11 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>{task_name} 状态更改自 {old_stage_name} 到 {new_stage_name}</p>
                     <p><strong>敬敬, </strong></p>
                     <p>{company_name}</p>',
-                    'da' =>'<p><strong>Hej</strong> {task_user}</p>
+                    'da' => '<p><strong>Hej</strong> {task_user}</p>
                     <p>{task_name} status ændret fra {old_stage_name} til {new_stage_name}</p>
                     <p><strong>Kind Hilds, </strong></p>
                     <p>{company_name}</p>',
-                    'de' =>'<p>&nbsp;</p>
+                    'de' => '<p>&nbsp;</p>
                     <p><strong>Hi</strong> {task_user}</p>
                     <p>{task_name} Status geändert von {old_stage_name} bis {new_stage_name}</p>
                     <p><strong>>KGütige Grüße, </strong></p>
@@ -3888,7 +3893,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>{task_name} Statut modifié par {old_stage_name} Vers {new_stage_name}</p>
                     <p><strong>Cordialement, </strong></p>
                     <p>{company_name}</p>',
-                    'he' =>'<p>&nbsp;</p>
+                    'he' => '<p>&nbsp;</p>
                     <p><strong>היי</strong> {task_user}</p>
                     <p>{task_name} הסטאטוס השתנה מ - {old_stage_name} ל {new_stage_name}</p>
                     <p><strong>די. די. די. , </strong></p>
@@ -3923,7 +3928,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>{task_name} status alterado de {old_stage_name} para {new_stage_name}</p>
                     <p><strong>Tipo Considera, </strong></p>
                     <p>{company_name}</p>',
-                    'tr' =>'<p>&nbsp;</p>
+                    'tr' => '<p>&nbsp;</p>
                     <p><strong>Hi</strong> {task_user}</p>
                     <p>{task_name} durum değişti {old_stage_name} ile {new_stage_name}</p>
                     <p><strong>Saygılarımızla, </strong></p>
@@ -3946,11 +3951,11 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>新离开创建自 {start_date} 到 {end_date} 为 {leave_reason}</p>
                     <p><strong>敬敬, </strong></p>
                     <p>{employee_name}</p>',
-                    'da' =>'<p><strong>-Hej.</strong> {user_name}</p>
+                    'da' => '<p><strong>-Hej.</strong> {user_name}</p>
                     <p>Ny Forlad, opret fra {start_date} til {end_date} for {leave_reason}</p>
                     <p><strong>Kind Hilds, </strong></p>
                     <p>{employee_name}</p>',
-                    'de' =>'<p><strong>Hi.</strong> {user_name}</p>
+                    'de' => '<p><strong>Hi.</strong> {user_name}</p>
                     <p>Neue Hinterlasse erstellen aus {start_date} bis {end_date} für {leave_reason}</p>
                     <p><strong>KGütige Grüße, </strong></p>
                     <p>{employee_name}</p>',
@@ -3966,7 +3971,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Nouveau congé créé à partir de {start_date} Vers {end_date} Pour {leave_reason}</p>
                     <p><strong>Cordialement, </strong></p>
                     <p>{employee_name}</p>',
-                    'he' =>'<p><strong>היי</strong> {user_name}</p>
+                    'he' => '<p><strong>היי</strong> {user_name}</p>
                     <p>יצירה חדשה של יצירה מ - {start_date} ל {end_date} עבור {leave_reason}</p>
                     <p><strong>די. די. די. </strong></p>
                     <p>{employee_name}</p>',
@@ -3994,7 +3999,7 @@ class User extends Authenticatable implements MustVerifyEmail
                     <p>Novo Deixe criar de {start_date} para {end_date} para {leave_reason}</p>
                     <p><strong>Tipo Considera, </strong></p>
                     <p>{employee_name}</p>',
-                    'tr' =>'<p><strong>Hi</strong> {user_name}</p>
+                    'tr' => '<p><strong>Hi</strong> {user_name}</p>
                     <p>Yeni Bırakıma yarat {start_date} ile {end_date} için {leave_reason}</p>
                     <p><strong>Saygılarımızla, </strong></p>
                     <p>{employee_name}</p>',
@@ -4021,7 +4026,6 @@ class User extends Authenticatable implements MustVerifyEmail
                         ]
                     );
                 }
-
             }
         }
     }
@@ -4049,9 +4053,8 @@ class User extends Authenticatable implements MustVerifyEmail
         $allEmail = EmailTemplate::all();
 
         foreach ($allEmail as $email) {
-            $emailTemplate = UserEmailTemplate::where('template_id', $email->id)->where('user_id',$user_id)->first();
-            if($emailTemplate == null)
-            {
+            $emailTemplate = UserEmailTemplate::where('template_id', $email->id)->where('user_id', $user_id)->first();
+            if ($emailTemplate == null) {
                 UserEmailTemplate::create(
                     [
                         'template_id' => $email->id,
@@ -4060,7 +4063,6 @@ class User extends Authenticatable implements MustVerifyEmail
                     ]
                 );
             }
-
         }
     }
 
@@ -4075,7 +4077,6 @@ class User extends Authenticatable implements MustVerifyEmail
                 'created_by' => 2,
             ]
         );
-
     }
 
     public function userWarehouseRegister($user_id)
@@ -4089,7 +4090,6 @@ class User extends Authenticatable implements MustVerifyEmail
                 'created_by' => $user_id,
             ]
         );
-
     }
 
     //default bank account for new company
@@ -4106,7 +4106,6 @@ class User extends Authenticatable implements MustVerifyEmail
                 'created_by' => $user_id,
             ]
         );
-
     }
 
     public function extraKeyword()
@@ -4185,7 +4184,6 @@ class User extends Authenticatable implements MustVerifyEmail
             } else {
                 return 0;
             }
-
         } elseif (Auth::user()->user_type != 'company' && Auth::user()->user_type != 'super admin') {
 
             if (Auth::user()->current_location == 0) {
@@ -4201,5 +4199,4 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Employee::where('created_by', '=', $this->creatorId())->count();
     }
-
 }

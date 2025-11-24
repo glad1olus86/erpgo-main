@@ -302,14 +302,15 @@
                             @if ($userPlan->pos == 1)
                                 @can('show pos dashboard')
                                     <li
-                                        class="dash-item dash-hasmenu {{
-                                        Request::segment(1) == 'pos-dashboard' ||
+                                        class="dash-item dash-hasmenu {{ Request::segment(1) == 'pos-dashboard' ||
                                         Request::segment(1) == 'reports-warehouse' ||
                                         Request::segment(1) == 'reports-daily-purchase' ||
                                         Request::segment(1) == 'reports-monthly-purchase' ||
                                         Request::segment(1) == 'reports-daily-pos' ||
                                         Request::segment(1) == 'reports-monthly-pos' ||
-                                        Request::segment(1) == 'reports-pos-vs-purchase' ? ' active dash-trigger' : '' }}">
+                                        Request::segment(1) == 'reports-pos-vs-purchase'
+                                            ? ' active dash-trigger'
+                                            : '' }}">
                                         <a class="dash-link" href="#">{{ __('POS') }}<span
                                                 class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -319,21 +320,23 @@
                                                     href="{{ route('pos.dashboard') }}">{{ __(' Overview') }}</a>
                                             </li>
                                             @can('manage pos')
-                                                <li class="dash-item dash-hasmenu {{
-                                                    Request::segment(1) == 'reports-warehouse' ||
-                                                    Request::segment(1) == 'reports-daily-purchase' ||
-                                                    Request::segment(1) == 'reports-monthly-purchase' ||
-                                                    Request::segment(1) == 'reports-daily-pos' ||
-                                                    Request::segment(1) == 'reports-monthly-pos' ||
-                                                    Request::segment(1) == 'reports-pos-vs-purchase' ? 'active dash-trigger' : '' }}"
+                                                <li class="dash-item dash-hasmenu {{ Request::segment(1) == 'reports-warehouse' ||
+                                                Request::segment(1) == 'reports-daily-purchase' ||
+                                                Request::segment(1) == 'reports-monthly-purchase' ||
+                                                Request::segment(1) == 'reports-daily-pos' ||
+                                                Request::segment(1) == 'reports-monthly-pos' ||
+                                                Request::segment(1) == 'reports-pos-vs-purchase'
+                                                    ? 'active dash-trigger'
+                                                    : '' }}"
                                                     href="#crm-report" data-toggle="collapse" role="button"
-                                                    aria-expanded="{{
-                                                    Request::segment(1) == 'reports-warehouse' ||
+                                                    aria-expanded="{{ Request::segment(1) == 'reports-warehouse' ||
                                                     Request::segment(1) == 'reports-daily-purchase' ||
                                                     Request::segment(1) == 'reports-monthly-purchase' ||
                                                     Request::segment(1) == 'reports-daily-pos' ||
                                                     Request::segment(1) == 'reports-monthly-pos' ||
-                                                    Request::segment(1) == 'reports-pos-vs-purchase' ? 'true' : 'false' }}">
+                                                    Request::segment(1) == 'reports-pos-vs-purchase'
+                                                        ? 'true'
+                                                        : 'false' }}">
                                                     <a class="dash-link" href="#">{{ __('Reports') }}<span
                                                             class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                                     <ul class="dash-submenu">
@@ -375,62 +378,114 @@
 
                 @if (!empty($userPlan) && $userPlan->hrm == 1)
                     @if (Gate::check('manage employee') ||
-                        Gate::check('manage set salary') || Gate::check('manage pay slip') ||
-                        Gate::check('manage leave') || Gate::check('manage attendance') ||
-                        Gate::check('create attendance') || Gate::check('manage indicator') ||
-                        Gate::check('manage appraisal') || Gate::check('manage goal tracking') ||
-                        Gate::check('manage training') || Gate::check('manage trainer') ||
-                        Gate::check('manage job') || Gate::check('create job') ||
-                        Gate::check('manage job application') || Gate::check('manage custom question') ||
-                        Gate::check('manage job onBoard') || Gate::check('show interview schedule') ||
-                        Gate::check('show career') || Gate::check('manage award') ||
-                        Gate::check('manage transfer') || Gate::check('manage resignation') ||
-                        Gate::check('manage travel') || Gate::check('manage promotion') ||
-                        Gate::check('manage complaint') || Gate::check('manage warning') ||
-                        Gate::check('manage termination') || Gate::check('manage announcement') ||
-                        Gate::check('manage holiday') || Gate::check('manage event') ||
-                        Gate::check('manage meeting') || Gate::check('manage assets') ||
-                        Gate::check('manage document') || Gate::check('manage company policy') ||
-                        Gate::check('manage branch') || Gate::check('manage department') ||
-                        Gate::check('manage designation') || Gate::check('manage leave type') ||
-                        Gate::check('manage document type') || Gate::check('manage payslip type') ||
-                        Gate::check('manage allowance option') || Gate::check('manage loan option') ||
-                        Gate::check('manage deduction option') || Gate::check('manage goal type') ||
-                        Gate::check('manage training type') || Gate::check('manage award type') ||
-                        Gate::check('manage termination type') || Gate::check('manage job category') ||
-                        Gate::check('manage job stage') || Gate::check('manage performance type') ||
-                        Gate::check('manage competencies'))
+                            Gate::check('manage set salary') ||
+                            Gate::check('manage pay slip') ||
+                            Gate::check('manage leave') ||
+                            Gate::check('manage attendance') ||
+                            Gate::check('create attendance') ||
+                            Gate::check('manage indicator') ||
+                            Gate::check('manage appraisal') ||
+                            Gate::check('manage goal tracking') ||
+                            Gate::check('manage training') ||
+                            Gate::check('manage trainer') ||
+                            Gate::check('manage job') ||
+                            Gate::check('create job') ||
+                            Gate::check('manage job application') ||
+                            Gate::check('manage custom question') ||
+                            Gate::check('manage job onBoard') ||
+                            Gate::check('show interview schedule') ||
+                            Gate::check('show career') ||
+                            Gate::check('manage award') ||
+                            Gate::check('manage transfer') ||
+                            Gate::check('manage resignation') ||
+                            Gate::check('manage travel') ||
+                            Gate::check('manage promotion') ||
+                            Gate::check('manage complaint') ||
+                            Gate::check('manage warning') ||
+                            Gate::check('manage termination') ||
+                            Gate::check('manage announcement') ||
+                            Gate::check('manage holiday') ||
+                            Gate::check('manage event') ||
+                            Gate::check('manage meeting') ||
+                            Gate::check('manage assets') ||
+                            Gate::check('manage document') ||
+                            Gate::check('manage company policy') ||
+                            Gate::check('manage branch') ||
+                            Gate::check('manage department') ||
+                            Gate::check('manage designation') ||
+                            Gate::check('manage leave type') ||
+                            Gate::check('manage document type') ||
+                            Gate::check('manage payslip type') ||
+                            Gate::check('manage allowance option') ||
+                            Gate::check('manage loan option') ||
+                            Gate::check('manage deduction option') ||
+                            Gate::check('manage goal type') ||
+                            Gate::check('manage training type') ||
+                            Gate::check('manage award type') ||
+                            Gate::check('manage termination type') ||
+                            Gate::check('manage job category') ||
+                            Gate::check('manage job stage') ||
+                            Gate::check('manage performance type') ||
+                            Gate::check('manage competencies'))
 
                         <li
                             class="dash-item dash-hasmenu {{ Request::segment(1) == 'holiday-calender' ||
-                            Request::segment(1) == 'leavetype' || Request::segment(1) == 'leave' ||
-                            Request::segment(1) == 'attendanceemployee' || Request::segment(1) == 'bulkattendance' ||
-                            Request::segment(1) == 'indicator' || Request::segment(1) == 'appraisal' ||
-                            Request::segment(1) == 'goaltracking' || Request::segment(1) == 'trainer' ||
-                            Request::segment(1) == 'event' || Request::segment(1) == 'meeting' ||
-                            Request::segment(1) == 'account-assets' || Request::segment(1) == 'leavetype' ||
-                            Request::segment(1) == 'meeting-calender' || Request::segment(1) == 'document-upload' ||
-                            Request::segment(1) == 'document' || Request::segment(1) == 'performanceType' ||
-                            Request::segment(1) == 'branch' || Request::segment(1) == 'department' ||
-                            Request::segment(1) == 'designation' || Request::segment(1) == 'employee' ||
-                            Request::segment(1) == 'leave_requests' || Request::segment(1) == 'holidays' ||
-                            Request::segment(1) == 'policies' || Request::segment(1) == 'leave_calender' ||
-                            Request::segment(1) == 'award' || Request::segment(1) == 'transfer' ||
-                            Request::segment(1) == 'resignation' || Request::segment(1) == 'training' ||
-                            Request::segment(1) == 'travel' || Request::segment(1) == 'promotion' ||
-                            Request::segment(1) == 'complaint' || Request::segment(1) == 'warning' ||
-                            Request::segment(1) == 'termination' || Request::segment(1) == 'announcement' ||
-                            Request::segment(1) == 'job' || Request::segment(1) == 'job-application' ||
-                            Request::segment(1) == 'candidates-job-applications' || Request::segment(1) == 'job-onboard' ||
-                            Request::segment(1) == 'custom-question' || Request::segment(1) == 'interview-schedule' ||
-                            Request::segment(1) == 'career' || Request::segment(1) == 'holiday' ||
-                            Request::segment(1) == 'setsalary' || Request::segment(1) == 'payslip' ||
-                            Request::segment(1) == 'paysliptype' || Request::segment(1) == 'company-policy' ||
-                            Request::segment(1) == 'job-stage' || Request::segment(1) == 'job-category' ||
-                            Request::segment(1) == 'terminationtype' || Request::segment(1) == 'awardtype' ||
-                            Request::segment(1) == 'trainingtype' || Request::segment(1) == 'goaltype' ||
-                            Request::segment(1) == 'allowanceoption' || Request::segment(1) == 'competencies' ||
-                            Request::segment(1) == 'loanoption' || Request::segment(1) == 'deductionoption'
+                            Request::segment(1) == 'leavetype' ||
+                            Request::segment(1) == 'leave' ||
+                            Request::segment(1) == 'attendanceemployee' ||
+                            Request::segment(1) == 'bulkattendance' ||
+                            Request::segment(1) == 'indicator' ||
+                            Request::segment(1) == 'appraisal' ||
+                            Request::segment(1) == 'goaltracking' ||
+                            Request::segment(1) == 'trainer' ||
+                            Request::segment(1) == 'event' ||
+                            Request::segment(1) == 'meeting' ||
+                            Request::segment(1) == 'account-assets' ||
+                            Request::segment(1) == 'leavetype' ||
+                            Request::segment(1) == 'meeting-calender' ||
+                            Request::segment(1) == 'document-upload' ||
+                            Request::segment(1) == 'document' ||
+                            Request::segment(1) == 'performanceType' ||
+                            Request::segment(1) == 'branch' ||
+                            Request::segment(1) == 'department' ||
+                            Request::segment(1) == 'designation' ||
+                            Request::segment(1) == 'employee' ||
+                            Request::segment(1) == 'leave_requests' ||
+                            Request::segment(1) == 'holidays' ||
+                            Request::segment(1) == 'policies' ||
+                            Request::segment(1) == 'leave_calender' ||
+                            Request::segment(1) == 'award' ||
+                            Request::segment(1) == 'transfer' ||
+                            Request::segment(1) == 'resignation' ||
+                            Request::segment(1) == 'training' ||
+                            Request::segment(1) == 'travel' ||
+                            Request::segment(1) == 'promotion' ||
+                            Request::segment(1) == 'complaint' ||
+                            Request::segment(1) == 'warning' ||
+                            Request::segment(1) == 'termination' ||
+                            Request::segment(1) == 'announcement' ||
+                            Request::segment(1) == 'job' ||
+                            Request::segment(1) == 'job-application' ||
+                            Request::segment(1) == 'candidates-job-applications' ||
+                            Request::segment(1) == 'job-onboard' ||
+                            Request::segment(1) == 'custom-question' ||
+                            Request::segment(1) == 'interview-schedule' ||
+                            Request::segment(1) == 'career' ||
+                            Request::segment(1) == 'holiday' ||
+                            Request::segment(1) == 'setsalary' ||
+                            Request::segment(1) == 'payslip' ||
+                            Request::segment(1) == 'paysliptype' ||
+                            Request::segment(1) == 'company-policy' ||
+                            Request::segment(1) == 'job-stage' ||
+                            Request::segment(1) == 'job-category' ||
+                            Request::segment(1) == 'terminationtype' ||
+                            Request::segment(1) == 'awardtype' ||
+                            Request::segment(1) == 'trainingtype' ||
+                            Request::segment(1) == 'goaltype' ||
+                            Request::segment(1) == 'allowanceoption' ||
+                            Request::segment(1) == 'competencies' ||
+                            Request::segment(1) == 'loanoption' ||
+                            Request::segment(1) == 'deductionoption'
                                 ? 'active dash-trigger'
                                 : '' }}">
                             <a href="#!" class="dash-link ">
@@ -804,36 +859,66 @@
                 <!--------------------- Start Account ----------------------------------->
 
                 @if (!empty($userPlan) && $userPlan->account == 1)
-                    @if (Gate::check('manage budget plan') || Gate::check('income vs expense report') ||
-                            Gate::check('manage goal') || Gate::check('manage constant tax') ||
-                            Gate::check('manage constant category') || Gate::check('manage constant unit') ||
-                            Gate::check('manage constant custom field') || Gate::check('manage print settings') ||
-                            Gate::check('manage customer') || Gate::check('manage vender') ||
-                            Gate::check('manage proposal') || Gate::check('manage bank account') ||
-                            Gate::check('manage bank transfer') || Gate::check('manage invoice') ||
-                            Gate::check('manage revenue') || Gate::check('manage credit note') ||
-                            Gate::check('manage bill') || Gate::check('manage payment') ||
-                            Gate::check('manage debit note') || Gate::check('manage chart of account') ||
-                            Gate::check('manage journal entry') || Gate::check('balance sheet report') ||
-                            Gate::check('ledger report') || Gate::check('trial balance report') )
+                    @if (Gate::check('manage budget plan') ||
+                            Gate::check('income vs expense report') ||
+                            Gate::check('manage goal') ||
+                            Gate::check('manage constant tax') ||
+                            Gate::check('manage constant category') ||
+                            Gate::check('manage constant unit') ||
+                            Gate::check('manage constant custom field') ||
+                            Gate::check('manage print settings') ||
+                            Gate::check('manage customer') ||
+                            Gate::check('manage vender') ||
+                            Gate::check('manage proposal') ||
+                            Gate::check('manage bank account') ||
+                            Gate::check('manage bank transfer') ||
+                            Gate::check('manage invoice') ||
+                            Gate::check('manage revenue') ||
+                            Gate::check('manage credit note') ||
+                            Gate::check('manage bill') ||
+                            Gate::check('manage payment') ||
+                            Gate::check('manage debit note') ||
+                            Gate::check('manage chart of account') ||
+                            Gate::check('manage journal entry') ||
+                            Gate::check('balance sheet report') ||
+                            Gate::check('ledger report') ||
+                            Gate::check('trial balance report'))
                         <li
                             class="dash-item dash-hasmenu
                                         {{ Request::route()->getName() == 'print-setting' ||
-                                        Request::segment(1) == 'customer' || Request::segment(1) == 'vender' ||
-                                        Request::segment(1) == 'proposal' || Request::segment(1) == 'bank-account' ||
-                                        Request::segment(1) == 'bank-transfer' || Request::segment(1) == 'invoice' ||
-                                        Request::segment(1) == 'revenue' || Request::segment(1) == 'credit-note' ||
-                                        Request::segment(1) == 'taxes' || Request::segment(1) == 'product-category' ||
-                                        Request::segment(1) == 'product-unit' || Request::segment(1) == 'payment-method' ||
-                                        Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type' ||
-                                        (Request::segment(1) == 'transaction' && Request::segment(2) != 'ledger' &&
-                                            Request::segment(2) != 'balance-sheet-report' && Request::segment(2) != 'trial-balance') ||
-                                        Request::segment(1) == 'goal' || Request::segment(1) == 'budget' ||
-                                        Request::segment(1) == 'chart-of-account' || Request::segment(1) == 'journal-entry' ||
-                                        Request::segment(2) == 'ledger' || Request::segment(2) == 'balance-sheet' ||
-                                        Request::segment(2) == 'trial-balance' || Request::segment(2) == 'profit-loss' ||
-                                        Request::segment(1) == 'bill' || Request::segment(1) == 'expense' ||
-                                        Request::segment(1) == 'payment' || Request::segment(1) == 'debit-note' || (Request::route()->getName() == 'report.balance.sheet') || (Request::route()->getName() == 'trial-balance-report') ? ' active dash-trigger'
+                                        Request::segment(1) == 'customer' ||
+                                        Request::segment(1) == 'vender' ||
+                                        Request::segment(1) == 'proposal' ||
+                                        Request::segment(1) == 'bank-account' ||
+                                        Request::segment(1) == 'bank-transfer' ||
+                                        Request::segment(1) == 'invoice' ||
+                                        Request::segment(1) == 'revenue' ||
+                                        Request::segment(1) == 'credit-note' ||
+                                        Request::segment(1) == 'taxes' ||
+                                        Request::segment(1) == 'product-category' ||
+                                        Request::segment(1) == 'product-unit' ||
+                                        Request::segment(1) == 'payment-method' ||
+                                        Request::segment(1) == 'custom-field' ||
+                                        Request::segment(1) == 'chart-of-account-type' ||
+                                        (Request::segment(1) == 'transaction' &&
+                                            Request::segment(2) != 'ledger' &&
+                                            Request::segment(2) != 'balance-sheet-report' &&
+                                            Request::segment(2) != 'trial-balance') ||
+                                        Request::segment(1) == 'goal' ||
+                                        Request::segment(1) == 'budget' ||
+                                        Request::segment(1) == 'chart-of-account' ||
+                                        Request::segment(1) == 'journal-entry' ||
+                                        Request::segment(2) == 'ledger' ||
+                                        Request::segment(2) == 'balance-sheet' ||
+                                        Request::segment(2) == 'trial-balance' ||
+                                        Request::segment(2) == 'profit-loss' ||
+                                        Request::segment(1) == 'bill' ||
+                                        Request::segment(1) == 'expense' ||
+                                        Request::segment(1) == 'payment' ||
+                                        Request::segment(1) == 'debit-note' ||
+                                        Request::route()->getName() == 'report.balance.sheet' ||
+                                        Request::route()->getName() == 'trial-balance-report'
+                                            ? ' active dash-trigger'
                                             : '' }}">
                             <a href="#!" class="dash-link"><span class="dash-micon"><i
                                         class="ti ti-box"></i></span><span
@@ -929,7 +1014,7 @@
                                                 <li
                                                     class="dash-item {{ Request::route()->getName() == 'bill.index' || Request::route()->getName() == 'bill.create' || Request::route()->getName() == 'bill.edit' || Request::route()->getName() == 'bill.show' ? ' active' : '' }}">
                                                     <a class="dash-link"
-                                                    href="{{ route('bill.index') }}">{{ __('Bill') }}</a>
+                                                        href="{{ route('bill.index') }}">{{ __('Bill') }}</a>
                                                 </li>
                                                 <li
                                                     class="dash-item {{ Request::route()->getName() == 'expense.index' || Request::route()->getName() == 'expense.create' || Request::route()->getName() == 'expense.edit' || Request::route()->getName() == 'expense.show' ? ' active' : '' }}">
@@ -967,7 +1052,10 @@
                                         Request::segment(2) == 'ledger' ||
                                         Request::segment(2) == 'trial-balance-report' ||
                                         Request::segment(2) == 'balance-sheet-report' ||
-                                        Request::segment(2) == 'trial-balance' || (Request::route()->getName() == 'report.balance.sheet') || (Request::route()->getName() == 'trial-balance-report') ? 'active dash-trigger'
+                                        Request::segment(2) == 'trial-balance' ||
+                                        Request::route()->getName() == 'report.balance.sheet' ||
+                                        Request::route()->getName() == 'trial-balance-report'
+                                            ? 'active dash-trigger'
                                             : '' }}">
                                         <a class="dash-link" href="#">{{ __('Double Entry') }}<span
                                                 class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
@@ -1014,7 +1102,7 @@
                                             @endcan
                                             @can('trial balance report')
                                                 <li
-                                                    class="dash-item {{ Request::route()->getName() == 'trial.balance' || (Request::route()->getName() == 'trial-balance-report') ? ' active' : '' }}">
+                                                    class="dash-item {{ Request::route()->getName() == 'trial.balance' || Request::route()->getName() == 'trial-balance-report' ? ' active' : '' }}">
                                                     <a class="dash-link"
                                                         href="{{ route('trial.balance') }}">{{ __('Trial Balance') }}</a>
                                                 </li>
@@ -1101,19 +1189,19 @@
                                             href="{{ route('contract.index') }}">{{ __('Contract') }}</a>
                                     </li>
                                 @endcan
-                        @if (Gate::check('manage lead stage') ||
-                                Gate::check('manage pipeline') ||
-                                Gate::check('manage source') ||
-                                Gate::check('manage label') ||
-                                Gate::check('manage contract type') ||
-                                Gate::check('manage stage'))
-                            <li
-                                class="dash-item  {{ Request::segment(1) == 'stages' || Request::segment(1) == 'labels' || Request::segment(1) == 'sources' || Request::segment(1) == 'lead_stages' || Request::segment(1) == 'pipelines' || Request::segment(1) == 'product-category' || Request::segment(1) == 'product-unit' || Request::segment(1) == 'contractType' || Request::segment(1) == 'payment-method' || Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type' ? 'active dash-trigger' : '' }}">
-                                <a class="dash-link"
-                                    href="{{ route('pipelines.index') }}   ">{{ __('CRM System Setup') }}</a>
+                                @if (Gate::check('manage lead stage') ||
+                                        Gate::check('manage pipeline') ||
+                                        Gate::check('manage source') ||
+                                        Gate::check('manage label') ||
+                                        Gate::check('manage contract type') ||
+                                        Gate::check('manage stage'))
+                                    <li
+                                        class="dash-item  {{ Request::segment(1) == 'stages' || Request::segment(1) == 'labels' || Request::segment(1) == 'sources' || Request::segment(1) == 'lead_stages' || Request::segment(1) == 'pipelines' || Request::segment(1) == 'product-category' || Request::segment(1) == 'product-unit' || Request::segment(1) == 'contractType' || Request::segment(1) == 'payment-method' || Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type' ? 'active dash-trigger' : '' }}">
+                                        <a class="dash-link"
+                                            href="{{ route('pipelines.index') }}   ">{{ __('CRM System Setup') }}</a>
 
-                            </li>
-                        @endif
+                                    </li>
+                                @endif
                             </ul>
                         </li>
                     @endif
@@ -1124,9 +1212,12 @@
                 <!--------------------- Start Project ----------------------------------->
 
                 @if (!empty($userPlan) && $userPlan->project == 1)
-                    @if (Gate::check('manage project') || Gate::check('manage project task') ||
-                        Gate::check('manage timesheet') || Gate::check('manage bug report') ||
-                        Gate::check('manage project task stage') || Gate::check('manage bug status'))
+                    @if (Gate::check('manage project') ||
+                            Gate::check('manage project task') ||
+                            Gate::check('manage timesheet') ||
+                            Gate::check('manage bug report') ||
+                            Gate::check('manage project task stage') ||
+                            Gate::check('manage bug status'))
                         <li
                             class="dash-item dash-hasmenu
                                                     {{ Request::segment(1) == 'project' ||
@@ -1150,7 +1241,8 @@
                                 @can('manage project')
                                     <li
                                         class="dash-item  {{ Request::segment(1) == 'project' || Request::route()->getName() == 'projects.list' || Request::route()->getName() == 'projects.list' || Request::route()->getName() == 'projects.index' || Request::route()->getName() == 'projects.show' || request()->is('projects/*') ? 'active' : '' }}">
-                                        <a class="dash-link" href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage project task')
@@ -1161,12 +1253,14 @@
                                 @endcan
                                 @can('manage timesheet')
                                     <li class="dash-item {{ request()->is('timesheet-list*') ? 'active' : '' }}">
-                                        <a class="dash-link" href="{{ route('timesheet.list') }}">{{ __('Timesheet') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('timesheet.list') }}">{{ __('Timesheet') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage bug report')
                                     <li class="dash-item {{ request()->is('bugs-report*') ? 'active' : '' }}">
-                                        <a class="dash-link" href="{{ route('bugs.view', 'list') }}">{{ __('Bug') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('bugs.view', 'list') }}">{{ __('Bug') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage project task')
@@ -1176,8 +1270,10 @@
                                     </li>
                                 @endcan
                                 @if (\Auth::user()->type != 'super admin')
-                                    <li class="dash-item  {{ Request::segment(1) == 'time-tracker' ? 'active open' : '' }}">
-                                        <a class="dash-link" href="{{ route('time.tracker') }}">{{ __('Tracker') }}</a>
+                                    <li
+                                        class="dash-item  {{ Request::segment(1) == 'time-tracker' ? 'active open' : '' }}">
+                                        <a class="dash-link"
+                                            href="{{ route('time.tracker') }}">{{ __('Tracker') }}</a>
                                     </li>
                                 @endif
                                 @if (\Auth::user()->type == 'company' || \Auth::user()->type == 'Employee')
@@ -1222,7 +1318,9 @@
 
                 <!--------------------- Start User Managaement System ----------------------------------->
 
-                @if (\Auth::user()->type != 'super admin' && (Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
+                @if (
+                    \Auth::user()->type != 'super admin' &&
+                        (Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'users' ||
                         Request::segment(1) == 'roles' ||
@@ -1289,6 +1387,28 @@
 
                 <!--------------------- End Products System ----------------------------------->
 
+                @if (\Auth::user()->type == 'company')
+                    <li
+                        class="dash-item dash-hasmenu {{ Request::segment(1) == 'hotel' || Request::segment(1) == 'room' ? 'active dash-trigger' : '' }}">
+                        <a href="#!" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-building-skyscraper"></i></span>
+                            <span class="dash-mtext">{{ __('Управление отелями') }}</span>
+                            <span class="dash-arrow"><i data-feather="chevron-right"></i></span>
+                        </a>
+                        <ul class="dash-submenu">
+                            @can('manage hotel')
+                                <li class="dash-item {{ Request::segment(1) == 'hotel' ? 'active' : '' }}">
+                                    <a class="dash-link" href="{{ route('hotel.index') }}">{{ __('Отели') }}</a>
+                                </li>
+                            @endcan
+                            <!-- Сюда потом добавите Rooms -->
+                            <li class="dash-item {{ Request::segment(1) == 'room' ? 'active' : '' }}">
+                                <a class="dash-link" href="{{ route('room.index') }}">{{ __('Номера') }}</a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
+
 
                 <!--------------------- Start POs System ----------------------------------->
                 @if (!empty($userPlan) && $userPlan->pos == 1)
@@ -1315,23 +1435,27 @@
                                 @can('manage warehouse')
                                     <li
                                         class="dash-item {{ Request::route()->getName() == 'warehouse.index' || Request::route()->getName() == 'warehouse.show' ? ' active' : '' }}">
-                                        <a class="dash-link" href="{{ route('warehouse.index') }}">{{ __('Warehouse') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('warehouse.index') }}">{{ __('Warehouse') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage purchase')
                                     <li
                                         class="dash-item {{ Request::route()->getName() == 'purchase.index' || Request::route()->getName() == 'purchase.create' || Request::route()->getName() == 'purchase.edit' || Request::route()->getName() == 'purchase.show' ? ' active' : '' }}">
-                                        <a class="dash-link" href="{{ route('purchase.index') }}">{{ __('Purchase') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('purchase.index') }}">{{ __('Purchase') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage quotation')
                                     <li
                                         class="dash-item {{ Request::route()->getName() == 'quotation.index' || Request::route()->getName() == 'quotations.create' || Request::route()->getName() == 'quotation.edit' || Request::route()->getName() == 'quotation.show' ? ' active' : '' }}">
-                                        <a class="dash-link" href="{{ route('quotation.index') }}">{{ __('Quotation') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('quotation.index') }}">{{ __('Quotation') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage pos')
-                                    <li class="dash-item {{ Request::route()->getName() == 'pos.index' ? ' active' : '' }}">
+                                    <li
+                                        class="dash-item {{ Request::route()->getName() == 'pos.index' ? ' active' : '' }}">
                                         <a class="dash-link" href="{{ route('pos.index') }}">{{ __(' Add POS') }}</a>
                                     </li>
                                     <li
@@ -1349,7 +1473,8 @@
                                 @can('create barcode')
                                     <li
                                         class="dash-item {{ Request::route()->getName() == 'pos.barcode' || Request::route()->getName() == 'pos.print' ? ' active' : '' }}">
-                                        <a class="dash-link" href="{{ route('pos.barcode') }}">{{ __('Print Barcode') }}</a>
+                                        <a class="dash-link"
+                                            href="{{ route('pos.barcode') }}">{{ __('Print Barcode') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage pos')
@@ -1388,7 +1513,8 @@
                 @endif
 
                 @if (\Auth::user()->type == 'company')
-                    <li class="dash-item dash-hasmenu {{ Request::segment(1) == 'notification_templates' ? 'active' : '' }}">
+                    <li
+                        class="dash-item dash-hasmenu {{ Request::segment(1) == 'notification_templates' ? 'active' : '' }}">
                         <a href="{{ route('notification-templates.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-notification"></i></span><span
                                 class="dash-mtext">{{ __('Notification Template') }}</span>
@@ -1436,7 +1562,8 @@
 
                                 @if (Gate::check('manage order') && Auth::user()->type == 'company')
                                     <li class="dash-item {{ Request::segment(1) == 'order' ? 'active' : '' }}">
-                                        <a href="{{ route('order.index') }}" class="dash-link">{{ __('Order') }}</a>
+                                        <a href="{{ route('order.index') }}"
+                                            class="dash-link">{{ __('Order') }}</a>
                                     </li>
                                 @endif
                             </ul>
