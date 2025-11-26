@@ -81,6 +81,14 @@
                                                                 {!! Form::close() !!}
                                                             </div>
                                                         @endcan
+                                                        <div class="action-btn ms-2">
+                                                            <a href="{{ route('hotel.rooms', $hotel->id) }}"
+                                                                class="mx-3 btn btn-sm align-items-center bg-warning"
+                                                                data-bs-toggle="tooltip"
+                                                                title="{{ __('Просмотреть комнаты') }}">
+                                                                <i class="ti ti-eye text-white"></i>
+                                                            </a>
+                                                        </div>
                                                     </span>
                                                 </td>
                                             </tr>

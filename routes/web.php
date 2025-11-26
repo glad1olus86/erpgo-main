@@ -800,6 +800,9 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/deals/list', [DealController::class, 'deal_list'])->name('deals.list')->middleware(['auth', 'XSS']);
     Route::get('/deals/export', [DealController::class, 'export'])->name('deals.export')->middleware(['auth', 'XSS']);
     Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::get('/hotel/{hotel}/rooms', [HotelController::class, 'showRooms'])->name('hotel.rooms')->middleware(['auth', 'XSS', 'revalidate']);
+    Route::resource('room', RoomController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');
     Route::get('import/deals/modal', [DealController::class, 'fileImportModal'])->name('deals.import.modal');
@@ -1807,8 +1810,6 @@ Route::group(['middleware' => ['verified']], function () {
 
 
 // hotel controlers test
-Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS']);
-Route::resource('room', RoomController::class)->middleware(['auth', 'XSS']);
 
 Route::any('/cookie-consent', [SystemController::class, 'CookieConsent'])->name('cookie-consent');
 Route::get('payslip/payslipPdf/{id}/{month}', [PaySlipController::class, 'payslipPdf'])->name('payslip.payslipPdf')->middleware(['XSS']);

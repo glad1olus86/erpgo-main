@@ -1387,39 +1387,27 @@
 
                 <!--------------------- End Products System ----------------------------------->
 
-                @if (\Auth::user()->type == 'company')
-                    <li
-                        class="dash-item dash-hasmenu {{ Request::segment(1) == 'hotel' || Request::segment(1) == 'room' ? 'active dash-trigger' : '' }}">
-                        <a href="#!" class="dash-link">
+
+                @can('manage hotel')
+                    <li class="dash-item {{ Request::segment(1) == 'hotel' ? 'active' : '' }}">
+                        <a href="{{ route('hotel.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-building-skyscraper"></i></span>
-                            <span class="dash-mtext">{{ __('Управление отелями') }}</span>
-                            <span class="dash-arrow"><i data-feather="chevron-right"></i></span>
+                            <span class="dash-mtext">{{ __('Отели') }}</span>
                         </a>
-                        <ul class="dash-submenu">
-                            @can('manage hotel')
-                                <li class="dash-item {{ Request::segment(1) == 'hotel' ? 'active' : '' }}">
-                                    <a class="dash-link" href="{{ route('hotel.index') }}">{{ __('Отели') }}</a>
-                                </li>
-                            @endcan
-                            <!-- Сюда потом добавите Rooms -->
-                            <li class="dash-item {{ Request::segment(1) == 'room' ? 'active' : '' }}">
-                                <a class="dash-link" href="{{ route('room.index') }}">{{ __('Номера') }}</a>
-                            </li>
-
-                        </ul>
                     </li>
-                @endif
+                @endcan
 
-                @if (\Auth::user()->type == 'company')
-                    @can('manage worker')
-                        <li class="dash-item {{ Request::segment(1) == 'worker' ? 'active' : '' }}">
-                            <a href="{{ route('worker.index') }}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-users"></i></span>
-                                <span class="dash-mtext">{{ __('Работники') }}</span>
-                            </a>
-                        </li>
-                    @endcan
-                @endif
+
+
+                @can('manage worker')
+                    <li class="dash-item {{ Request::segment(1) == 'worker' ? 'active' : '' }}">
+                        <a href="{{ route('worker.index') }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-users"></i></span>
+                            <span class="dash-mtext">{{ __('Работники') }}</span>
+                        </a>
+                    </li>
+                @endcan
+
 
 
                 <!--------------------- Start POs System ----------------------------------->

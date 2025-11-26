@@ -26,12 +26,13 @@ class RoomController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         if (Auth::user()->can('create hotel')) // Assuming same permission for now
         {
             $hotels = Hotel::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-            return view('room.create', compact('hotels'));
+            $selectedHotelId = $request->query('hotel_id'); // Get hotel_id from query parameter
+            return view('room.create', compact('hotels', 'selectedHotelId'));
         } else {
             return response()->json(['error' => __('Permission denied.')], 401);
         }
@@ -65,7 +66,7 @@ class RoomController extends Controller
             $room->created_by = Auth::user()->creatorId();
             $room->save();
 
-            return redirect()->route('room.index')->with('success', __('Номер успешно создан.'));
+            return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Номер успешно создан.'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -123,7 +124,7 @@ class RoomController extends Controller
                 $room->price       = $request->price;
                 $room->save();
 
-                return redirect()->route('room.index')->with('success', __('Номер успешно обновлён.'));
+                return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Номер успешно обновлён.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -139,8 +140,9 @@ class RoomController extends Controller
     {
         if (Auth::user()->can('delete hotel')) {
             if ($room->created_by == Auth::user()->creatorId()) {
+                $hotelId = $room->hotel_id;
                 $room->delete();
-                return redirect()->route('room.index')->with('success', __('Номер успешно удалён.'));
+                return redirect()->route('hotel.rooms', $hotelId)->with('success', __('Номер успешно удалён.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

@@ -67,11 +67,22 @@ class HotelController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display rooms for a specific hotel.
      */
-    public function show(Hotel $hotel)
+    public function showRooms(Hotel $hotel)
     {
-        return redirect()->route('hotel.index');
+        if (Auth::user()->can('manage hotel')) {
+            if ($hotel->created_by == Auth::user()->creatorId()) {
+                $rooms = $hotel->rooms; // Using the relationship defined in Hotel model
+                $hotels = Hotel::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                return view('hotel.rooms', compact('hotel', 'rooms', 'hotels'));
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
     }
 
     /**

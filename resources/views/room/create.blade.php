@@ -4,7 +4,7 @@
         <div class="col-12">
             <div class="form-group">
                 {{ Form::label('hotel_id', __('Отель'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::select('hotel_id', $hotels, null, ['class' => 'form-control select', 'placeholder' => __('Выберите отель'), 'required' => 'required']) }}
+                {{ Form::select('hotel_id', $hotels, $selectedHotelId ?? null, ['class' => 'form-control select', 'placeholder' => __('Выберите отель'), 'required' => 'required']) }}
             </div>
         </div>
         <div class="col-12">
