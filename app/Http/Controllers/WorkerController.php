@@ -19,6 +19,19 @@ class WorkerController extends Controller
         }
     }
 
+    public function show(Worker $worker)
+    {
+        if (Auth::user()->can('manage worker')) {
+            if ($worker->created_by == Auth::user()->creatorId()) {
+                return view('worker.show', compact('worker'));
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
     public function create()
     {
         if (Auth::user()->can('create worker')) {
@@ -63,13 +76,13 @@ class WorkerController extends Controller
 
             if ($request->hasFile('document_photo')) {
                 $fileName = time() . '_doc_' . $request->document_photo->getClientOriginalName();
-                $request->document_photo->storeAs('uploads/worker_documents', $fileName);
+                $request->document_photo->move(public_path('uploads/worker_documents'), $fileName);
                 $worker->document_photo = $fileName;
             }
 
             if ($request->hasFile('photo')) {
                 $fileName = time() . '_photo_' . $request->photo->getClientOriginalName();
-                $request->photo->storeAs('uploads/worker_photos', $fileName);
+                $request->photo->move(public_path('uploads/worker_photos'), $fileName);
                 $worker->photo = $fileName;
             }
 
@@ -128,13 +141,13 @@ class WorkerController extends Controller
 
                 if ($request->hasFile('document_photo')) {
                     $fileName = time() . '_doc_' . $request->document_photo->getClientOriginalName();
-                    $request->document_photo->storeAs('uploads/worker_documents', $fileName);
+                    $request->document_photo->move(public_path('uploads/worker_documents'), $fileName);
                     $worker->document_photo = $fileName;
                 }
 
                 if ($request->hasFile('photo')) {
                     $fileName = time() . '_photo_' . $request->photo->getClientOriginalName();
-                    $request->photo->storeAs('uploads/worker_photos', $fileName);
+                    $request->photo->move(public_path('uploads/worker_photos'), $fileName);
                     $worker->photo = $fileName;
                 }
 
