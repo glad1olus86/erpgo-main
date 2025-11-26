@@ -37,7 +37,7 @@
                                             <th>{{ __('Название') }}</th>
                                             <th>{{ __('Адрес') }}</th>
                                             <th>{{ __('Вместимость') }}</th>
-                                            <th>{{ __('Рейтинг') }}</th>
+                                            <th>{{ __('Контакты') }}</th>
                                             <th width="200px">{{ __('Действие') }}</th>
                                         </tr>
                                     </thead>
@@ -72,7 +72,17 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td>{{ $hotel->rating }}</td>
+                                                <td>
+                                                    @if ($hotel->phone)
+                                                        <div><i class="ti ti-phone"></i> {{ $hotel->phone }}</div>
+                                                    @endif
+                                                    @if ($hotel->email)
+                                                        <div><i class="ti ti-mail"></i> {{ $hotel->email }}</div>
+                                                    @endif
+                                                    @if (!$hotel->phone && !$hotel->email)
+                                                        <span class="text-muted">{{ __('Нет данных') }}</span>
+                                                    @endif
+                                                </td>
 
                                                 <td class="Action">
                                                     <span>

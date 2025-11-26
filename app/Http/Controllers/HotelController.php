@@ -56,7 +56,8 @@ class HotelController extends Controller
             $hotel             = new Hotel();
             $hotel->name       = $request->name;
             $hotel->address    = $request->address;
-            $hotel->rating     = $request->rating;
+            $hotel->phone      = $request->phone;
+            $hotel->email      = $request->email;
             $hotel->created_by = Auth::user()->creatorId();
             $hotel->save();
 
@@ -113,6 +114,8 @@ class HotelController extends Controller
                     [
                         'name' => 'required|max:30',
                         'address' => 'required',
+                        'phone' => 'required|max:20',
+                        'email' => 'required|email|max:100',
                     ]
                 );
                 if ($validator->fails()) {
@@ -123,7 +126,8 @@ class HotelController extends Controller
 
                 $hotel->name    = $request->name;
                 $hotel->address = $request->address;
-                $hotel->rating  = $request->rating;
+                $hotel->phone   = $request->phone;
+                $hotel->email   = $request->email;
                 $hotel->save();
 
                 return redirect()->route('hotel.index')->with('success', __('Отель успешно изменён.'));

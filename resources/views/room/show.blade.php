@@ -1,3 +1,13 @@
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h6>{{ __('') }}</h6>
+    @if (!$room->isFull())
+        <a href="#" data-url="{{ route('room.assign.form', $room->id) }}" data-ajax-popup="true"
+            data-title="{{ __('Заселить работника') }}" class="btn btn-sm btn-primary">
+            <i class="ti ti-plus"></i> {{ __('Заселить') }}
+        </a>
+    @endif
+</div>
+
 <div class="table-responsive">
     <table class="table">
         <thead>

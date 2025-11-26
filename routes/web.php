@@ -807,6 +807,10 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('worker.assign.room')->middleware(['auth', 'XSS']);
     Route::post('/worker/{worker}/unassign-room', [RoomAssignmentController::class, 'unassignWorker'])
         ->name('worker.unassign.room')->middleware(['auth', 'XSS']);
+    Route::post('/room/{room}/assign-worker', [RoomAssignmentController::class, 'assignWorkerToRoom'])
+        ->name('room.assign.worker')->middleware(['auth', 'XSS']);
+    Route::get('/room/{room}/assign-form', [RoomAssignmentController::class, 'assignForm'])
+        ->name('room.assign.form')->middleware(['auth', 'XSS']);
 
     Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('/hotel/{hotel}/rooms', [HotelController::class, 'showRooms'])->name('hotel.rooms')->middleware(['auth', 'XSS', 'revalidate']);

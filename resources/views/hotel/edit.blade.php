@@ -26,8 +26,14 @@
         </div>
         <div class="col-12">
             <div class="form-group">
-                {{ Form::label('rating', __('Рейтинг'), ['class' => 'form-label']) }}
-                {{ Form::number('rating', null, ['class' => 'form-control', 'placeholder' => __('Рейтинг (0-5)'), 'min' => '0', 'max' => '5']) }}
+                {{ Form::label('phone', __('Контактный телефон'), ['class' => 'form-label']) }}
+                {{ Form::text('phone', null, ['class' => 'form-control', 'placeholder' => __('Введите контактный телефон')]) }}
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="form-group">
+                {{ Form::label('email', __('Контактный email'), ['class' => 'form-label']) }}
+                {{ Form::email('email', null, ['class' => 'form-control', 'placeholder' => __('Введите контактный email')]) }}
             </div>
         </div>
 
