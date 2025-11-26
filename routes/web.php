@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\WorkerController;
+use App\Http\Controllers\RoomAssignmentController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\AamarpayController;
@@ -800,8 +801,20 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/deals/list', [DealController::class, 'deal_list'])->name('deals.list')->middleware(['auth', 'XSS']);
     Route::get('/deals/export', [DealController::class, 'export'])->name('deals.export')->middleware(['auth', 'XSS']);
     Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
+
+    // Worker assignment routes
+    Route::post('/worker/{worker}/assign-room', [RoomAssignmentController::class, 'assignWorker'])
+        ->name('worker.assign.room')->middleware(['auth', 'XSS']);
+    Route::post('/worker/{worker}/unassign-room', [RoomAssignmentController::class, 'unassignWorker'])
+        ->name('worker.unassign.room')->middleware(['auth', 'XSS']);
+
     Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('/hotel/{hotel}/rooms', [HotelController::class, 'showRooms'])->name('hotel.rooms')->middleware(['auth', 'XSS', 'revalidate']);
+
+    // API route for getting available rooms
+    Route::get('/hotel/{hotel}/available-rooms', [RoomAssignmentController::class, 'getAvailableRooms'])
+        ->name('hotel.available.rooms')->middleware(['auth', 'XSS']);
+
     Route::resource('room', RoomController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');

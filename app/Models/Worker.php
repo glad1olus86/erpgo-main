@@ -23,8 +23,27 @@ class Worker extends Model
         'created_by',
     ];
 
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the current active room assignment for this worker.
+     */
+    public function currentAssignment()
+    {
+        return $this->hasOne(RoomAssignment::class)
+            ->whereNull('check_out_date')
+            ->with(['room', 'hotel']);
+    }
+
+    /**
+     * Get all room assignments for this worker (historical).
+     */
+    public function assignments()
+    {
+        return $this->hasMany(RoomAssignment::class);
     }
 }

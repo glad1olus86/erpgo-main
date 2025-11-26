@@ -23,7 +23,12 @@ class WorkerController extends Controller
     {
         if (Auth::user()->can('manage worker')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
-                return view('worker.show', compact('worker'));
+                $worker->load('currentAssignment');
+                $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())
+                    ->get()
+                    ->pluck('name', 'id');
+
+                return view('worker.show', compact('worker', 'hotels'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

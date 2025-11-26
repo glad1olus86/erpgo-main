@@ -77,7 +77,16 @@ class RoomController extends Controller
      */
     public function show(Room $room)
     {
-        return redirect()->route('room.index');
+        if (Auth::user()->can('manage hotel')) {
+            if ($room->created_by == Auth::user()->creatorId()) {
+                $room->load(['currentAssignments.worker']);
+                return view('room.show', compact('room'));
+            } else {
+                return response()->json(['error' => __('Permission denied.')], 401);
+            }
+        } else {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
     }
 
     /**

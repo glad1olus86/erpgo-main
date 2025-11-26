@@ -41,11 +41,26 @@
                                             @foreach ($rooms as $room)
                                                 <tr>
                                                     <td>{{ $room->room_number }}</td>
-                                                    <td>{{ $room->capacity }}</td>
+                                                    <td>{{ $room->currentAssignments->count() }} / {{ $room->capacity }}
+                                                    </td>
                                                     <td>{{ $room->price }}</td>
 
                                                     <td class="Action">
                                                         <span>
+                                                            @can('manage hotel')
+                                                                <div class="action-btn me-2">
+                                                                    <a href="#"
+                                                                        data-url="{{ route('room.show', $room->id) }}"
+                                                                        data-ajax-popup="true"
+                                                                        data-title="{{ __('Жильцы комнаты') }}"
+                                                                        class="mx-3 btn btn-sm align-items-center bg-warning"
+                                                                        data-bs-toggle="tooltip"
+                                                                        title="{{ __('Просмотр жильцов') }}"
+                                                                        data-original-title="{{ __('View') }}">
+                                                                        <i class="ti ti-eye text-white"></i>
+                                                                    </a>
+                                                                </div>
+                                                            @endcan
                                                             @can('edit hotel')
                                                                 <div class="action-btn me-2">
 

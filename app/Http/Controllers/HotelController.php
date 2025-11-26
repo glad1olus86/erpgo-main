@@ -14,7 +14,7 @@ class HotelController extends Controller
     public function index()
     {
         if (Auth::user()->can('manage hotel')) {
-            $hotels = Hotel::where('created_by', '=', Auth::user()->creatorId())->get();
+            $hotels = Hotel::where('created_by', '=', Auth::user()->creatorId())->with(['rooms.currentAssignments'])->get();
 
             return view('hotel.index', compact('hotels'));
         } else {
@@ -73,7 +73,7 @@ class HotelController extends Controller
     {
         if (Auth::user()->can('manage hotel')) {
             if ($hotel->created_by == Auth::user()->creatorId()) {
-                $rooms = $hotel->rooms; // Using the relationship defined in Hotel model
+                $rooms = $hotel->rooms()->with('currentAssignments')->get();
                 $hotels = Hotel::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
 
                 return view('hotel.rooms', compact('hotel', 'rooms', 'hotels'));

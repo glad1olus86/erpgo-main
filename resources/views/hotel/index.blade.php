@@ -36,15 +36,42 @@
                                         <tr>
                                             <th>{{ __('Название') }}</th>
                                             <th>{{ __('Адрес') }}</th>
+                                            <th>{{ __('Вместимость') }}</th>
                                             <th>{{ __('Рейтинг') }}</th>
                                             <th width="200px">{{ __('Действие') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-style">
                                         @foreach ($hotels as $hotel)
+                                            @php
+                                                $totalCapacity = $hotel->rooms->sum('capacity');
+                                                $totalOccupied = $hotel->rooms->sum(function ($room) {
+                                                    return $room->currentAssignments->count();
+                                                });
+                                                $percentage =
+                                                    $totalCapacity > 0 ? ($totalOccupied / $totalCapacity) * 100 : 0;
+                                                $color =
+                                                    $percentage < 50
+                                                        ? 'bg-danger'
+                                                        : ($percentage < 100
+                                                            ? 'bg-warning'
+                                                            : 'bg-success');
+                                            @endphp
                                             <tr>
                                                 <td>{{ $hotel->name }}</td>
                                                 <td>{{ $hotel->address }}</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="me-2">{{ $totalOccupied }} /
+                                                            {{ $totalCapacity }}</span>
+                                                        <div class="progress w-100" style="height: 6px;">
+                                                            <div class="progress-bar {{ $color }}"
+                                                                role="progressbar" style="width: {{ $percentage }}%;"
+                                                                aria-valuenow="{{ $percentage }}" aria-valuemin="0"
+                                                                aria-valuemax="100"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 <td>{{ $hotel->rating }}</td>
 
                                                 <td class="Action">
