@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WorkerController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\AamarpayController;
@@ -798,6 +799,7 @@ Route::group(['middleware' => ['verified']], function () {
     Route::put('/deals/{id}/permission/{cid}', [DealController::class, 'permissionStore'])->name('deals.client.permissions.store')->middleware(['auth', 'XSS']);
     Route::get('/deals/list', [DealController::class, 'deal_list'])->name('deals.list')->middleware(['auth', 'XSS']);
     Route::get('/deals/export', [DealController::class, 'export'])->name('deals.export')->middleware(['auth', 'XSS']);
+    Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');
     Route::get('import/deals/modal', [DealController::class, 'fileImportModal'])->name('deals.import.modal');

@@ -1405,20 +1405,8 @@
                             <li class="dash-item {{ Request::segment(1) == 'room' ? 'active' : '' }}">
                                 <a class="dash-link" href="{{ route('room.index') }}">{{ __('Номера') }}</a>
                             </li>
-
                         </ul>
                     </li>
-                @endif
-
-                @if (\Auth::user()->type == 'company')
-                    @can('manage worker')
-                        <li class="dash-item {{ Request::segment(1) == 'worker' ? 'active' : '' }}">
-                            <a href="{{ route('worker.index') }}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-users"></i></span>
-                                <span class="dash-mtext">{{ __('Работники') }}</span>
-                            </a>
-                        </li>
-                    @endcan
                 @endif
 
 
