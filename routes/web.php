@@ -4,6 +4,9 @@ use App\Http\Controllers\WorkerController;
 use App\Http\Controllers\RoomAssignmentController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\WorkPlaceController;
+use App\Http\Controllers\WorkAssignmentController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AamarpayController;
 use App\Http\Controllers\AiTemplateController;
 use App\Http\Controllers\AllowanceController;
@@ -820,6 +823,20 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('hotel.available.rooms')->middleware(['auth', 'XSS']);
 
     Route::resource('room', RoomController::class)->middleware(['auth', 'XSS', 'revalidate']);
+
+    // Work Place routes
+    Route::resource('work-place', WorkPlaceController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::get('/work-place/{workPlace}/workers', [WorkPlaceController::class, 'showWorkers'])
+        ->name('work-place.workers')->middleware(['auth', 'XSS']);
+
+    // Work Assignment routes
+    Route::post('/work-place/{workPlace}/assign-worker', [WorkAssignmentController::class, 'assignWorker'])
+        ->name('work-place.assign.worker')->middleware(['auth', 'XSS']);
+    Route::get('/work-place/{workPlace}/assign-form', [WorkAssignmentController::class, 'assignForm'])
+        ->name('work-place.assign.form')->middleware(['auth', 'XSS']);
+    Route::post('/worker/{worker}/dismiss', [WorkAssignmentController::class, 'dismissWorker'])
+        ->name('worker.dismiss')->middleware(['auth', 'XSS']);
+
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');
     Route::get('import/deals/modal', [DealController::class, 'fileImportModal'])->name('deals.import.modal');
@@ -1830,3 +1847,10 @@ Route::group(['middleware' => ['verified']], function () {
 
 Route::any('/cookie-consent', [SystemController::class, 'CookieConsent'])->name('cookie-consent');
 Route::get('payslip/payslipPdf/{id}/{month}', [PaySlipController::class, 'payslipPdf'])->name('payslip.payslipPdf')->middleware(['XSS']);
+
+Route::group(['prefix' => 'audit', 'as' => 'audit.', 'middleware' => ['auth', 'XSS']], function () {
+    Route::get('/', [AuditLogController::class, 'index'])->name('index');
+    Route::get('/calendar-view', [AuditLogController::class, 'calendarView'])->name('calendar.view'); // New route for calendar page
+    Route::get('/calendar/{year}/{month}', [AuditLogController::class, 'calendar'])->name('calendar');
+    Route::get('/day/{date}', [AuditLogController::class, 'dayDetails'])->name('day.details');
+});

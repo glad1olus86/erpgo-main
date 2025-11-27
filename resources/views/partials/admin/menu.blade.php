@@ -1396,18 +1396,44 @@
                         </a>
                     </li>
                 @endcan
-
-
+                @can('manage work place')
+                    <li class="dash-item {{ Request::segment(1) == 'work-place' ? 'active' : '' }}">
+                        <a href="{{ route('work-place.index') }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-briefcase"></i></span>
+                            <span class="dash-mtext">{{ __('Рабочие места') }}</span>
+                        </a>
+                    </li>
+                @endcan
 
                 @can('manage worker')
                     <li class="dash-item {{ Request::segment(1) == 'worker' ? 'active' : '' }}">
                         <a href="{{ route('worker.index') }}" class="dash-link">
-                            <span class="dash-micon"><i class="ti ti-users"></i></span>
+                            <span class="dash-micon"><i class="ti ti-user"></i></span>
                             <span class="dash-mtext">{{ __('Работники') }}</span>
                         </a>
                     </li>
                 @endcan
 
+                @can('view audit log')
+                    <li
+                        class="dash-item dash-hasmenu {{ Request::segment(1) == 'audit' ? ' active dash-trigger' : '' }}">
+                        <a href="#!" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-activity"></i></span>
+                            <span class="dash-mtext">{{ __('Аудит') }}</span>
+                            <span class="dash-arrow"><i data-feather="chevron-right"></i></span>
+                        </a>
+                        <ul class="dash-submenu {{ Request::segment(1) == 'audit' ? 'show' : '' }}">
+                            <li class="dash-item {{ Request::route()->getName() == 'audit.index' ? ' active' : '' }}">
+                                <a class="dash-link" href="{{ route('audit.index') }}">{{ __('Список') }}</a>
+                            </li>
+                            <li
+                                class="dash-item {{ Request::route()->getName() == 'audit.calendar.view' ? ' active' : '' }}">
+                                <a class="dash-link"
+                                    href="{{ route('audit.calendar.view') }}">{{ __('Календарь') }}</a>
+                            </li>
+                        </ul>
+                    </li>
+                @endcan
 
 
                 <!--------------------- Start POs System ----------------------------------->

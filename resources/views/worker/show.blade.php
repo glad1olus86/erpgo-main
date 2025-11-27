@@ -199,6 +199,100 @@
                 </div>
             </div>
         </div>
+
+        {{-- Трудоустройство Section --}}
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>{{ __('Трудоустройство') }}</h5>
+                    @if ($worker->currentWorkAssignment)
+                        <form action="{{ route('worker.dismiss', $worker->id) }}" method="POST"
+                            style="display: inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('{{ __('Вы уверены, что хотите уволить этого работника?') }}')">
+                                <i class="ti ti-briefcase-off"></i> {{ __('Уволить') }}
+                            </button>
+                        </form>
+                    @endif
+                </div>
+                <div class="card-body">
+                    @if ($worker->currentWorkAssignment)
+                        @php
+                            $startDate = \Carbon\Carbon::parse($worker->currentWorkAssignment->started_at);
+                            $today = \Carbon\Carbon::now();
+                            $daysWorked = max(1, (int) floor($startDate->diffInDays($today)) + 1); // Минимум 1 день
+
+                            // Формат для отображения
+                            if ($daysWorked == 1) {
+                                $workDuration = '1 ' . __('день');
+                            } elseif ($daysWorked >= 2 && $daysWorked <= 4) {
+                                $workDuration = $daysWorked . ' ' . __('дня');
+                            } else {
+                                $workDuration = $daysWorked . ' ' . __('дней');
+                            }
+
+                            $createdBy = \App\Models\User::find($worker->currentWorkAssignment->created_by);
+                        @endphp
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="theme-avtar bg-primary">
+                                        <i class="ti ti-briefcase"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <p class="text-muted text-sm mb-0">{{ __('Рабочее место') }}</p>
+                                        <h5 class="mb-0 mt-1">{{ $worker->currentWorkAssignment->workPlace->name }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="theme-avtar bg-info">
+                                        <i class="ti ti-calendar"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <p class="text-muted text-sm mb-0">{{ __('Дата устройства') }}</p>
+                                        <h5 class="mb-0 mt-1">
+                                            {{ \Auth::user()->dateFormat($worker->currentWorkAssignment->started_at) }}
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="theme-avtar bg-success">
+                                        <i class="ti ti-clock"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <p class="text-muted text-sm mb-0">{{ __('Время работы') }}</p>
+                                        <h5 class="mb-0 mt-1">{{ $workDuration }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="theme-avtar bg-warning">
+                                        <i class="ti ti-user-check"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <p class="text-muted text-sm mb-0">{{ __('Устроен кем') }}</p>
+                                        <h5 class="mb-0 mt-1">{{ $createdBy ? $createdBy->name : '-' }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="ti ti-briefcase-off" style="font-size: 48px; opacity: 0.3;"></i>
+                            <h5 class="mt-3">{{ __('Работник не трудоустроен') }}</h5>
+                            <p class="text-muted">
+                                {{ __('Устройте работника на рабочее место через модуль "Рабочие места"') }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Assignment Modal --}}

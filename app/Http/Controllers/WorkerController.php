@@ -23,7 +23,7 @@ class WorkerController extends Controller
     {
         if (Auth::user()->can('manage worker')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
-                $worker->load('currentAssignment');
+                $worker->load('currentAssignment', 'currentWorkAssignment.workPlace');
                 $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())
                     ->get()
                     ->pluck('name', 'id');

@@ -46,4 +46,30 @@ class Worker extends Model
     {
         return $this->hasMany(RoomAssignment::class);
     }
+
+    /**
+     * Get all room assignments for this worker.
+     */
+    public function roomAssignments()
+    {
+        return $this->hasMany(RoomAssignment::class);
+    }
+
+    /**
+     * Get the current active work assignment for this worker.
+     */
+    public function currentWorkAssignment()
+    {
+        return $this->hasOne(WorkAssignment::class)
+            ->whereNull('ended_at')
+            ->with(['workPlace']);
+    }
+
+    /**
+     * Get all work assignments for this worker.
+     */
+    public function workAssignments()
+    {
+        return $this->hasMany(WorkAssignment::class);
+    }
 }
