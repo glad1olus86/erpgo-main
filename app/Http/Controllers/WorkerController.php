@@ -28,7 +28,15 @@ class WorkerController extends Controller
                     ->get()
                     ->pluck('name', 'id');
 
-                return view('worker.show', compact('worker', 'hotels'));
+                // Load recent audit events for this worker
+                $recentEvents = \App\Models\AuditLog::where('subject_type', 'App\Models\Worker')
+                    ->where('subject_id', $worker->id)
+                    ->where('created_by', Auth::user()->creatorId())
+                    ->latest()
+                    ->limit(10)
+                    ->get();
+
+                return view('worker.show', compact('worker', 'hotels', 'recentEvents'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

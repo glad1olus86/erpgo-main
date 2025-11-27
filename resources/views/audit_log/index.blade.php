@@ -19,14 +19,14 @@
                         <div class="row align-items-end">
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="start_date" class="form-label">{{ __('Начальная дата') }}</label>
+                                    <label for="start_date" class="form-label">{{ __('Дата от') }}</label>
                                     <input type="date" class="form-control" name="start_date" id="start_date"
                                         value="{{ request('start_date') }}">
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="end_date" class="form-label">{{ __('Конечная дата') }}</label>
+                                    <label for="end_date" class="form-label">{{ __('Дата до') }}</label>
                                     <input type="date" class="form-control" name="end_date" id="end_date"
                                         value="{{ request('end_date') }}">
                                 </div>
@@ -47,6 +47,20 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
+                                    <label for="worker_id" class="form-label">{{ __('Работник') }}</label>
+                                    <select name="worker_id" id="worker_id" class="form-control select2">
+                                        <option value="">{{ __('Все работники') }}</option>
+                                        @foreach ($workers as $id => $name)
+                                            <option value="{{ $id }}"
+                                                {{ request('worker_id') == $id ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
                                     <label for="event_type" class="form-label">{{ __('Тип события') }}</label>
                                     <select name="event_type" id="event_type" class="form-control select2">
                                         <option value="">{{ __('Все события') }}</option>
@@ -59,36 +73,39 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="form-group d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="ti ti-filter"></i> {{ __('Применить') }}
-                                    </button>
-                                    <a href="{{ route('audit.index') }}" class="btn btn-secondary">
-                                        <i class="ti ti-refresh"></i> {{ __('Сбросить') }}
-                                    </a>
-                                </div>
+                        </div>
+
+                        {{-- Кнопки в отдельной строке справа --}}
+                        <div class="row mt-2">
+                            <div class="col-md-12 d-flex justify-content-end gap-2">
+                                <button type="submit" class="btn btn-primary" style="min-width: 140px;">
+                                    <i class="ti ti-filter"></i> {{ __('Применить') }}
+                                </button>
+                                <a href="{{ route('audit.index') }}" class="btn btn-secondary" style="min-width: 140px;">
+                                    <i class="ti ti-refresh"></i> {{ __('Сбросить') }}
+                                </a>
                             </div>
                         </div>
                     </form>
 
-                    {{-- Переключатель режимов --}}
-                    <div class="row">
-                        <div class="col-md-9"></div>
-                        <div class="col-md-9">
-                            <ul class="nav nav-pills mb-5 gap-2" id="pills-tab" role="tablist">
+                    {{-- Переключатель режимов выровнен вправо --}}
+                    <div class="row mb-5">
+                        <div class="col-md-12 d-flex justify-content-end">
+                            <ul class="nav nav-pills gap-2" id="pills-tab" role="tablist">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link px-4 {{ request('tab') != 'calendar' ? 'active' : '' }}"
-                                        id="pills-list-tab" data-bs-toggle="pill" data-bs-target="#pills-list"
-                                        type="button" role="tab" aria-controls="pills-list"
+                                    <button class="nav-link {{ request('tab') != 'calendar' ? 'active' : '' }}"
+                                        style="min-width: 140px;" id="pills-list-tab" data-bs-toggle="pill"
+                                        data-bs-target="#pills-list" type="button" role="tab"
+                                        aria-controls="pills-list"
                                         aria-selected="{{ request('tab') != 'calendar' ? 'true' : 'false' }}">
                                         <i class="ti ti-list me-1"></i>{{ __('Список') }}
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link px-3 {{ request('tab') == 'calendar' ? 'active' : '' }}"
-                                        id="pills-calendar-tab" data-bs-toggle="pill" data-bs-target="#pills-calendar"
-                                        type="button" role="tab" aria-controls="pills-calendar"
+                                    <button class="nav-link {{ request('tab') == 'calendar' ? 'active' : '' }}"
+                                        style="min-width: 140px;" id="pills-calendar-tab" data-bs-toggle="pill"
+                                        data-bs-target="#pills-calendar" type="button" role="tab"
+                                        aria-controls="pills-calendar"
                                         aria-selected="{{ request('tab') == 'calendar' ? 'true' : 'false' }}">
                                         <i class="ti ti-calendar me-1"></i>{{ __('Календарь') }}
                                     </button>

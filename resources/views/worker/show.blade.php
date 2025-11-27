@@ -295,126 +295,216 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- Assignment Modal --}}
-    <div class="modal fade" id="assign-room-modal" tabindex="-1" role="dialog"
-        aria-labelledby="assign-room-modal-label" aria-hidden="true">
-        <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="assign-room-modal-label">{{ __('Заселить работника') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        {{-- Activity Feed --}}
+        <div class="col-md-12 mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="ti ti-timeline me-2"></i>{{ __('Активность работника') }}
+                        </h5>
+                        <div class="d-flex align-items-center gap-2">
+                            @if ($recentEvents->count() > 0)
+                                <span class="badge bg-primary">{{ $recentEvents->count() }} {{ __('событий') }}</span>
+                            @endif
+                            <a href="{{ route('audit.index', ['worker_id' => $worker->id]) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="ti ti-list me-1"></i>{{ __('Просмотреть все события') }}
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <form action="{{ route('worker.assign.room', $worker->id) }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label for="hotel_id"
-                                        class="form-label">{{ __('Отель') }}</label><x-required></x-required>
-                                    <select name="hotel_id" id="hotel_id" class="form-control" required>
-                                        <option value="" selected>{{ __('Выберите отель') }}</option>
-                                        @foreach ($hotels as $id => $name)
-                                            <option value="{{ $id }}">{{ $name }}</option>
-                                        @endforeach
-                                    </select>
+                <div class="card-body">
+                    @if ($recentEvents->count() > 0)
+                        <div class="timeline">
+                            @foreach ($recentEvents as $event)
+                                <div class="timeline-item mb-3 pb-3 border-bottom">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="timeline-icon rounded-circle flex-shrink-0"
+                                            style="width: 40px; height: 40px; background-color: {{ $event->event_color }}; display: flex; align-items: center; justify-content: center;">
+                                            <i class="{{ $event->event_icon }} text-white"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1">{{ $event->description }}</h6>
+                                                    <p class="text-muted small mb-0">
+                                                        <i class="ti ti-user me-1"></i>{{ $event->user_name }}
+                                                        <span class="mx-2">•</span>
+                                                        <i
+                                                            class="ti ti-clock me-1"></i>{{ \Auth::user()->timeFormat($event->created_at) }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            @if (!empty($event->old_values) || !empty($event->new_values))
+                                                <button class="btn btn-sm btn-link p-0 mt-2 text-decoration-none"
+                                                    type="button" data-bs-toggle="collapse"
+                                                    data-bs-target="#event-details-{{ $event->id }}">
+                                                    <i class="ti ti-chevron-down me-1"></i>{{ __('Показать детали') }}
+                                                </button>
+                                                <div class="collapse mt-2" id="event-details-{{ $event->id }}">
+                                                    <div class="card card-body bg-light p-2 small">
+                                                        @if (!empty($event->old_values))
+                                                            <div class="mb-2">
+                                                                <strong>{{ __('Старые значения') }}:</strong>
+                                                                <div class="ms-2">
+                                                                    @foreach ($event->old_values as $key => $value)
+                                                                        <div>{{ ucfirst($key) }}:
+                                                                            <code>{{ $value }}</code></div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        @if (!empty($event->new_values))
+                                                            <div>
+                                                                <strong>{{ __('Новые значения') }}:</strong>
+                                                                <div class="ms-2">
+                                                                    @foreach ($event->new_values as $key => $value)
+                                                                        <div>{{ ucfirst($key) }}:
+                                                                            <code>{{ $value }}</code></div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-12 mt-3">
-                                <div class="form-group">
-                                    <label for="room_id"
-                                        class="form-label">{{ __('Комната') }}</label><x-required></x-required>
-                                    <select name="room_id" id="room_id" class="form-control" required disabled>
-                                        <option value="">{{ __('Сначала выберите отель') }}</option>
-                                    </select>
-                                    <small class="form-text text-muted" id="room-capacity-info"></small>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="ti ti-timeline-event-x" style="font-size: 48px; opacity: 0.3;"></i>
+                            <h5 class="mt-3">{{ __('Нет активности') }}</h5>
+                            <p class="text-muted">{{ __('История действий работника пока пуста') }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+
+        {{-- Assignment Modal --}}
+        <div class="modal fade" id="assign-room-modal" tabindex="-1" role="dialog"
+            aria-labelledby="assign-room-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-md" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assign-room-modal-label">{{ __('Заселить работника') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('worker.assign.room', $worker->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="hotel_id"
+                                            class="form-label">{{ __('Отель') }}</label><x-required></x-required>
+                                        <select name="hotel_id" id="hotel_id" class="form-control" required>
+                                            <option value="" selected>{{ __('Выберите отель') }}</option>
+                                            @foreach ($hotels as $id => $name)
+                                                <option value="{{ $id }}">{{ $name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12 mt-3">
+                                    <div class="form-group">
+                                        <label for="room_id"
+                                            class="form-label">{{ __('Комната') }}</label><x-required></x-required>
+                                        <select name="room_id" id="room_id" class="form-control" required disabled>
+                                            <option value="">{{ __('Сначала выберите отель') }}</option>
+                                        </select>
+                                        <small class="form-text text-muted" id="room-capacity-info"></small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-primary">{{ __('Заселить') }}</button>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Заселить') }}</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
 
-@push('script-page')
-    <script>
-        $(document).ready(function() {
-            $('#hotel_id').on('change', function() {
-                var hotelId = $(this).val();
-                var roomSelect = $('#room_id');
-                var capacityInfo = $('#room-capacity-info');
+    @push('script-page')
+        <script>
+            $(document).ready(function() {
+                $('#hotel_id').on('change', function() {
+                    var hotelId = $(this).val();
+                    var roomSelect = $('#room_id');
+                    var capacityInfo = $('#room-capacity-info');
 
-                if (hotelId) {
-                    $.ajax({
-                        url: '/hotel/' + hotelId + '/available-rooms',
-                        type: 'GET',
-                        success: function(rooms) {
-                            roomSelect.empty();
-                            roomSelect.prop('disabled', false);
+                    if (hotelId) {
+                        $.ajax({
+                            url: '/hotel/' + hotelId + '/available-rooms',
+                            type: 'GET',
+                            success: function(rooms) {
+                                roomSelect.empty();
+                                roomSelect.prop('disabled', false);
 
-                            if (rooms.length === 0) {
+                                if (rooms.length === 0) {
+                                    roomSelect.append(
+                                        '<option value="">{{ __('Нет доступных комнат') }}</option>'
+                                    );
+                                    roomSelect.prop('disabled', true);
+                                    return;
+                                }
+
                                 roomSelect.append(
-                                    '<option value="">{{ __('Нет доступных комнат') }}</option>'
+                                    '<option value="">{{ __('Выберите комнату') }}</option>');
+
+                                rooms.forEach(function(room) {
+                                    var optionText = '{{ __('Комната') }} ' + room
+                                        .room_number +
+                                        ' (' + room.occupancy_status +
+                                        ' {{ __('занято') }})';
+
+                                    if (room.is_full) {
+                                        optionText += ' - {{ __('Заполнено') }}';
+                                        roomSelect.append('<option value="' + room.id +
+                                            '" disabled>' + optionText + '</option>');
+                                    } else {
+                                        roomSelect.append('<option value="' + room.id +
+                                            '">' + optionText + '</option>');
+                                    }
+                                });
+                            },
+                            error: function() {
+                                roomSelect.empty();
+                                roomSelect.append(
+                                    '<option value="">{{ __('Ошибка загрузки комнат') }}</option>'
                                 );
                                 roomSelect.prop('disabled', true);
-                                return;
                             }
+                        });
+                    } else {
+                        roomSelect.empty();
+                        roomSelect.append('<option value="">{{ __('Сначала выберите отель') }}</option>');
+                        roomSelect.prop('disabled', true);
+                        capacityInfo.text('');
+                    }
+                });
 
-                            roomSelect.append(
-                                '<option value="">{{ __('Выберите комнату') }}</option>');
+                $('#room_id').on('change', function() {
+                    var selectedOption = $(this).find('option:selected');
+                    var capacityInfo = $('#room-capacity-info');
 
-                            rooms.forEach(function(room) {
-                                var optionText = '{{ __('Комната') }} ' + room
-                                    .room_number +
-                                    ' (' + room.occupancy_status +
-                                    ' {{ __('занято') }})';
-
-                                if (room.is_full) {
-                                    optionText += ' - {{ __('Заполнено') }}';
-                                    roomSelect.append('<option value="' + room.id +
-                                        '" disabled>' + optionText + '</option>');
-                                } else {
-                                    roomSelect.append('<option value="' + room.id +
-                                        '">' + optionText + '</option>');
-                                }
-                            });
-                        },
-                        error: function() {
-                            roomSelect.empty();
-                            roomSelect.append(
-                                '<option value="">{{ __('Ошибка загрузки комнат') }}</option>'
-                            );
-                            roomSelect.prop('disabled', true);
-                        }
-                    });
-                } else {
-                    roomSelect.empty();
-                    roomSelect.append('<option value="">{{ __('Сначала выберите отель') }}</option>');
-                    roomSelect.prop('disabled', true);
-                    capacityInfo.text('');
-                }
+                    if ($(this).val() && !selectedOption.is(':disabled')) {
+                        capacityInfo.text('{{ __('Комната доступна для заселения') }}');
+                        capacityInfo.removeClass('text-danger').addClass('text-success');
+                    } else {
+                        capacityInfo.text('');
+                    }
+                });
             });
-
-            $('#room_id').on('change', function() {
-                var selectedOption = $(this).find('option:selected');
-                var capacityInfo = $('#room-capacity-info');
-
-                if ($(this).val() && !selectedOption.is(':disabled')) {
-                    capacityInfo.text('{{ __('Комната доступна для заселения') }}');
-                    capacityInfo.removeClass('text-danger').addClass('text-success');
-                } else {
-                    capacityInfo.text('');
-                }
-            });
-        });
-    </script>
-@endpush
+        </script>
+    @endpush

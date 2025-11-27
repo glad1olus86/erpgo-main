@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Models\Worker;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,9 +24,15 @@ class AuditLogController extends Controller
                 $query->byDateRange($request->start_date, $request->end_date);
             }
 
-            // Фильтр по пользователю
+            // Фильтр по пользователю (кто совершил действие)
             if ($request->filled('user_id')) {
                 $query->byUser($request->user_id);
+            }
+
+            // Фильтр по работнику (над кем совершено действие)
+            if ($request->filled('worker_id')) {
+                $query->where('subject_type', 'App\Models\Worker')
+                    ->where('subject_id', $request->worker_id);
             }
 
             // Фильтр по типу события
@@ -35,6 +42,13 @@ class AuditLogController extends Controller
 
             $auditLogs = $query->latest()->paginate(20);
             $users = User::where('created_by', '=', Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+            // Список работников для фильтра
+            $workers = \App\Models\Worker::where('created_by', Auth::user()->creatorId())
+                ->get()
+                ->mapWithKeys(function ($worker) {
+                    return [$worker->id => $worker->first_name . ' ' . $worker->last_name];
+                });
 
             // Список всех возможных типов событий для фильтра
             $eventTypes = [
@@ -56,7 +70,7 @@ class AuditLogController extends Controller
                 'hotel.deleted' => __('Удаление отеля'),
             ];
 
-            return view('audit_log.index', compact('auditLogs', 'users', 'eventTypes'));
+            return view('audit_log.index', compact('auditLogs', 'users', 'workers', 'eventTypes'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
