@@ -1417,21 +1417,10 @@
                 @can('view audit log')
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'audit' ? ' active dash-trigger' : '' }}">
-                        <a href="#!" class="dash-link">
+                        <a href="{{ route('audit.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-activity"></i></span>
                             <span class="dash-mtext">{{ __('Аудит') }}</span>
-                            <span class="dash-arrow"><i data-feather="chevron-right"></i></span>
                         </a>
-                        <ul class="dash-submenu {{ Request::segment(1) == 'audit' ? 'show' : '' }}">
-                            <li class="dash-item {{ Request::route()->getName() == 'audit.index' ? ' active' : '' }}">
-                                <a class="dash-link" href="{{ route('audit.index') }}">{{ __('Список') }}</a>
-                            </li>
-                            <li
-                                class="dash-item {{ Request::route()->getName() == 'audit.calendar.view' ? ' active' : '' }}">
-                                <a class="dash-link"
-                                    href="{{ route('audit.calendar.view') }}">{{ __('Календарь') }}</a>
-                            </li>
-                        </ul>
                     </li>
                 @endcan
 
