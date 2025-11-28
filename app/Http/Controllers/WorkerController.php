@@ -28,6 +28,11 @@ class WorkerController extends Controller
                     ->get()
                     ->pluck('name', 'id');
 
+                // Load work places for assignment modal
+                $workPlaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())
+                    ->get()
+                    ->pluck('name', 'id');
+
                 // Load recent audit events for this worker
                 $recentEvents = \App\Models\AuditLog::where('subject_type', 'App\Models\Worker')
                     ->where('subject_id', $worker->id)
@@ -36,7 +41,7 @@ class WorkerController extends Controller
                     ->limit(10)
                     ->get();
 
-                return view('worker.show', compact('worker', 'hotels', 'recentEvents'));
+                return view('worker.show', compact('worker', 'hotels', 'workPlaces', 'recentEvents'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

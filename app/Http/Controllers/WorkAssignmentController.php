@@ -99,4 +99,51 @@ class WorkAssignmentController extends Controller
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
+
+    /**
+     * Assign a worker to a work place from worker profile.
+     */
+    public function assignWorkerFromProfile(Request $request, Worker $worker)
+    {
+        if (Auth::user()->can('manage worker')) {
+            if ($worker->created_by == Auth::user()->creatorId()) {
+                $validator = Validator::make(
+                    $request->all(),
+                    [
+                        'work_place_id' => 'required|exists:work_places,id',
+                    ]
+                );
+
+                if ($validator->fails()) {
+                    return redirect()->back()->with('error', $validator->errors()->first());
+                }
+
+                $workPlace = WorkPlace::find($request->work_place_id);
+
+                // Check if work place belongs to the same company
+                if ($workPlace->created_by != Auth::user()->creatorId()) {
+                    return redirect()->back()->with('error', __('Permission denied.'));
+                }
+
+                // Check if worker already has an active work assignment
+                if ($worker->currentWorkAssignment) {
+                    return redirect()->back()->with('error', __('Работник уже устроен на работу. Сначала уволите его.'));
+                }
+
+                // Create the assignment
+                $assignment = new WorkAssignment();
+                $assignment->worker_id = $worker->id;
+                $assignment->work_place_id = $workPlace->id;
+                $assignment->started_at = now();
+                $assignment->created_by = Auth::user()->creatorId();
+                $assignment->save();
+
+                return redirect()->route('worker.show', $worker->id)->with('success', __('Работник успешно устроен на работу.'));
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
 }

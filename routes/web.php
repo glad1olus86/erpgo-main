@@ -834,6 +834,8 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('work-place.assign.worker')->middleware(['auth', 'XSS']);
     Route::get('/work-place/{workPlace}/assign-form', [WorkAssignmentController::class, 'assignForm'])
         ->name('work-place.assign.form')->middleware(['auth', 'XSS']);
+    Route::post('/worker/{worker}/assign-work', [WorkAssignmentController::class, 'assignWorkerFromProfile'])
+        ->name('worker.assign.work')->middleware(['auth', 'XSS']);
     Route::post('/worker/{worker}/dismiss', [WorkAssignmentController::class, 'dismissWorker'])
         ->name('worker.dismiss')->middleware(['auth', 'XSS']);
 

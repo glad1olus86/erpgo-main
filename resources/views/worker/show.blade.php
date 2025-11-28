@@ -214,6 +214,13 @@
                                 <i class="ti ti-briefcase-off"></i> {{ __('Уволить') }}
                             </button>
                         </form>
+                    @else
+                        @can('manage worker')
+                            <a href="#" class="btn btn-sm btn-primary"
+                                onclick="event.preventDefault(); $('#assign-work-modal').modal('show');">
+                                <i class="ti ti-briefcase-off"></i> {{ __('Устроить') }}
+                            </a>
+                        @endcan
                     @endif
                 </div>
                 <div class="card-body">
@@ -286,10 +293,7 @@
                         <div class="text-center py-4">
                             <i class="ti ti-briefcase-off" style="font-size: 48px; opacity: 0.3;"></i>
                             <h5 class="mt-3">{{ __('Работник не трудоустроен') }}</h5>
-                            <p class="text-muted">
-                                {{ __('Устройте работника на рабочее место через модуль') }}
-                                <a href="{{ route('work-place.index') }}">{{ __('Рабочие места') }}</a>
-                            </p>
+                            <p class="text-muted">{{ __('Нажмите "Устроить" чтобы назначить рабочее место') }}</p>
                         </div>
                     @endif
                 </div>
@@ -387,7 +391,7 @@
         </div>
 
 
-        {{-- Assignment Modal --}}
+        {{-- Room Assignment Modal --}}
         <div class="modal fade" id="assign-room-modal" tabindex="-1" role="dialog"
             aria-labelledby="assign-room-modal-label" aria-hidden="true">
             <div class="modal-dialog modal-md" role="document">
@@ -428,6 +432,43 @@
                             <button type="button" class="btn btn-secondary"
                                 data-bs-dismiss="modal">{{ __('Отмена') }}</button>
                             <button type="submit" class="btn btn-primary">{{ __('Заселить') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Work Assignment Modal --}}
+        <div class="modal fade" id="assign-work-modal" tabindex="-1" role="dialog"
+            aria-labelledby="assign-work-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-md" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assign-work-modal-label">{{ __('Устроить работника') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('worker.assign.work', $worker->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="work_place_id"
+                                            class="form-label">{{ __('Рабочее место') }}</label><x-required></x-required>
+                                        <select name="work_place_id" id="work_place_id" class="form-control" required>
+                                            <option value="" selected>{{ __('Выберите рабочее место') }}</option>
+                                            @foreach ($workPlaces as $id => $name)
+                                                <option value="{{ $id }}">{{ $name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Устроить') }}</button>
                         </div>
                     </form>
                 </div>

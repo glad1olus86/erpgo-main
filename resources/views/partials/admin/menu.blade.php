@@ -36,11 +36,11 @@
         @if (\Auth::user()->type != 'client')
             <ul class="dash-navbar">
                 <!--------------------- Start Dashboard ----------------------------------->
-                @if (Gate::check('show hrm dashboard') ||
-                        Gate::check('show project dashboard') ||
-                        Gate::check('show account dashboard') ||
-                        Gate::check('show crm dashboard') ||
-                        Gate::check('show pos dashboard'))
+                @if (Gate::check('show hrm dashboard_nevershow') ||
+                        Gate::check('show project dashboard_nevershow') ||
+                        Gate::check('show account dashboard_nevershow') ||
+                        Gate::check('show crm dashboard_nevershow') ||
+                        Gate::check('show pos dashboard_nevershow'))
                     <li
                         class="dash-item dash-hasmenu
                                 {{ Request::segment(1) == null ||
@@ -376,57 +376,57 @@
 
                 <!--------------------- Start HRM ----------------------------------->
 
-                @if (!empty($userPlan) && $userPlan->hrm == 1)
-                    @if (Gate::check('manage employee') ||
-                            Gate::check('manage set salary') ||
-                            Gate::check('manage pay slip') ||
-                            Gate::check('manage leave') ||
-                            Gate::check('manage attendance') ||
-                            Gate::check('create attendance') ||
-                            Gate::check('manage indicator') ||
-                            Gate::check('manage appraisal') ||
-                            Gate::check('manage goal tracking') ||
-                            Gate::check('manage training') ||
-                            Gate::check('manage trainer') ||
-                            Gate::check('manage job') ||
-                            Gate::check('create job') ||
-                            Gate::check('manage job application') ||
-                            Gate::check('manage custom question') ||
-                            Gate::check('manage job onBoard') ||
-                            Gate::check('show interview schedule') ||
-                            Gate::check('show career') ||
-                            Gate::check('manage award') ||
-                            Gate::check('manage transfer') ||
-                            Gate::check('manage resignation') ||
-                            Gate::check('manage travel') ||
-                            Gate::check('manage promotion') ||
-                            Gate::check('manage complaint') ||
-                            Gate::check('manage warning') ||
-                            Gate::check('manage termination') ||
-                            Gate::check('manage announcement') ||
-                            Gate::check('manage holiday') ||
-                            Gate::check('manage event') ||
-                            Gate::check('manage meeting') ||
-                            Gate::check('manage assets') ||
-                            Gate::check('manage document') ||
-                            Gate::check('manage company policy') ||
-                            Gate::check('manage branch') ||
-                            Gate::check('manage department') ||
-                            Gate::check('manage designation') ||
-                            Gate::check('manage leave type') ||
-                            Gate::check('manage document type') ||
-                            Gate::check('manage payslip type') ||
-                            Gate::check('manage allowance option') ||
-                            Gate::check('manage loan option') ||
-                            Gate::check('manage deduction option') ||
-                            Gate::check('manage goal type') ||
-                            Gate::check('manage training type') ||
-                            Gate::check('manage award type') ||
-                            Gate::check('manage termination type') ||
-                            Gate::check('manage job category') ||
-                            Gate::check('manage job stage') ||
-                            Gate::check('manage performance type') ||
-                            Gate::check('manage competencies'))
+                @if (!empty($userPlan) && $userPlan->hrm_nevershow == 1)
+                    @if (Gate::check('manage employee_nevershow') ||
+                            Gate::check('manage set salary_nevershow') ||
+                            Gate::check('manage pay slip_nevershow') ||
+                            Gate::check('manage leave_nevershow') ||
+                            Gate::check('manage attendance_nevershow') ||
+                            Gate::check('create attendance_nevershow') ||
+                            Gate::check('manage indicator_nevershow') ||
+                            Gate::check('manage appraisal_nevershow') ||
+                            Gate::check('manage goal tracking_nevershow') ||
+                            Gate::check('manage training_nevershow') ||
+                            Gate::check('manage trainer_nevershow') ||
+                            Gate::check('manage job_nevershow') ||
+                            Gate::check('create job_nevershow') ||
+                            Gate::check('manage job application_nevershow') ||
+                            Gate::check('manage custom question_nevershow') ||
+                            Gate::check('manage job onBoard_nevershow') ||
+                            Gate::check('show interview schedule_nevershow') ||
+                            Gate::check('show career_nevershow') ||
+                            Gate::check('manage award_nevershow') ||
+                            Gate::check('manage transfer_nevershow') ||
+                            Gate::check('manage resignation_nevershow') ||
+                            Gate::check('manage travel_nevershow') ||
+                            Gate::check('manage promotion_nevershow') ||
+                            Gate::check('manage complaint_nevershow') ||
+                            Gate::check('manage warning_nevershow') ||
+                            Gate::check('manage termination_nevershow') ||
+                            Gate::check('manage announcement_nevershow') ||
+                            Gate::check('manage holiday_nevershow') ||
+                            Gate::check('manage event_nevershow') ||
+                            Gate::check('manage meeting_nevershow') ||
+                            Gate::check('manage assets_nevershow') ||
+                            Gate::check('manage document_nevershow') ||
+                            Gate::check('manage company policy_nevershow') ||
+                            Gate::check('manage branch_nevershow') ||
+                            Gate::check('manage department_nevershow') ||
+                            Gate::check('manage designation_nevershow') ||
+                            Gate::check('manage leave type_nevershow') ||
+                            Gate::check('manage document type_nevershow') ||
+                            Gate::check('manage payslip type_nevershow') ||
+                            Gate::check('manage allowance option_nevershow') ||
+                            Gate::check('manage loan option_nevershow') ||
+                            Gate::check('manage deduction option_nevershow') ||
+                            Gate::check('manage goal type_nevershow') ||
+                            Gate::check('manage training type_nevershow') ||
+                            Gate::check('manage award type_nevershow') ||
+                            Gate::check('manage termination type_nevershow') ||
+                            Gate::check('manage job category_nevershow') ||
+                            Gate::check('manage job stage_nevershow') ||
+                            Gate::check('manage performance type_nevershow') ||
+                            Gate::check('manage competencies_nevershow'))
 
                         <li
                             class="dash-item dash-hasmenu {{ Request::segment(1) == 'holiday-calender' ||
@@ -858,31 +858,31 @@
 
                 <!--------------------- Start Account ----------------------------------->
 
-                @if (!empty($userPlan) && $userPlan->account == 1)
-                    @if (Gate::check('manage budget plan') ||
-                            Gate::check('income vs expense report') ||
-                            Gate::check('manage goal') ||
-                            Gate::check('manage constant tax') ||
-                            Gate::check('manage constant category') ||
-                            Gate::check('manage constant unit') ||
-                            Gate::check('manage constant custom field') ||
-                            Gate::check('manage print settings') ||
-                            Gate::check('manage customer') ||
-                            Gate::check('manage vender') ||
-                            Gate::check('manage proposal') ||
-                            Gate::check('manage bank account') ||
-                            Gate::check('manage bank transfer') ||
-                            Gate::check('manage invoice') ||
-                            Gate::check('manage revenue') ||
-                            Gate::check('manage credit note') ||
-                            Gate::check('manage bill') ||
-                            Gate::check('manage payment') ||
-                            Gate::check('manage debit note') ||
-                            Gate::check('manage chart of account') ||
-                            Gate::check('manage journal entry') ||
-                            Gate::check('balance sheet report') ||
-                            Gate::check('ledger report') ||
-                            Gate::check('trial balance report'))
+                @if (!empty($userPlan) && $userPlan->account_nevershow == 1)
+                    @if (Gate::check('manage budget plan_nevershow') ||
+                            Gate::check('income vs expense report_nevershow') ||
+                            Gate::check('manage goal_nevershow') ||
+                            Gate::check('manage constant tax_nevershow') ||
+                            Gate::check('manage constant category_nevershow') ||
+                            Gate::check('manage constant unit_nevershow') ||
+                            Gate::check('manage constant custom field_nevershow') ||
+                            Gate::check('manage print settings_nevershow') ||
+                            Gate::check('manage customer_nevershow') ||
+                            Gate::check('manage vender_nevershow') ||
+                            Gate::check('manage proposal_nevershow') ||
+                            Gate::check('manage bank account_nevershow') ||
+                            Gate::check('manage bank transfer_nevershow') ||
+                            Gate::check('manage invoice_nevershow') ||
+                            Gate::check('manage revenue_nevershow') ||
+                            Gate::check('manage credit note_nevershow') ||
+                            Gate::check('manage bill_nevershow') ||
+                            Gate::check('manage payment_nevershow') ||
+                            Gate::check('manage debit note_nevershow') ||
+                            Gate::check('manage chart of account_nevershow') ||
+                            Gate::check('manage journal entry_nevershow') ||
+                            Gate::check('balance sheet report_nevershow') ||
+                            Gate::check('ledger report_nevershow') ||
+                            Gate::check('trial balance report_nevershow'))
                         <li
                             class="dash-item dash-hasmenu
                                         {{ Request::route()->getName() == 'print-setting' ||
@@ -1150,11 +1150,11 @@
 
                 <!--------------------- Start CRM ----------------------------------->
 
-                @if (!empty($userPlan) && $userPlan->crm == 1)
-                    @if (Gate::check('manage lead') ||
-                            Gate::check('manage deal') ||
-                            Gate::check('manage form builder') ||
-                            Gate::check('manage contract'))
+                @if (!empty($userPlan) && $userPlan->crm_nevershow == 1)
+                    @if (Gate::check('manage lead_nevershow') ||
+                            Gate::check('manage deal_nevershow') ||
+                            Gate::check('manage form builder_nevershow') ||
+                            Gate::check('manage contract_nevershow'))
                         <li
                             class="dash-item dash-hasmenu {{ Request::segment(1) == 'stages' || Request::segment(1) == 'labels' || Request::segment(1) == 'sources' || Request::segment(1) == 'lead_stages' || Request::segment(1) == 'pipelines' || Request::segment(1) == 'deals' || Request::segment(1) == 'leads' || Request::segment(1) == 'form_builder' || Request::segment(1) == 'contractType' || Request::segment(1) == 'form_response' || Request::segment(1) == 'contract' ? ' active dash-trigger' : '' }}">
                             <a href="#!" class="dash-link"><span class="dash-micon"><i
@@ -1211,13 +1211,13 @@
 
                 <!--------------------- Start Project ----------------------------------->
 
-                @if (!empty($userPlan) && $userPlan->project == 1)
-                    @if (Gate::check('manage project') ||
-                            Gate::check('manage project task') ||
-                            Gate::check('manage timesheet') ||
-                            Gate::check('manage bug report') ||
-                            Gate::check('manage project task stage') ||
-                            Gate::check('manage bug status'))
+                @if (!empty($userPlan) && $userPlan->project_nevershow == 1)
+                    @if (Gate::check('manage project_nevershow') ||
+                            Gate::check('manage project task_nevershow') ||
+                            Gate::check('manage timesheet_nevershow') ||
+                            Gate::check('manage bug report_nevershow') ||
+                            Gate::check('manage project task stage_nevershow') ||
+                            Gate::check('manage bug status_nevershow'))
                         <li
                             class="dash-item dash-hasmenu
                                                     {{ Request::segment(1) == 'project' ||
@@ -1320,7 +1320,9 @@
 
                 @if (
                     \Auth::user()->type != 'super admin' &&
-                        (Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
+                        (Gate::check('manage user_nevershow') ||
+                            Gate::check('manage role_nevershow') ||
+                            Gate::check('manage client_nevershow')))
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'users' ||
                         Request::segment(1) == 'roles' ||
@@ -1361,7 +1363,7 @@
 
                 <!--------------------- Start Products System ----------------------------------->
 
-                @if (Gate::check('manage product & service'))
+                @if (Gate::check('manage product & service_nevershow'))
                     <li class="dash-item dash-hasmenu">
                         <a href="#!" class="dash-link ">
                             <span class="dash-micon"><i class="ti ti-shopping-cart"></i></span><span
@@ -1426,13 +1428,13 @@
 
 
                 <!--------------------- Start POs System ----------------------------------->
-                @if (!empty($userPlan) && $userPlan->pos == 1)
-                    @if (Gate::check('manage warehouse') ||
-                            Gate::check('manage purchase') ||
-                            Gate::check('manage quotation') ||
-                            Gate::check('create barcode') ||
-                            Gate::check('manage pos') ||
-                            Gate::check('manage print settings'))
+                @if (!empty($userPlan) && $userPlan->pos_nevershow == 1)
+                    @if (Gate::check('manage warehouse_nevershow') ||
+                            Gate::check('manage purchase_nevershow') ||
+                            Gate::check('manage quotation_nevershow') ||
+                            Gate::check('create barcode_nevershow') ||
+                            Gate::check('manage pos_nevershow') ||
+                            Gate::check('manage print settings_nevershow'))
                         <li
                             class="dash-item dash-hasmenu {{ Request::segment(1) == 'warehouse' || Request::segment(1) == 'purchase' || Request::segment(1) == 'quotation' || Request::route()->getName() == 'pos.barcode' || Request::route()->getName() == 'pos.print' || Request::route()->getName() == 'pos.show' ? ' active dash-trigger' : '' }}">
                             <a href="#!" class="dash-link"><span class="dash-micon"><i
@@ -1505,7 +1507,7 @@
                 @endif
                 <!--------------------- End POs System ----------------------------------->
 
-                @if (\Auth::user()->type != 'super admin')
+                @if (\Auth::user()->type != 'super admin_nevershow')
                     <li class="dash-item dash-hasmenu {{ Request::segment(1) == 'support' ? 'active' : '' }}">
                         <a href="{{ route('support.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-headphones"></i></span><span
@@ -1527,7 +1529,7 @@
                     </li>
                 @endif
 
-                @if (\Auth::user()->type == 'company')
+                @if (\Auth::user()->type == 'company_nevershow')
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'notification_templates' ? 'active' : '' }}">
                         <a href="{{ route('notification-templates.index') }}" class="dash-link">
@@ -1555,7 +1557,7 @@
                                     <i data-feather="chevron-right"></i></span>
                             </a>
                             <ul class="dash-submenu">
-                                @if (Gate::check('manage company settings'))
+                                @if (Gate::check('manage company settings') && Auth::user()->type == 'super admin')
                                     <li
                                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'settings' ? ' active' : '' }}">
                                         <a href="{{ route('settings') }}"
