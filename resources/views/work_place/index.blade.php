@@ -42,8 +42,16 @@
                                     <tbody class="font-style">
                                         @foreach ($workPlaces as $workPlace)
                                             <tr>
-                                                <td>{{ $workPlace->name }}</td>
-                                                <td>{{ $workPlace->currentAssignments->count() }}</td>
+                                                <td>
+                                                    <strong>{{ $workPlace->name }}</strong>
+                                                </td>
+                                                <td>
+                                                    @if($workPlace->currentAssignments->count() > 0)
+                                                        <span class="badge bg-success">{{ $workPlace->currentAssignments->count() }}</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">0</span>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $workPlace->address }}</td>
                                                 <td>
                                                     @if ($workPlace->phone)
@@ -94,9 +102,10 @@
                                                                 <a href="#"
                                                                     data-url="{{ route('work-place.workers', $workPlace->id) }}"
                                                                     data-ajax-popup="true" data-title="{{ __('Сотрудники') }}"
+                                                                    data-size="lg"
                                                                     class="mx-3 btn btn-sm align-items-center bg-warning"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Просмотреть') }}">
-                                                                    <i class="ti ti-eye text-white"></i>
+                                                                    data-bs-toggle="tooltip" title="{{ __('Просмотреть сотрудников') }}">
+                                                                    <i class="ti ti-users text-white"></i>
                                                                 </a>
                                                             </div>
                                                         @endcan

@@ -92,6 +92,48 @@ class RoomAssignmentController extends Controller
     }
 
     /**
+     * Bulk checkout workers from a room.
+     */
+    public function bulkCheckout(Request $request, Room $room)
+    {
+        if (Auth::user()->can('manage worker')) {
+            if ($room->created_by == Auth::user()->creatorId()) {
+                $validator = Validator::make($request->all(), [
+                    'worker_ids' => 'required|string',
+                ]);
+
+                if ($validator->fails()) {
+                    return redirect()->back()->with('error', $validator->errors()->first());
+                }
+
+                $workerIds = array_filter(explode(',', $request->worker_ids));
+                $checkedOut = 0;
+
+                foreach ($workerIds as $workerId) {
+                    $worker = Worker::where('id', $workerId)
+                        ->where('created_by', Auth::user()->creatorId())
+                        ->first();
+
+                    if (!$worker) continue;
+
+                    $assignment = $worker->currentAssignment;
+                    if ($assignment && $assignment->room_id == $room->id) {
+                        $assignment->check_out_date = now();
+                        $assignment->save();
+                        $checkedOut++;
+                    }
+                }
+
+                return redirect()->back()->with('success', __('Выселено работников: :count', ['count' => $checkedOut]));
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    /**
      * Get available rooms for a specific hotel (API endpoint).
      */
     public function getAvailableRooms(Hotel $hotel)
@@ -185,6 +227,54 @@ class RoomAssignmentController extends Controller
             }
         } else {
             return response()->json(['error' => __('Permission denied.')], 403);
+        }
+    }
+
+    /**
+     * Bulk assign workers to a room.
+     */
+    public function assignWorkersBulk(Request $request, Room $room)
+    {
+        if (Auth::user()->can('manage worker')) {
+            if ($room->created_by == Auth::user()->creatorId()) {
+                $validator = Validator::make($request->all(), [
+                    'worker_ids' => 'required|string',
+                ]);
+
+                if ($validator->fails()) {
+                    return redirect()->back()->with('error', $validator->errors()->first());
+                }
+
+                $workerIds = array_filter(explode(',', $request->worker_ids));
+                $availableSpots = $room->availableSpots();
+                $assigned = 0;
+
+                foreach ($workerIds as $workerId) {
+                    if ($assigned >= $availableSpots) break;
+
+                    $worker = Worker::where('id', $workerId)
+                        ->where('created_by', Auth::user()->creatorId())
+                        ->first();
+
+                    if (!$worker) continue;
+                    if ($worker->currentAssignment) continue;
+
+                    $assignment = new RoomAssignment();
+                    $assignment->worker_id = $worker->id;
+                    $assignment->room_id = $room->id;
+                    $assignment->hotel_id = $room->hotel_id;
+                    $assignment->check_in_date = now();
+                    $assignment->created_by = Auth::user()->creatorId();
+                    $assignment->save();
+                    $assigned++;
+                }
+
+                return redirect()->back()->with('success', __('Заселено работников: :count', ['count' => $assigned]));
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 }

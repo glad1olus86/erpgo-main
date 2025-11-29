@@ -53,6 +53,7 @@
                                                                         data-url="{{ route('room.show', $room->id) }}"
                                                                         data-ajax-popup="true"
                                                                         data-title="{{ __('Жильцы комнаты') }}"
+                                                                        data-size="lg"
                                                                         class="mx-3 btn btn-sm align-items-center bg-warning"
                                                                         data-bs-toggle="tooltip"
                                                                         title="{{ __('Просмотр жильцов') }}"

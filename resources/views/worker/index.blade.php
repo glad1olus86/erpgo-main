@@ -21,15 +21,56 @@
     </div>
 @endsection
 
+@push('css-page')
+<style>
+    #workers-table th:first-child {
+        cursor: default !important;
+    }
+    #workers-table th:first-child::after,
+    #workers-table th:first-child::before {
+        display: none !important;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body table-border-style">
+                    {{-- Bulk Actions Panel --}}
+                    <div id="bulk-actions-panel" class="mb-3 p-3 bg-light rounded" style="display: none;">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="fw-bold"><span id="selected-count">0</span> {{ __('выбрано') }}</span>
+                            <div class="vr mx-2"></div>
+                            @can('manage work place')
+                                <button type="button" class="btn btn-sm btn-success" id="bulk-assign-btn">
+                                    <i class="ti ti-briefcase me-1"></i>{{ __('Устроить на работу') }}
+                                </button>
+                                <button type="button" class="btn btn-sm btn-warning" id="bulk-dismiss-btn">
+                                    <i class="ti ti-user-off me-1"></i>{{ __('Уволить') }}
+                                </button>
+                            @endcan
+                            @can('manage worker')
+                                <button type="button" class="btn btn-sm btn-danger" id="bulk-checkout-btn">
+                                    <i class="ti ti-door-exit me-1"></i>{{ __('Выселить') }}
+                                </button>
+                            @endcan
+                            <button type="button" class="btn btn-sm btn-secondary" id="bulk-clear-btn">
+                                <i class="ti ti-x me-1"></i>{{ __('Снять выделение') }}
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
-                        <table class="table datatable">
+                        <table class="table" id="workers-table">
                             <thead>
                                 <tr>
+                                    <th data-sortable="false" style="width: 40px; cursor: default !important;">
+                                        <div class="form-check" onclick="event.stopPropagation();">
+                                            <input type="checkbox" class="form-check-input" id="select-all-checkbox">
+                                        </div>
+                                    </th>
                                     <th>{{ __('Имя') }}</th>
                                     <th>{{ __('Фамилия') }}</th>
                                     <th>{{ __('Дата рождения') }}</th>
@@ -41,9 +82,28 @@
                             </thead>
                             <tbody>
                                 @foreach ($workers as $worker)
-                                    <tr>
-                                        <td>{{ $worker->first_name }}</td>
-                                        <td>{{ $worker->last_name }}</td>
+                                    <tr data-worker-id="{{ $worker->id }}">
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="checkbox" class="form-check-input worker-checkbox" 
+                                                    value="{{ $worker->id }}" 
+                                                    data-name="{{ $worker->first_name }} {{ $worker->last_name }}"
+                                                    data-is-working="{{ $worker->currentWorkAssignment ? '1' : '0' }}"
+                                                    data-work-place="{{ $worker->currentWorkAssignment ? $worker->currentWorkAssignment->workPlace->name : '' }}"
+                                                    data-is-housed="{{ $worker->currentAssignment ? '1' : '0' }}"
+                                                    data-hotel="{{ $worker->currentAssignment ? $worker->currentAssignment->hotel->name : '' }}">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium">
+                                                {{ $worker->first_name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium">
+                                                {{ $worker->last_name }}
+                                            </a>
+                                        </td>
                                         <td>{{ \Auth::user()->dateFormat($worker->dob) }}</td>
                                         <td>{{ $worker->gender == 'male' ? __('Мужчина') : __('Женщина') }}</td>
                                         <td>{{ $worker->nationality }}</td>
@@ -95,4 +155,331 @@
                 </div>
             </div>
         </div>
-    @endsection
+    </div>
+
+    {{-- Bulk Assign Modal --}}
+    <div class="modal fade" id="bulkAssignModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('Устроить на работу') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="bulk-assign-form" method="POST" action="{{ route('worker.bulk.assign') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="worker_ids" id="assign-worker-ids">
+                        
+                        <div id="assign-already-working" class="mb-3" style="display: none;">
+                            <label class="form-label text-warning"><i class="ti ti-alert-triangle me-1"></i>{{ __('Уже работают (будут пропущены):') }}</label>
+                            <div id="assign-already-working-list" class="text-muted small"></div>
+                        </div>
+                        
+                        <div id="assign-will-be-assigned" class="mb-3">
+                            <label class="form-label text-success"><i class="ti ti-check me-1"></i>{{ __('Будут устроены:') }}</label>
+                            <div id="assign-workers-list" class="text-muted small"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ __('Рабочее место') }}</label>
+                            <select name="work_place_id" class="form-control" required>
+                                <option value="">{{ __('Выберите рабочее место') }}</option>
+                                @php
+                                    $workPlaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
+                                @endphp
+                                @foreach($workPlaces as $place)
+                                    <option value="{{ $place->id }}">{{ $place->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                        <button type="submit" class="btn btn-success" id="assign-submit-btn">{{ __('Устроить') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Bulk Dismiss Confirm Modal --}}
+    <div class="modal fade" id="bulkDismissModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('Уволить работников') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="bulk-dismiss-form" method="POST" action="{{ route('worker.bulk.dismiss') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="worker_ids" id="dismiss-worker-ids">
+                        
+                        <div id="dismiss-not-working" class="mb-3" style="display: none;">
+                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Не работают (будут пропущены):') }}</label>
+                            <div id="dismiss-not-working-list" class="text-muted small"></div>
+                        </div>
+                        
+                        <div id="dismiss-will-be-fired" class="mb-3">
+                            <label class="form-label text-warning"><i class="ti ti-user-off me-1"></i>{{ __('Будут уволены:') }}</label>
+                            <div id="dismiss-workers-list" class="text-muted small"></div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="ti ti-alert-triangle me-1"></i>
+                            {{ __('Работники будут уволены с текущего места работы.') }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                        <button type="submit" class="btn btn-warning" id="dismiss-submit-btn">{{ __('Уволить') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Bulk Checkout Confirm Modal --}}
+    <div class="modal fade" id="bulkCheckoutModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('Выселить работников') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="bulk-checkout-form" method="POST" action="{{ route('worker.bulk.checkout') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="worker_ids" id="checkout-worker-ids">
+                        
+                        <div id="checkout-not-housed" class="mb-3" style="display: none;">
+                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Не проживают (будут пропущены):') }}</label>
+                            <div id="checkout-not-housed-list" class="text-muted small"></div>
+                        </div>
+                        
+                        <div id="checkout-will-be-evicted" class="mb-3">
+                            <label class="form-label text-danger"><i class="ti ti-door-exit me-1"></i>{{ __('Будут выселены:') }}</label>
+                            <div id="checkout-workers-list" class="text-muted small"></div>
+                        </div>
+                        
+                        <div class="alert alert-danger">
+                            <i class="ti ti-alert-triangle me-1"></i>
+                            {{ __('Работники будут выселены из текущего места проживания.') }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                        <button type="submit" class="btn btn-danger" id="checkout-submit-btn">{{ __('Выселить') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('script-page')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize DataTable with first column not sortable
+    var workersTable = new simpleDatatables.DataTable("#workers-table", {
+        columns: [
+            { select: 0, sortable: false } // Disable sorting on checkbox column
+        ],
+        perPage: 10,
+        perPageSelect: [10, 25, 50, 100]
+    });
+
+    var selectAllCheckbox = document.getElementById('select-all-checkbox');
+    var bulkActionsPanel = document.getElementById('bulk-actions-panel');
+    var selectedCountEl = document.getElementById('selected-count');
+    
+    function getVisibleCheckboxes() {
+        // Get only visible rows from DataTable
+        var checkboxes = [];
+        var rows = document.querySelectorAll('#workers-table tbody tr');
+        rows.forEach(function(row) {
+            // Check if row is visible (not hidden by DataTable)
+            if (row.style.display !== 'none' && !row.classList.contains('hidden')) {
+                var cb = row.querySelector('.worker-checkbox');
+                if (cb) checkboxes.push(cb);
+            }
+        });
+        return checkboxes;
+    }
+
+    function getAllCheckboxes() {
+        return document.querySelectorAll('.worker-checkbox');
+    }
+
+    function getSelectedWorkers() {
+        var selected = [];
+        getAllCheckboxes().forEach(function(cb) {
+            if (cb.checked) {
+                selected.push({
+                    id: cb.value,
+                    name: cb.dataset.name,
+                    isWorking: cb.dataset.isWorking === '1',
+                    workPlace: cb.dataset.workPlace || '',
+                    isHoused: cb.dataset.isHoused === '1',
+                    hotel: cb.dataset.hotel || ''
+                });
+            }
+        });
+        return selected;
+    }
+
+    function updateBulkPanel() {
+        var selected = getSelectedWorkers();
+        selectedCountEl.textContent = selected.length;
+        bulkActionsPanel.style.display = selected.length > 0 ? 'block' : 'none';
+    }
+
+    // Select all checkbox - use event delegation to handle clicks
+    selectAllCheckbox.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent DataTable from capturing the click
+        var checkboxes = getVisibleCheckboxes();
+        checkboxes.forEach(function(cb) {
+            cb.checked = selectAllCheckbox.checked;
+        });
+        updateBulkPanel();
+    });
+
+    // Individual checkboxes
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('worker-checkbox')) {
+            updateBulkPanel();
+            // Update select-all state
+            var allCheckboxes = getVisibleCheckboxes();
+            var allChecked = allCheckboxes.every(function(cb) { return cb.checked; });
+            selectAllCheckbox.checked = allChecked && allCheckboxes.length > 0;
+        }
+    });
+
+    // Clear selection
+    document.getElementById('bulk-clear-btn').addEventListener('click', function() {
+        getAllCheckboxes().forEach(function(cb) { cb.checked = false; });
+        selectAllCheckbox.checked = false;
+        updateBulkPanel();
+    });
+
+    // Bulk Assign
+    document.getElementById('bulk-assign-btn').addEventListener('click', function() {
+        var selected = getSelectedWorkers();
+        if (selected.length === 0) return;
+        
+        var alreadyWorking = selected.filter(function(w) { return w.isWorking; });
+        var willBeAssigned = selected.filter(function(w) { return !w.isWorking; });
+        
+        document.getElementById('assign-worker-ids').value = willBeAssigned.map(function(w) { return w.id; }).join(',');
+        
+        // Show already working
+        var alreadyWorkingDiv = document.getElementById('assign-already-working');
+        if (alreadyWorking.length > 0) {
+            alreadyWorkingDiv.style.display = 'block';
+            document.getElementById('assign-already-working-list').innerHTML = alreadyWorking.map(function(w) { 
+                return '• ' + w.name + ' <span class="text-warning">(' + w.workPlace + ')</span>'; 
+            }).join('<br>');
+        } else {
+            alreadyWorkingDiv.style.display = 'none';
+        }
+        
+        // Show will be assigned
+        var willBeAssignedDiv = document.getElementById('assign-will-be-assigned');
+        if (willBeAssigned.length > 0) {
+            willBeAssignedDiv.style.display = 'block';
+            document.getElementById('assign-workers-list').innerHTML = willBeAssigned.map(function(w) { return '• ' + w.name; }).join('<br>');
+            document.getElementById('assign-submit-btn').disabled = false;
+        } else {
+            willBeAssignedDiv.style.display = 'none';
+            document.getElementById('assign-workers-list').innerHTML = '<span class="text-muted">{{ __("Нет работников для устройства") }}</span>';
+            document.getElementById('assign-submit-btn').disabled = true;
+        }
+        
+        new bootstrap.Modal(document.getElementById('bulkAssignModal')).show();
+    });
+
+    // Bulk Dismiss
+    document.getElementById('bulk-dismiss-btn').addEventListener('click', function() {
+        var selected = getSelectedWorkers();
+        if (selected.length === 0) return;
+        
+        var notWorking = selected.filter(function(w) { return !w.isWorking; });
+        var willBeFired = selected.filter(function(w) { return w.isWorking; });
+        
+        document.getElementById('dismiss-worker-ids').value = willBeFired.map(function(w) { return w.id; }).join(',');
+        
+        // Show not working
+        var notWorkingDiv = document.getElementById('dismiss-not-working');
+        if (notWorking.length > 0) {
+            notWorkingDiv.style.display = 'block';
+            document.getElementById('dismiss-not-working-list').innerHTML = notWorking.map(function(w) { return '• ' + w.name; }).join('<br>');
+        } else {
+            notWorkingDiv.style.display = 'none';
+        }
+        
+        // Show will be fired
+        var willBeFiredDiv = document.getElementById('dismiss-will-be-fired');
+        if (willBeFired.length > 0) {
+            willBeFiredDiv.style.display = 'block';
+            document.getElementById('dismiss-workers-list').innerHTML = willBeFired.map(function(w) { 
+                return '• ' + w.name + ' <span class="text-warning">(' + w.workPlace + ')</span>'; 
+            }).join('<br>');
+            document.getElementById('dismiss-submit-btn').disabled = false;
+        } else {
+            willBeFiredDiv.style.display = 'none';
+            document.getElementById('dismiss-workers-list').innerHTML = '<span class="text-muted">{{ __("Нет работников для увольнения") }}</span>';
+            document.getElementById('dismiss-submit-btn').disabled = true;
+        }
+        
+        new bootstrap.Modal(document.getElementById('bulkDismissModal')).show();
+    });
+
+    // Bulk Checkout
+    document.getElementById('bulk-checkout-btn').addEventListener('click', function() {
+        var selected = getSelectedWorkers();
+        if (selected.length === 0) return;
+        
+        var notHoused = selected.filter(function(w) { return !w.isHoused; });
+        var willBeEvicted = selected.filter(function(w) { return w.isHoused; });
+        
+        document.getElementById('checkout-worker-ids').value = willBeEvicted.map(function(w) { return w.id; }).join(',');
+        
+        // Show not housed
+        var notHousedDiv = document.getElementById('checkout-not-housed');
+        if (notHoused.length > 0) {
+            notHousedDiv.style.display = 'block';
+            document.getElementById('checkout-not-housed-list').innerHTML = notHoused.map(function(w) { return '• ' + w.name; }).join('<br>');
+        } else {
+            notHousedDiv.style.display = 'none';
+        }
+        
+        // Show will be evicted
+        var willBeEvictedDiv = document.getElementById('checkout-will-be-evicted');
+        if (willBeEvicted.length > 0) {
+            willBeEvictedDiv.style.display = 'block';
+            document.getElementById('checkout-workers-list').innerHTML = willBeEvicted.map(function(w) { 
+                return '• ' + w.name + ' <span class="text-danger">(' + w.hotel + ')</span>'; 
+            }).join('<br>');
+            document.getElementById('checkout-submit-btn').disabled = false;
+        } else {
+            willBeEvictedDiv.style.display = 'none';
+            document.getElementById('checkout-workers-list').innerHTML = '<span class="text-muted">{{ __("Нет работников для выселения") }}</span>';
+            document.getElementById('checkout-submit-btn').disabled = true;
+        }
+        
+        new bootstrap.Modal(document.getElementById('bulkCheckoutModal')).show();
+    });
+
+    // Update select-all when DataTable redraws (search, pagination, etc.)
+    workersTable.on('datatable.page', function() {
+        selectAllCheckbox.checked = false;
+    });
+    workersTable.on('datatable.search', function() {
+        selectAllCheckbox.checked = false;
+    });
+    workersTable.on('datatable.sort', function() {
+        selectAllCheckbox.checked = false;
+    });
+});
+</script>
+@endpush

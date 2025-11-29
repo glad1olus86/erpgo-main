@@ -806,6 +806,14 @@ Route::group(['middleware' => ['verified']], function () {
     Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::post('/worker/scan-document', [WorkerController::class, 'scanDocument'])
         ->name('worker.scan.document')->middleware(['auth', 'XSS']);
+    
+    // Bulk actions for workers
+    Route::post('/worker/bulk-assign', [WorkerController::class, 'bulkAssign'])
+        ->name('worker.bulk.assign')->middleware(['auth', 'XSS']);
+    Route::post('/worker/bulk-dismiss', [WorkerController::class, 'bulkDismiss'])
+        ->name('worker.bulk.dismiss')->middleware(['auth', 'XSS']);
+    Route::post('/worker/bulk-checkout', [WorkerController::class, 'bulkCheckout'])
+        ->name('worker.bulk.checkout')->middleware(['auth', 'XSS']);
 
     // Worker assignment routes
     Route::post('/worker/{worker}/assign-room', [RoomAssignmentController::class, 'assignWorker'])
@@ -814,6 +822,10 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('worker.unassign.room')->middleware(['auth', 'XSS']);
     Route::post('/room/{room}/assign-worker', [RoomAssignmentController::class, 'assignWorkerToRoom'])
         ->name('room.assign.worker')->middleware(['auth', 'XSS']);
+    Route::post('/room/{room}/assign-workers-bulk', [RoomAssignmentController::class, 'assignWorkersBulk'])
+        ->name('room.assign.workers.bulk')->middleware(['auth', 'XSS']);
+    Route::post('/room/{room}/checkout-bulk', [RoomAssignmentController::class, 'bulkCheckout'])
+        ->name('room.checkout.bulk')->middleware(['auth', 'XSS']);
     Route::get('/room/{room}/assign-form', [RoomAssignmentController::class, 'assignForm'])
         ->name('room.assign.form')->middleware(['auth', 'XSS']);
 
@@ -834,6 +846,10 @@ Route::group(['middleware' => ['verified']], function () {
     // Work Assignment routes
     Route::post('/work-place/{workPlace}/assign-worker', [WorkAssignmentController::class, 'assignWorker'])
         ->name('work-place.assign.worker')->middleware(['auth', 'XSS']);
+    Route::post('/work-place/{workPlace}/assign-workers-bulk', [WorkAssignmentController::class, 'assignWorkersBulk'])
+        ->name('work-place.assign.workers.bulk')->middleware(['auth', 'XSS']);
+    Route::post('/work-place/{workPlace}/dismiss-bulk', [WorkAssignmentController::class, 'dismissBulk'])
+        ->name('work-place.dismiss.bulk')->middleware(['auth', 'XSS']);
     Route::get('/work-place/{workPlace}/assign-form', [WorkAssignmentController::class, 'assignForm'])
         ->name('work-place.assign.form')->middleware(['auth', 'XSS']);
     Route::post('/worker/{worker}/assign-work', [WorkAssignmentController::class, 'assignWorkerFromProfile'])

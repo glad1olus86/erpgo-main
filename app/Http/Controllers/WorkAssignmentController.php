@@ -101,6 +101,71 @@ class WorkAssignmentController extends Controller
     }
 
     /**
+     * Bulk assign workers to a work place.
+     */
+    public function assignWorkersBulk(Request $request, WorkPlace $workPlace)
+    {
+        if (Auth::user()->can('manage work place')) {
+            if ($workPlace->created_by == Auth::user()->creatorId()) {
+                $workerIds = array_filter(explode(',', $request->worker_ids ?? ''));
+                $assigned = 0;
+
+                foreach ($workerIds as $workerId) {
+                    $worker = Worker::where('id', $workerId)
+                        ->where('created_by', Auth::user()->creatorId())
+                        ->first();
+
+                    if (!$worker || $worker->currentWorkAssignment) continue;
+
+                    $assignment = new WorkAssignment();
+                    $assignment->worker_id = $worker->id;
+                    $assignment->work_place_id = $workPlace->id;
+                    $assignment->started_at = now();
+                    $assignment->created_by = Auth::user()->creatorId();
+                    $assignment->save();
+                    $assigned++;
+                }
+
+                return redirect()->back()->with('success', __('Устроено работников: :count', ['count' => $assigned]));
+            }
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+        return redirect()->back()->with('error', __('Permission denied.'));
+    }
+
+    /**
+     * Bulk dismiss workers from a work place.
+     */
+    public function dismissBulk(Request $request, WorkPlace $workPlace)
+    {
+        if (Auth::user()->can('manage work place')) {
+            if ($workPlace->created_by == Auth::user()->creatorId()) {
+                $workerIds = array_filter(explode(',', $request->worker_ids ?? ''));
+                $dismissed = 0;
+
+                foreach ($workerIds as $workerId) {
+                    $worker = Worker::where('id', $workerId)
+                        ->where('created_by', Auth::user()->creatorId())
+                        ->first();
+
+                    if (!$worker) continue;
+
+                    $assignment = $worker->currentWorkAssignment;
+                    if ($assignment && $assignment->work_place_id == $workPlace->id) {
+                        $assignment->ended_at = now();
+                        $assignment->save();
+                        $dismissed++;
+                    }
+                }
+
+                return redirect()->back()->with('success', __('Уволено работников: :count', ['count' => $dismissed]));
+            }
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+        return redirect()->back()->with('error', __('Permission denied.'));
+    }
+
+    /**
      * Assign a worker to a work place from worker profile.
      */
     public function assignWorkerFromProfile(Request $request, Worker $worker)

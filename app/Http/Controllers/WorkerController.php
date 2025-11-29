@@ -13,7 +13,9 @@ class WorkerController extends Controller
     public function index()
     {
         if (Auth::user()->can('manage worker')) {
-            $workers = Worker::where('created_by', '=', Auth::user()->creatorId())->get();
+            $workers = Worker::where('created_by', '=', Auth::user()->creatorId())
+                ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel'])
+                ->get();
             return view('worker.index', compact('workers'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
@@ -245,5 +247,139 @@ class WorkerController extends Controller
                 'error' => __('Ошибка сканирования: ') . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Bulk assign workers to a work place
+     */
+    public function bulkAssign(Request $request)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'worker_ids' => 'required|string',
+            'work_place_id' => 'required|exists:work_places,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        $workerIds = explode(',', $request->worker_ids);
+        $workPlace = \App\Models\WorkPlace::find($request->work_place_id);
+
+        if ($workPlace->created_by != Auth::user()->creatorId()) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        $assigned = 0;
+        $skipped = 0;
+
+        foreach ($workerIds as $workerId) {
+            $worker = Worker::where('id', $workerId)
+                ->where('created_by', Auth::user()->creatorId())
+                ->first();
+
+            if (!$worker) continue;
+
+            // Skip if already has active work assignment
+            if ($worker->currentWorkAssignment) {
+                $skipped++;
+                continue;
+            }
+
+            $assignment = new \App\Models\WorkAssignment();
+            $assignment->worker_id = $worker->id;
+            $assignment->work_place_id = $workPlace->id;
+            $assignment->started_at = now();
+            $assignment->created_by = Auth::user()->creatorId();
+            $assignment->save();
+            $assigned++;
+        }
+
+        $message = __('Устроено работников: :assigned', ['assigned' => $assigned]);
+        if ($skipped > 0) {
+            $message .= '. ' . __('Пропущено (уже работают): :skipped', ['skipped' => $skipped]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * Bulk dismiss workers from their work places
+     */
+    public function bulkDismiss(Request $request)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'worker_ids' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        $workerIds = explode(',', $request->worker_ids);
+        $dismissed = 0;
+
+        foreach ($workerIds as $workerId) {
+            $worker = Worker::where('id', $workerId)
+                ->where('created_by', Auth::user()->creatorId())
+                ->first();
+
+            if (!$worker) continue;
+
+            $assignment = $worker->currentWorkAssignment;
+            if ($assignment) {
+                $assignment->ended_at = now();
+                $assignment->save();
+                $dismissed++;
+            }
+        }
+
+        return redirect()->back()->with('success', __('Уволено работников: :count', ['count' => $dismissed]));
+    }
+
+    /**
+     * Bulk checkout workers from their rooms
+     */
+    public function bulkCheckout(Request $request)
+    {
+        if (!Auth::user()->can('manage worker')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'worker_ids' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        $workerIds = explode(',', $request->worker_ids);
+        $checkedOut = 0;
+
+        foreach ($workerIds as $workerId) {
+            $worker = Worker::where('id', $workerId)
+                ->where('created_by', Auth::user()->creatorId())
+                ->first();
+
+            if (!$worker) continue;
+
+            $assignment = $worker->currentAssignment;
+            if ($assignment) {
+                $assignment->check_out_date = now();
+                $assignment->save();
+                $checkedOut++;
+            }
+        }
+
+        return redirect()->back()->with('success', __('Выселено работников: :count', ['count' => $checkedOut]));
     }
 }
