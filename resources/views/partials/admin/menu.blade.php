@@ -1426,6 +1426,15 @@
                     </li>
                 @endcan
 
+                @can('manage worker')
+                    <li class="dash-item {{ Request::segment(1) == 'notifications' ? 'active' : '' }}">
+                        <a href="{{ route('notifications.index') }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-bell"></i></span>
+                            <span class="dash-mtext">{{ __('Уведомления') }}</span>
+                        </a>
+                    </li>
+                @endcan
+
 
                 <!--------------------- Start POs System ----------------------------------->
                 @if (!empty($userPlan) && $userPlan->pos_nevershow == 1)

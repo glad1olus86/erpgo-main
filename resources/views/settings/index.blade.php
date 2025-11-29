@@ -395,6 +395,10 @@
                                 class="list-group-item list-group-item-action border-0">{{ __('Chat GPT Settings') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div>
                             </a>
+                            <a href="#notification-settings"
+                                class="list-group-item list-group-item-action border-0">{{ __('Notification Settings') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div>
+                            </a>
 
                         </div>
                     </div>
@@ -4153,6 +4157,72 @@
                         <div class="card-footer p-3 text-end">
                             <input class="btn btn-print-invoice btn-primary" type="submit"
                                 value="{{ __('Save Changes') }}">
+                        </div>
+                        {{ Form::close() }}
+                    </div>
+
+                    {{-- Notification Settings --}}
+                    @php
+                        $notificationSettings = \App\Services\NotificationService::getSettings();
+                    @endphp
+                    <div id="notification-settings" class="card">
+                        <div class="card-header p-3">
+                            <h5>{{ __('Notification Settings') }}</h5>
+                            <small class="text-muted">{{ __('Настройки системных уведомлений для всех пользователей') }}</small>
+                        </div>
+                        {{ Form::open(['route' => 'notifications.settings.save', 'method' => 'post', 'class' => 'mb-0']) }}
+                        <div class="card-body p-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Уведомления включены') }}</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input" name="notifications_enabled" 
+                                                id="notifications_enabled" {{ ($notificationSettings['notifications_enabled'] ?? 'on') == 'on' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="notifications_enabled">{{ __('Включить систему уведомлений') }}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="notification_poll_interval">{{ __('Интервал проверки браузером (минуты)') }}</label>
+                                        <input type="number" class="form-control" name="notification_poll_interval" 
+                                            id="notification_poll_interval" min="1" max="60" 
+                                            value="{{ $notificationSettings['notification_poll_interval'] ?? 1 }}">
+                                        <small class="text-muted">{{ __('Как часто браузер проверяет новые уведомления') }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="notification_create_interval">{{ __('Интервал создания уведомлений (минуты)') }}</label>
+                                        <input type="number" class="form-control" name="notification_create_interval" 
+                                            id="notification_create_interval" min="1" max="1440" 
+                                            value="{{ $notificationSettings['notification_create_interval'] ?? 60 }}">
+                                        <small class="text-muted">{{ __('Как часто создавать новые уведомления (например, 60 = раз в час)') }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="notification_hotel_occupancy_threshold">{{ __('Порог заполненности отеля (%)') }}</label>
+                                        <input type="number" class="form-control" name="notification_hotel_occupancy_threshold" 
+                                            id="notification_hotel_occupancy_threshold" min="1" max="100" 
+                                            value="{{ $notificationSettings['notification_hotel_occupancy_threshold'] ?? 50 }}">
+                                        <small class="text-muted">{{ __('Уведомление если заполненность ниже этого процента') }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="notification_unemployed_days">{{ __('Дней без работы') }}</label>
+                                        <input type="number" class="form-control" name="notification_unemployed_days" 
+                                            id="notification_unemployed_days" min="1" max="30" 
+                                            value="{{ $notificationSettings['notification_unemployed_days'] ?? 3 }}">
+                                        <small class="text-muted">{{ __('Уведомление если работник живёт в отеле без работы дольше этого срока') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-3 text-end">
+                            <input class="btn btn-print-invoice btn-primary" type="submit" value="{{ __('Save Changes') }}">
                         </div>
                         {{ Form::close() }}
                     </div>

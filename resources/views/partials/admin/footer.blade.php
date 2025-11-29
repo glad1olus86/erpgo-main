@@ -76,7 +76,117 @@
 
 @stack('old-datatable-js')
 
+{{-- System Notifications Polling --}}
+@if(Auth::check() && Auth::user()->type != 'client')
+@php
+    $notifSettings = \App\Services\NotificationService::getSettings();
+    $pollIntervalMs = ((int)($notifSettings['notification_poll_interval'] ?? 5)) * 60 * 1000;
+@endphp
+<script>
+(function() {
+    var notificationBadge = document.getElementById('notification-badge');
+    var notificationList = document.getElementById('notification-list');
+    var markAllReadBtn = document.getElementById('mark-all-read');
+    var pollInterval = {{ $pollIntervalMs }}; // From settings
+    var pollTimer = null;
+    var checkUrl = '{{ route("notifications.check") }}';
+    var markAllUrl = '{{ route("notifications.read.all") }}';
+    var csrfToken = '{{ csrf_token() }}';
 
+    // Start polling with dynamic interval
+    function startPolling() {
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(checkNotifications, pollInterval);
+        console.log('Notification polling started: every ' + (pollInterval/1000) + ' seconds');
+    }
+
+    function updateNotifications(data) {
+        if (!notificationBadge || !notificationList) return;
+
+        // Update badge
+        if (data.count > 0) {
+            notificationBadge.textContent = data.count > 99 ? '99+' : data.count;
+            notificationBadge.style.display = 'inline-block';
+        } else {
+            notificationBadge.style.display = 'none';
+        }
+
+        // Update poll interval from server if changed
+        if (data.poll_interval && data.poll_interval !== pollInterval) {
+            pollInterval = data.poll_interval;
+            startPolling(); // Restart with new interval
+            console.log('Poll interval updated to: ' + (pollInterval/1000) + ' seconds');
+        }
+
+        // Update notification list
+        if (data.notifications && data.notifications.length > 0) {
+            var html = '';
+            data.notifications.forEach(function(n) {
+                html += '<a href="' + n.link + '" class="dropdown-item py-2 border-bottom">';
+                html += '<div class="d-flex align-items-start">';
+                html += '<span class="avatar avatar-sm bg-' + n.color + '-subtle me-2">';
+                html += '<i class="' + n.icon + ' text-' + n.color + '"></i></span>';
+                html += '<div class="flex-grow-1">';
+                html += '<p class="mb-0 fw-medium">' + n.title + '</p>';
+                html += '<small class="text-muted">' + n.message + '</small><br>';
+                html += '<small class="text-muted">' + n.time + '</small>';
+                html += '</div></div></a>';
+            });
+            notificationList.innerHTML = html;
+        } else {
+            notificationList.innerHTML = '<div class="text-center py-3 text-muted"><i class="ti ti-bell-off"></i> {{ __("Нет уведомлений") }}</div>';
+        }
+    }
+
+    function checkNotifications() {
+        fetch(checkUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                updateNotifications(data);
+            }
+        })
+        .catch(function(error) {
+            console.log('Notification check error:', error);
+        });
+    }
+
+    // Mark all as read
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch(markAllUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    checkNotifications();
+                }
+            });
+        });
+    }
+
+    // Initial check after 2 seconds
+    setTimeout(function() {
+        checkNotifications();
+        startPolling();
+    }, 2000);
+})();
+</script>
+@endif
 
 <script>
 

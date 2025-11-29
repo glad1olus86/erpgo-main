@@ -841,6 +841,20 @@ Route::group(['middleware' => ['verified']], function () {
     Route::post('/worker/{worker}/dismiss', [WorkAssignmentController::class, 'dismissWorker'])
         ->name('worker.dismiss')->middleware(['auth', 'XSS']);
 
+    // System Notifications routes
+    Route::get('/notifications/check', [App\Http\Controllers\NotificationController::class, 'check'])
+        ->name('notifications.check')->middleware(['auth']);
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
+        ->name('notifications.index')->middleware(['auth', 'XSS']);
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])
+        ->name('notifications.read')->middleware(['auth']);
+    Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.read.all')->middleware(['auth']);
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])
+        ->name('notifications.destroy')->middleware(['auth']);
+    Route::post('/notifications/settings', [App\Http\Controllers\NotificationController::class, 'saveSettings'])
+        ->name('notifications.settings.save')->middleware(['auth']);
+
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');
     Route::get('import/deals/modal', [DealController::class, 'fileImportModal'])->name('deals.import.modal');
