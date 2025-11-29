@@ -804,6 +804,8 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/deals/list', [DealController::class, 'deal_list'])->name('deals.list')->middleware(['auth', 'XSS']);
     Route::get('/deals/export', [DealController::class, 'export'])->name('deals.export')->middleware(['auth', 'XSS']);
     Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::post('/worker/scan-document', [WorkerController::class, 'scanDocument'])
+        ->name('worker.scan.document')->middleware(['auth', 'XSS']);
 
     // Worker assignment routes
     Route::post('/worker/{worker}/assign-room', [RoomAssignmentController::class, 'assignWorker'])

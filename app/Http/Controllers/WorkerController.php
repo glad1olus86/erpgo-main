@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Worker;
+use App\Services\DocumentScannerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -92,6 +93,16 @@ class WorkerController extends Controller
             $worker->email = $request->email;
             $worker->created_by = Auth::user()->creatorId();
 
+            // Check if we have a pre-scanned document from the scanner
+            if ($request->filled('scanned_document_path')) {
+                $scannedFile = $request->scanned_document_path;
+                // Verify file exists in uploads folder
+                if (file_exists(public_path('uploads/worker_documents/' . $scannedFile))) {
+                    $worker->document_photo = $scannedFile;
+                }
+            }
+            
+            // If user uploaded a new document, it overrides the scanned one
             if ($request->hasFile('document_photo')) {
                 $fileName = time() . '_doc_' . $request->document_photo->getClientOriginalName();
                 $request->document_photo->move(public_path('uploads/worker_documents'), $fileName);
@@ -191,6 +202,48 @@ class WorkerController extends Controller
             }
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    /**
+     * Scan document image and extract worker data using Gemini API
+     * Also saves the scanned document for later attachment to worker
+     */
+    public function scanDocument(Request $request)
+    {
+        if (!Auth::user()->can('create worker')) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'document_image' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            $image = $request->file('document_image');
+            $imagePath = $image->getRealPath();
+
+            $scanner = new DocumentScannerService();
+            $data = $scanner->scanDocument($imagePath);
+
+            // Save the scanned document to uploads folder
+            $fileName = time() . '_scan_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/worker_documents'), $fileName);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'scanned_document' => $fileName  // Return saved filename
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => __('Ошибка сканирования: ') . $e->getMessage()
+            ], 500);
         }
     }
 }
