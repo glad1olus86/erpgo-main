@@ -39,4 +39,12 @@ class WorkAssignment extends Model
     {
         return $query->whereNull('ended_at');
     }
+
+    /**
+     * Get the user who created this assignment.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

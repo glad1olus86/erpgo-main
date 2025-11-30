@@ -1,16 +1,41 @@
-<div class="mb-3 px-2 d-flex justify-content-between align-items-center">
-    <div>
-        <span class="text-muted">
-            {{ __('Комната') }}: <strong>{{ $room->room_number }}</strong> | 
-            {{ __('Занято') }}: <strong>{{ $room->currentAssignments->count() }}</strong> {{ __('из') }} {{ $room->capacity }}
+<div class="mb-3 px-2">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+            <span class="text-muted">
+                {{ __('Комната') }}: <strong>{{ $room->room_number }}</strong> | 
+                {{ __('Занято') }}: <strong>{{ $room->currentAssignments->count() }}</strong> {{ __('из') }} {{ $room->capacity }}
+            </span>
+        </div>
+        @if (!$room->isFull())
+            <a href="#" data-url="{{ route('room.assign.form', $room->id) }}" data-ajax-popup="true"
+                data-title="{{ __('Заселить работников') }}" data-size="lg" class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i> {{ __('Заселить') }}
+            </a>
+        @endif
+    </div>
+    <div class="d-flex gap-3 flex-wrap">
+        <span class="badge bg-secondary">
+            <i class="ti ti-currency-euro me-1"></i>{{ __('Цена/месяц') }}: {{ number_format($room->monthly_price, 2) }} €
+        </span>
+        @php
+            $paymentLabels = [
+                'worker' => __('Платит сам'),
+                'agency' => __('Платит агенство'),
+                'partial' => __('Платит частично'),
+            ];
+            $paymentColors = [
+                'worker' => 'info',
+                'agency' => 'success',
+                'partial' => 'warning',
+            ];
+        @endphp
+        <span class="badge bg-{{ $paymentColors[$room->payment_type] ?? 'secondary' }}">
+            <i class="ti ti-wallet me-1"></i>{{ $paymentLabels[$room->payment_type] ?? $room->payment_type }}
+            @if($room->payment_type == 'partial' && $room->partial_amount)
+                ({{ number_format($room->partial_amount, 2) }} €)
+            @endif
         </span>
     </div>
-    @if (!$room->isFull())
-        <a href="#" data-url="{{ route('room.assign.form', $room->id) }}" data-ajax-popup="true"
-            data-title="{{ __('Заселить работников') }}" data-size="lg" class="btn btn-sm btn-primary">
-            <i class="ti ti-plus"></i> {{ __('Заселить') }}
-        </a>
-    @endif
 </div>
 
 @if($room->currentAssignments->count() > 0)

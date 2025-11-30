@@ -89,9 +89,9 @@
                     <li class="dropdown dash-h-item drp-notification" id="notification-dropdown">
                         <a class="dash-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                             <i class="ti ti-bell"></i>
-                            <span class="bg-warning dash-h-badge notification-badge" id="notification-badge" style="display: none;">0</span>
+                            <span class="bg-danger text-white notification-badge" id="notification-badge" style="display: none; position: absolute; top: 5px; right: 5px; min-width: 18px; height: 18px; border-radius: 50%; font-size: 11px; font-weight: bold; line-height: 18px; text-align: center; padding: 0 4px;">0</span>
                         </a>
-                        <div class="dropdown-menu dash-h-dropdown dropdown-menu-end notification-dropdown-menu" style="width: 350px; max-height: 400px; overflow-y: auto;">
+                        <div class="dropdown-menu dash-h-dropdown dropdown-menu-end notification-dropdown-menu" style="width: 420px; max-height: 450px; overflow-y: auto;">
                             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
                                 <h6 class="mb-0">{{ __('Уведомления') }}</h6>
                                 <a href="#" id="mark-all-read" class="text-primary small">{{ __('Прочитать все') }}</a>

@@ -4167,8 +4167,15 @@
                     @endphp
                     <div id="notification-settings" class="card">
                         <div class="card-header p-3">
-                            <h5>{{ __('Notification Settings') }}</h5>
-                            <small class="text-muted">{{ __('Настройки системных уведомлений для всех пользователей') }}</small>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">{{ __('Notification Settings') }}</h5>
+                                    <small class="text-muted">{{ __('Настройки системных уведомлений для всех пользователей') }}</small>
+                                </div>
+                                <a href="{{ route('notification-rules.index') }}" class="btn btn-sm btn-primary">
+                                    <i class="ti ti-puzzle me-1"></i>{{ __('Конструктор уведомлений') }}
+                                </a>
+                            </div>
                         </div>
                         {{ Form::open(['route' => 'notifications.settings.save', 'method' => 'post', 'class' => 'mb-0']) }}
                         <div class="card-body p-3">

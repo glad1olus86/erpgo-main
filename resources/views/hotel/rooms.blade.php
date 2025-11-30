@@ -33,17 +33,31 @@
                                             <tr>
                                                 <th>{{ __('Номер комнаты') }}</th>
                                                 <th>{{ __('Вместимость') }}</th>
-                                                <th>{{ __('Цена') }}</th>
+                                                <th>{{ __('Цена/месяц') }}</th>
+                                                <th>{{ __('Кто платит') }}</th>
                                                 <th width="200px">{{ __('Действие') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody class="font-style">
+                                            @php
+                                                $paymentLabels = [
+                                                    'worker' => __('Платит сам'),
+                                                    'agency' => __('Платит агенство'),
+                                                    'partial' => __('Платит частично'),
+                                                ];
+                                            @endphp
                                             @foreach ($rooms as $room)
                                                 <tr>
                                                     <td>{{ $room->room_number }}</td>
                                                     <td>{{ $room->currentAssignments->count() }} / {{ $room->capacity }}
                                                     </td>
-                                                    <td>{{ $room->price }}</td>
+                                                    <td>{{ number_format($room->monthly_price, 2) }} €</td>
+                                                    <td>
+                                                        {{ $paymentLabels[$room->payment_type] ?? $room->payment_type }}
+                                                        @if($room->payment_type == 'partial' && $room->partial_amount)
+                                                            <br><small class="text-muted">({{ number_format($room->partial_amount, 2) }} €)</small>
+                                                        @endif
+                                                    </td>
 
                                                     <td class="Action">
                                                         <span>

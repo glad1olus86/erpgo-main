@@ -44,26 +44,33 @@ class RoomController extends Controller
     public function store(Request $request)
     {
         if (Auth::user()->can('create hotel')) {
-            $validator = \Validator::make(
-                $request->all(),
-                [
-                    'hotel_id' => 'required',
-                    'room_number' => 'required|max:20',
-                    'capacity' => 'required|integer',
-                    'price' => 'required|numeric',
-                ]
-            );
+            $rules = [
+                'hotel_id' => 'required',
+                'room_number' => 'required|max:20',
+                'capacity' => 'required|integer|min:1',
+                'monthly_price' => 'required|numeric|min:0',
+                'payment_type' => 'required|in:worker,agency,partial',
+            ];
+            
+            // Если выбран частичный платёж, требуем сумму
+            if ($request->payment_type === 'partial') {
+                $rules['partial_amount'] = 'required|numeric|min:0';
+            }
+            
+            $validator = \Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 $messages = $validator->getMessageBag();
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $room             = new Room();
-            $room->hotel_id   = $request->hotel_id;
-            $room->room_number = $request->room_number;
-            $room->capacity   = $request->capacity;
-            $room->price      = $request->price;
-            $room->created_by = Auth::user()->creatorId();
+            $room                = new Room();
+            $room->hotel_id      = $request->hotel_id;
+            $room->room_number   = $request->room_number;
+            $room->capacity      = $request->capacity;
+            $room->monthly_price = $request->monthly_price;
+            $room->payment_type  = $request->payment_type;
+            $room->partial_amount = $request->payment_type === 'partial' ? $request->partial_amount : null;
+            $room->created_by    = Auth::user()->creatorId();
             $room->save();
 
             return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Номер успешно создан.'));
@@ -113,24 +120,30 @@ class RoomController extends Controller
     {
         if (Auth::user()->can('edit hotel')) {
             if ($room->created_by == Auth::user()->creatorId()) {
-                $validator = \Validator::make(
-                    $request->all(),
-                    [
-                        'hotel_id' => 'required',
-                        'room_number' => 'required|max:20',
-                        'capacity' => 'required|integer',
-                        'price' => 'required|numeric',
-                    ]
-                );
+                $rules = [
+                    'hotel_id' => 'required',
+                    'room_number' => 'required|max:20',
+                    'capacity' => 'required|integer|min:1',
+                    'monthly_price' => 'required|numeric|min:0',
+                    'payment_type' => 'required|in:worker,agency,partial',
+                ];
+                
+                if ($request->payment_type === 'partial') {
+                    $rules['partial_amount'] = 'required|numeric|min:0';
+                }
+                
+                $validator = \Validator::make($request->all(), $rules);
                 if ($validator->fails()) {
                     $messages = $validator->getMessageBag();
                     return redirect()->back()->with('error', $messages->first());
                 }
 
-                $room->hotel_id    = $request->hotel_id;
-                $room->room_number = $request->room_number;
-                $room->capacity    = $request->capacity;
-                $room->price       = $request->price;
+                $room->hotel_id      = $request->hotel_id;
+                $room->room_number   = $request->room_number;
+                $room->capacity      = $request->capacity;
+                $room->monthly_price = $request->monthly_price;
+                $room->payment_type  = $request->payment_type;
+                $room->partial_amount = $request->payment_type === 'partial' ? $request->partial_amount : null;
                 $room->save();
 
                 return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Номер успешно обновлён.'));

@@ -6,6 +6,9 @@ use App\Http\Controllers\HotelController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\WorkPlaceController;
 use App\Http\Controllers\WorkAssignmentController;
+use App\Http\Controllers\WorkerExportController;
+use App\Http\Controllers\WorkPlaceExportController;
+use App\Http\Controllers\HotelExportController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AamarpayController;
 use App\Http\Controllers\AiTemplateController;
@@ -803,17 +806,28 @@ Route::group(['middleware' => ['verified']], function () {
     Route::put('/deals/{id}/permission/{cid}', [DealController::class, 'permissionStore'])->name('deals.client.permissions.store')->middleware(['auth', 'XSS']);
     Route::get('/deals/list', [DealController::class, 'deal_list'])->name('deals.list')->middleware(['auth', 'XSS']);
     Route::get('/deals/export', [DealController::class, 'export'])->name('deals.export')->middleware(['auth', 'XSS']);
-    Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
+
+    // Worker export routes (must be before resource route)
+    Route::get('/worker/export', [WorkerExportController::class, 'showExportModal'])
+        ->name('worker.export.modal')->middleware(['auth', 'XSS']);
+    Route::post('/worker/export/pdf', [WorkerExportController::class, 'exportPdf'])
+        ->name('worker.export.pdf')->middleware(['auth', 'XSS']);
+    Route::post('/worker/export/excel', [WorkerExportController::class, 'exportExcel'])
+        ->name('worker.export.excel')->middleware(['auth', 'XSS']);
+
+    // Worker scan document (must be before resource route)
     Route::post('/worker/scan-document', [WorkerController::class, 'scanDocument'])
         ->name('worker.scan.document')->middleware(['auth', 'XSS']);
     
-    // Bulk actions for workers
+    // Bulk actions for workers (must be before resource route)
     Route::post('/worker/bulk-assign', [WorkerController::class, 'bulkAssign'])
         ->name('worker.bulk.assign')->middleware(['auth', 'XSS']);
     Route::post('/worker/bulk-dismiss', [WorkerController::class, 'bulkDismiss'])
         ->name('worker.bulk.dismiss')->middleware(['auth', 'XSS']);
     Route::post('/worker/bulk-checkout', [WorkerController::class, 'bulkCheckout'])
         ->name('worker.bulk.checkout')->middleware(['auth', 'XSS']);
+
+    Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
 
     // Worker assignment routes
     Route::post('/worker/{worker}/assign-room', [RoomAssignmentController::class, 'assignWorker'])
@@ -829,6 +843,14 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/room/{room}/assign-form', [RoomAssignmentController::class, 'assignForm'])
         ->name('room.assign.form')->middleware(['auth', 'XSS']);
 
+    // Hotel export routes (must be before resource route)
+    Route::get('/hotel/export', [HotelExportController::class, 'showExportModal'])
+        ->name('hotel.export.modal')->middleware(['auth', 'XSS']);
+    Route::post('/hotel/export/pdf', [HotelExportController::class, 'exportPdf'])
+        ->name('hotel.export.pdf')->middleware(['auth', 'XSS']);
+    Route::post('/hotel/export/excel', [HotelExportController::class, 'exportExcel'])
+        ->name('hotel.export.excel')->middleware(['auth', 'XSS']);
+
     Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('/hotel/{hotel}/rooms', [HotelController::class, 'showRooms'])->name('hotel.rooms')->middleware(['auth', 'XSS', 'revalidate']);
 
@@ -837,6 +859,14 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('hotel.available.rooms')->middleware(['auth', 'XSS']);
 
     Route::resource('room', RoomController::class)->middleware(['auth', 'XSS', 'revalidate']);
+
+    // Work Place export routes (must be before resource route)
+    Route::get('/work-place/export', [WorkPlaceExportController::class, 'showExportModal'])
+        ->name('work-place.export.modal')->middleware(['auth', 'XSS']);
+    Route::post('/work-place/export/pdf', [WorkPlaceExportController::class, 'exportPdf'])
+        ->name('work-place.export.pdf')->middleware(['auth', 'XSS']);
+    Route::post('/work-place/export/excel', [WorkPlaceExportController::class, 'exportExcel'])
+        ->name('work-place.export.excel')->middleware(['auth', 'XSS']);
 
     // Work Place routes
     Route::resource('work-place', WorkPlaceController::class)->middleware(['auth', 'XSS', 'revalidate']);
@@ -870,6 +900,24 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('notifications.destroy')->middleware(['auth']);
     Route::post('/notifications/settings', [App\Http\Controllers\NotificationController::class, 'saveSettings'])
         ->name('notifications.settings.save')->middleware(['auth']);
+
+    // Notification Rules (Constructor)
+    Route::get('/notification-rules', [App\Http\Controllers\NotificationRuleController::class, 'index'])
+        ->name('notification-rules.index')->middleware(['auth']);
+    Route::get('/notification-rules/create', [App\Http\Controllers\NotificationRuleController::class, 'create'])
+        ->name('notification-rules.create')->middleware(['auth']);
+    Route::post('/notification-rules', [App\Http\Controllers\NotificationRuleController::class, 'store'])
+        ->name('notification-rules.store')->middleware(['auth']);
+    Route::get('/notification-rules/{notificationRule}/edit', [App\Http\Controllers\NotificationRuleController::class, 'edit'])
+        ->name('notification-rules.edit')->middleware(['auth']);
+    Route::put('/notification-rules/{notificationRule}', [App\Http\Controllers\NotificationRuleController::class, 'update'])
+        ->name('notification-rules.update')->middleware(['auth']);
+    Route::delete('/notification-rules/{notificationRule}', [App\Http\Controllers\NotificationRuleController::class, 'destroy'])
+        ->name('notification-rules.destroy')->middleware(['auth']);
+    Route::post('/notification-rules/{notificationRule}/toggle', [App\Http\Controllers\NotificationRuleController::class, 'toggle'])
+        ->name('notification-rules.toggle')->middleware(['auth']);
+    Route::get('/notification-rules/conditions', [App\Http\Controllers\NotificationRuleController::class, 'getConditions'])
+        ->name('notification-rules.conditions')->middleware(['auth']);
 
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');

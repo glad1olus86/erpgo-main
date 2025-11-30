@@ -18,6 +18,14 @@
 
         <div class="col-12">
             <div class="my-3 d-flex justify-content-end">
+                @can('manage hotel')
+                    <a href="#" data-url="{{ route('hotel.export.modal') }}" data-ajax-popup="true"
+                        data-title="{{ __('Экспорт отелей') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
+                        data-size="lg"
+                        class="btn btn-sm btn-secondary me-1">
+                        <i class="ti ti-file-export"></i>
+                    </a>
+                @endcan
                 @can('create hotel')
                     <a href="#" data-url="{{ route('hotel.create') }}" data-ajax-popup="true"
                         data-title="{{ __('Создать новый отель') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"

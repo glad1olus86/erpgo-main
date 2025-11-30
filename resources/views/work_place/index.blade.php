@@ -16,6 +16,14 @@
     <div class="row">
         <div class="col-12">
             <div class="my-3 d-flex justify-content-end">
+                @can('manage work place')
+                    <a href="#" data-url="{{ route('work-place.export.modal') }}" data-ajax-popup="true"
+                        data-title="{{ __('Экспорт рабочих мест') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
+                        data-size="lg"
+                        class="btn btn-sm btn-secondary me-1">
+                        <i class="ti ti-file-export"></i>
+                    </a>
+                @endcan
                 @can('create work place')
                     <a href="#" data-url="{{ route('work-place.create') }}" data-ajax-popup="true"
                         data-title="{{ __('Создать рабочее место') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"

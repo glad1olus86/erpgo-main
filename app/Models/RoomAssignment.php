@@ -70,4 +70,12 @@ class RoomAssignment extends Model
     {
         return $this->check_out_date === null;
     }
+
+    /**
+     * Get the user who created this assignment.
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

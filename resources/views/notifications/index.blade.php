@@ -40,7 +40,7 @@
                                             <h6 class="mb-1 {{ !$notification->is_read ? 'fw-bold' : '' }}">
                                                 {{ $notification->title }}
                                             </h6>
-                                            <p class="mb-1 text-muted">{{ $notification->message }}</p>
+                                            <p class="mb-1 text-muted" style="white-space: pre-line;">{{ $notification->message }}</p>
                                             <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
                                         </div>
                                         <div class="btn-group">

@@ -13,6 +13,7 @@ class SystemNotification extends Model
         'message',
         'data',
         'link',
+        'severity',
         'is_read',
         'created_by',
     ];
@@ -25,6 +26,11 @@ class SystemNotification extends Model
     // Notification types
     const TYPE_HOTEL_OCCUPANCY = 'hotel_occupancy';
     const TYPE_WORKER_UNEMPLOYED = 'worker_unemployed';
+
+    // Severity levels
+    const SEVERITY_INFO = 'info';
+    const SEVERITY_WARNING = 'warning';
+    const SEVERITY_DANGER = 'danger';
 
     /**
      * Scope for current user's notifications (multi-tenancy)
@@ -59,10 +65,19 @@ class SystemNotification extends Model
     }
 
     /**
-     * Get icon based on type
+     * Get icon based on type/severity
      */
     public function getIconAttribute()
     {
+        // For custom rules, use severity-based icons
+        if (str_starts_with($this->type, 'custom_rule_')) {
+            return match($this->severity) {
+                self::SEVERITY_WARNING => 'ti ti-alert-triangle',
+                self::SEVERITY_DANGER => 'ti ti-alert-circle',
+                default => 'ti ti-info-circle',
+            };
+        }
+
         return match($this->type) {
             self::TYPE_HOTEL_OCCUPANCY => 'ti ti-building',
             self::TYPE_WORKER_UNEMPLOYED => 'ti ti-user-off',
@@ -71,10 +86,15 @@ class SystemNotification extends Model
     }
 
     /**
-     * Get color based on type
+     * Get color based on type/severity
      */
     public function getColorAttribute()
     {
+        // For custom rules, use severity
+        if (str_starts_with($this->type, 'custom_rule_') && $this->severity) {
+            return $this->severity;
+        }
+
         return match($this->type) {
             self::TYPE_HOTEL_OCCUPANCY => 'warning',
             self::TYPE_WORKER_UNEMPLOYED => 'danger',

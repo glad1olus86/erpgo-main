@@ -1586,6 +1586,12 @@
                                         class="dash-link">{{ __('Referral Program') }}</a>
                                 </li>
 
+                                <li
+                                    class="dash-item{{ Request::route()->getName() == 'notification-rules.index' ? ' active' : '' }}">
+                                    <a href="{{ route('notification-rules.index') }}"
+                                        class="dash-link">{{ __('Конструктор уведомлений') }}</a>
+                                </li>
+
                                 @if (Gate::check('manage order') && Auth::user()->type == 'company')
                                     <li class="dash-item {{ Request::segment(1) == 'order' ? 'active' : '' }}">
                                         <a href="{{ route('order.index') }}"

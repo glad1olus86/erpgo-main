@@ -128,7 +128,7 @@
                 html += '<i class="' + n.icon + ' text-' + n.color + '"></i></span>';
                 html += '<div class="flex-grow-1">';
                 html += '<p class="mb-0 fw-medium">' + n.title + '</p>';
-                html += '<small class="text-muted">' + n.message + '</small><br>';
+                html += '<small class="text-muted" style="white-space: pre-line; display: block;">' + n.message + '</small>';
                 html += '<small class="text-muted">' + n.time + '</small>';
                 html += '</div></div></a>';
             });

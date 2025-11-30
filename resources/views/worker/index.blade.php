@@ -11,6 +11,14 @@
 
 @section('action-btn')
     <div class="float-end">
+        @can('manage worker')
+            <a href="#" data-url="{{ route('worker.export.modal') }}" data-ajax-popup="true"
+                data-title="{{ __('Экспорт работников') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
+                data-size="lg"
+                class="btn btn-sm btn-secondary me-1">
+                <i class="ti ti-file-export"></i>
+            </a>
+        @endcan
         @can('create worker')
             <a href="#" data-url="{{ route('worker.create') }}" data-ajax-popup="true"
                 data-title="{{ __('Добавить нового работника') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"
