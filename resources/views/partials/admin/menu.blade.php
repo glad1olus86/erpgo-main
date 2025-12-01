@@ -1320,9 +1320,7 @@
 
                 @if (
                     \Auth::user()->type != 'super admin' &&
-                        (Gate::check('manage user_nevershow') ||
-                            Gate::check('manage role_nevershow') ||
-                            Gate::check('manage client_nevershow')))
+                        (Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'users' ||
                         Request::segment(1) == 'roles' ||
@@ -1412,6 +1410,15 @@
                         <a href="{{ route('worker.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-user"></i></span>
                             <span class="dash-mtext">{{ __('Работники') }}</span>
+                        </a>
+                    </li>
+                @endcan
+
+                @can('cashbox_access')
+                    <li class="dash-item {{ Request::segment(1) == 'cashbox' ? 'active' : '' }}">
+                        <a href="{{ route('cashbox.index') }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-cash"></i></span>
+                            <span class="dash-mtext">{{ __('Касса') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1591,6 +1598,14 @@
                                     <a href="{{ route('notification-rules.index') }}"
                                         class="dash-link">{{ __('Конструктор уведомлений') }}</a>
                                 </li>
+
+                                @can('cashbox_access')
+                                    <li
+                                        class="dash-item{{ Request::route()->getName() == 'cashbox.settings' ? ' active' : '' }}">
+                                        <a href="{{ route('cashbox.settings') }}"
+                                            class="dash-link">{{ __('Настройки кассы') }}</a>
+                                    </li>
+                                @endcan
 
                                 @if (Gate::check('manage order') && Auth::user()->type == 'company')
                                     <li class="dash-item {{ Request::segment(1) == 'order' ? 'active' : '' }}">

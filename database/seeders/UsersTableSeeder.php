@@ -3168,6 +3168,49 @@ class UsersTableSeeder extends Seeder
                 "created_at" => date('Y-m-d H:i:s'),
                 "updated_at" => date('Y-m-d H:i:s'),
             ],
+            // Cashbox permissions
+            [
+                'name' => 'cashbox_access',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'cashbox_deposit',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'cashbox_distribute',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'cashbox_refund',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'cashbox_self_salary',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'cashbox_edit_frozen',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'cashbox_view_audit',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
         ];
 
         Permission::insert($arrPermissions);
@@ -3742,6 +3785,14 @@ class UsersTableSeeder extends Seeder
             'delete company policy',
             "manage biometric attendance",
             "biometric attendance synchronize",
+            // Cashbox permissions (boss level - all permissions)
+            'cashbox_access',
+            'cashbox_deposit',
+            'cashbox_distribute',
+            'cashbox_refund',
+            'cashbox_self_salary',
+            'cashbox_edit_frozen',
+            'cashbox_view_audit',
         ];
 
         $companyRole->givePermissionTo($companyPermissions);
@@ -3762,6 +3813,54 @@ class UsersTableSeeder extends Seeder
             ]
         );
         $company->assignRole($companyRole);
+
+        // Create cashbox roles for the company (boss, manager, curator)
+        // Boss role - all cashbox permissions
+        $bossRole = Role::create(
+            [
+                'name' => 'boss',
+                'created_by' => $company->id,
+            ]
+        );
+        $bossPermissions = [
+            'cashbox_access',
+            'cashbox_deposit',
+            'cashbox_distribute',
+            'cashbox_refund',
+            'cashbox_self_salary',
+            'cashbox_edit_frozen',
+            'cashbox_view_audit',
+        ];
+        $bossRole->givePermissionTo($bossPermissions);
+
+        // Manager role - can distribute, refund, and take self salary once per period
+        $managerRole = Role::create(
+            [
+                'name' => 'manager',
+                'created_by' => $company->id,
+            ]
+        );
+        $managerPermissions = [
+            'cashbox_access',
+            'cashbox_distribute',
+            'cashbox_refund',
+            'cashbox_self_salary',
+        ];
+        $managerRole->givePermissionTo($managerPermissions);
+
+        // Curator role - can only distribute to workers and refund
+        $curatorRole = Role::create(
+            [
+                'name' => 'curator',
+                'created_by' => $company->id,
+            ]
+        );
+        $curatorPermissions = [
+            'cashbox_access',
+            'cashbox_distribute',
+            'cashbox_refund',
+        ];
+        $curatorRole->givePermissionTo($curatorPermissions);
 
         // accountant
         $accountantRole       = Role::create(

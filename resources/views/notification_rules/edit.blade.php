@@ -39,6 +39,13 @@
                     <i class="ti ti-plus me-1"></i>{{ __('Добавить условие') }}
                 </button>
             </div>
+
+            {{-- Template Variables (for event-based entities like cashbox) --}}
+            <div id="template-variables-container" class="mt-3" style="display: none;">
+                <label class="form-label"><i class="ti ti-variable me-1"></i>{{ __('Доступные переменные для шаблонов') }}</label>
+                <div id="template-variables-list" class="d-flex flex-wrap gap-2"></div>
+                <small class="text-muted">{{ __('Эти переменные будут автоматически заменены в уведомлениях') }}</small>
+            </div>
         </div>
     </div>
 
@@ -113,12 +120,17 @@
     var entityLabels = @json($entityTypes);
     var severityLabels = @json($severityLevels);
 
+    var templateVariablesContainer = document.getElementById('template-variables-container');
+    var templateVariablesList = document.getElementById('template-variables-list');
+
     // Load conditions on init
     loadConditions(entityTypeSelect.value, true);
+    loadTemplateVariables(entityTypeSelect.value);
 
     // Load conditions when entity type changes
     entityTypeSelect.addEventListener('change', function() {
         loadConditions(this.value, false);
+        loadTemplateVariables(this.value);
     });
 
     function loadConditions(entityType, loadExisting) {
@@ -146,6 +158,33 @@
                 }
                 
                 updatePreview();
+            });
+    }
+
+    function loadTemplateVariables(entityType) {
+        if (!entityType) {
+            templateVariablesContainer.style.display = 'none';
+            templateVariablesList.innerHTML = '';
+            return;
+        }
+
+        fetch('{{ route("notification-rules.template-variables") }}?entity_type=' + entityType)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                templateVariablesList.innerHTML = '';
+                var hasVariables = Object.keys(data).length > 0;
+                
+                if (hasVariables) {
+                    for (var variable in data) {
+                        var badge = document.createElement('span');
+                        badge.className = 'badge bg-secondary';
+                        badge.innerHTML = '<code>' + variable + '</code> - ' + data[variable];
+                        templateVariablesList.appendChild(badge);
+                    }
+                    templateVariablesContainer.style.display = 'block';
+                } else {
+                    templateVariablesContainer.style.display = 'none';
+                }
             });
     }
 

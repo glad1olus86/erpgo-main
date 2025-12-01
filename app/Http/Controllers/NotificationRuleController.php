@@ -51,7 +51,7 @@ class NotificationRuleController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'entity_type' => 'required|in:worker,room,hotel,work_place',
+            'entity_type' => 'required|in:worker,room,hotel,work_place,cashbox',
             'conditions' => 'required|array|min:1',
             'period_from' => 'required|integer|min:0',
             'period_to' => 'nullable|integer|min:0',
@@ -62,8 +62,8 @@ class NotificationRuleController extends Controller
             return redirect()->back()->with('error', $validator->errors()->first());
         }
 
-        // Validate period_to > period_from if set
-        if ($request->period_to && $request->period_to <= $request->period_from) {
+        // Validate period_to > period_from if set (skip for event-based entities like cashbox)
+        if ($request->entity_type !== 'cashbox' && $request->period_to && $request->period_to <= $request->period_from) {
             return redirect()->back()->with('error', __('Период "до" должен быть больше периода "от"'));
         }
 
@@ -116,7 +116,7 @@ class NotificationRuleController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'entity_type' => 'required|in:worker,room,hotel,work_place',
+            'entity_type' => 'required|in:worker,room,hotel,work_place,cashbox',
             'conditions' => 'required|array|min:1',
             'period_from' => 'required|integer|min:0',
             'period_to' => 'nullable|integer|min:0',
@@ -127,7 +127,8 @@ class NotificationRuleController extends Controller
             return redirect()->back()->with('error', $validator->errors()->first());
         }
 
-        if ($request->period_to && $request->period_to <= $request->period_from) {
+        // Validate period_to > period_from if set (skip for event-based entities like cashbox)
+        if ($request->entity_type !== 'cashbox' && $request->period_to && $request->period_to <= $request->period_from) {
             return redirect()->back()->with('error', __('Период "до" должен быть больше периода "от"'));
         }
 
@@ -191,5 +192,17 @@ class NotificationRuleController extends Controller
         $conditions = NotificationRule::getConditionsForEntity($entityType);
         
         return response()->json($conditions);
+    }
+
+    /**
+     * Get template variables for entity type (AJAX)
+     * Requirement 12.3: Template variables for notifications
+     */
+    public function getTemplateVariables(Request $request)
+    {
+        $entityType = $request->get('entity_type');
+        $variables = NotificationRule::getTemplateVariablesForEntity($entityType);
+        
+        return response()->json($variables);
     }
 }

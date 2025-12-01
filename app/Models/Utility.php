@@ -277,7 +277,10 @@ class Utility extends Model
             'zkteco_api_url' => '',
             'username' => '',
             'user_password' => '',
-            'auth_token' => ''
+            'auth_token' => '',
+
+            // Cashbox currency setting (Requirement 11.1)
+            'cashbox_currency' => 'EUR',
         ];
 
         foreach ($data as $row) {
@@ -483,6 +486,9 @@ class Utility extends Model
             'decimal_separator'=>'dot',
             'thousand_separator'=>'dot',
             'currency_symbol' => 'withcurrencysymbol',
+
+            // Cashbox currency setting (Requirement 11.1)
+            'cashbox_currency' => 'EUR',
         ];
 
         foreach ($data as $row) {

@@ -399,6 +399,12 @@
                                 class="list-group-item list-group-item-action border-0">{{ __('Notification Settings') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div>
                             </a>
+                            @can('cashbox_access')
+                            <a href="#cashbox-settings"
+                                class="list-group-item list-group-item-action border-0">{{ __('Cashbox Settings') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div>
+                            </a>
+                            @endcan
 
                         </div>
                     </div>
@@ -4233,6 +4239,56 @@
                         </div>
                         {{ Form::close() }}
                     </div>
+
+                    {{-- Cashbox Settings --}}
+                    @can('cashbox_access')
+                    @php
+                        $cashboxCurrencies = \App\Helpers\CashboxCurrencyHelper::getAvailableCurrencies();
+                        $currentCashboxCurrency = $settings['cashbox_currency'] ?? 'EUR';
+                    @endphp
+                    <div id="cashbox-settings" class="card">
+                        <div class="card-header p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">{{ __('Cashbox Settings') }}</h5>
+                                    <small class="text-muted">{{ __('Настройки модуля кассы') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {{ Form::open(['route' => 'cashbox.settings.save', 'method' => 'post', 'class' => 'mb-0']) }}
+                        <div class="card-body p-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label" for="cashbox_currency">{{ __('Валюта кассы') }}</label>
+                                        <select class="form-control" name="cashbox_currency" id="cashbox_currency">
+                                            @foreach($cashboxCurrencies as $code => $name)
+                                                <option value="{{ $code }}" {{ $currentCashboxCurrency == $code ? 'selected' : '' }}>
+                                                    {{ $name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <small class="text-muted">{{ __('Выберите валюту для отображения сумм в кассе') }}</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Пример форматирования') }}</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="currency_preview" 
+                                                value="{{ \App\Helpers\CashboxCurrencyHelper::format(1234567.89, $currentCashboxCurrency) }}" readonly>
+                                        </div>
+                                        <small class="text-muted">{{ __('Так будут отображаться суммы в кассе') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-3 text-end">
+                            <input class="btn btn-print-invoice btn-primary" type="submit" value="{{ __('Save Changes') }}">
+                        </div>
+                        {{ Form::close() }}
+                    </div>
+                    @endcan
                     {{--  End for all settings tab --}}
 
                 </div>

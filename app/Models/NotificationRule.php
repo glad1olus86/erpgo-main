@@ -32,6 +32,7 @@ class NotificationRule extends Model
     const ENTITY_ROOM = 'room';
     const ENTITY_HOTEL = 'hotel';
     const ENTITY_WORK_PLACE = 'work_place';
+    const ENTITY_CASHBOX = 'cashbox';
 
     // Severity levels
     const SEVERITY_INFO = 'info';
@@ -48,6 +49,7 @@ class NotificationRule extends Model
             self::ENTITY_ROOM => __('Комната'),
             self::ENTITY_HOTEL => __('Отель'),
             self::ENTITY_WORK_PLACE => __('Рабочее место'),
+            self::ENTITY_CASHBOX => __('Касса'),
         ];
     }
 
@@ -93,6 +95,30 @@ class NotificationRule extends Model
                 'has_no_workers' => ['label' => __('Нет сотрудников'), 'type' => 'boolean'],
                 'workers_below' => ['label' => __('Сотрудников меньше'), 'type' => 'number'],
                 'workers_above' => ['label' => __('Сотрудников больше'), 'type' => 'number'],
+            ],
+            self::ENTITY_CASHBOX => [
+                'cashbox_money_received' => ['label' => __('Получение денег'), 'type' => 'event'],
+                'cashbox_money_sent' => ['label' => __('Выдача денег'), 'type' => 'event'],
+                'cashbox_money_refunded' => ['label' => __('Возврат денег'), 'type' => 'event'],
+                'cashbox_taken_to_work' => ['label' => __('Взятие в работу'), 'type' => 'event'],
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Get template variables for entity type
+     * Requirement 12.3: Template variables for cashbox notifications
+     */
+    public static function getTemplateVariablesForEntity(string $entityType): array
+    {
+        return match($entityType) {
+            self::ENTITY_CASHBOX => [
+                '{amount}' => __('Сумма транзакции'),
+                '{sender_name}' => __('Имя отправителя'),
+                '{recipient_name}' => __('Имя получателя'),
+                '{comment}' => __('Комментарий'),
+                '{task}' => __('Задача'),
             ],
             default => [],
         };

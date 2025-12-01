@@ -149,6 +149,13 @@ class AuditLog extends Model
             'hotel.created' => '#28a745',       // Зеленый
             'hotel.updated' => '#17a2b8',       // Голубой
             'hotel.deleted' => '#6c757d',       // Серый
+
+            // Касса
+            'cashbox.deposit' => '#28a745',         // Зеленый - внесение
+            'cashbox.distribution' => '#007bff',    // Синий - выдача
+            'cashbox.refund' => '#fd7e14',          // Оранжевый - возврат
+            'cashbox.self_salary' => '#6f42c1',     // Фиолетовый - ЗП себе
+            'cashbox.status_change' => '#17a2b8',   // Голубой - смена статуса
         ];
 
         return $colors[$this->event_type] ?? '#6c757d';
@@ -185,6 +192,13 @@ class AuditLog extends Model
             'hotel.created' => 'ti-building-skyscraper',
             'hotel.updated' => 'ti-building-edit',
             'hotel.deleted' => 'ti-building-x',
+
+            // Касса
+            'cashbox.deposit' => 'ti-cash',
+            'cashbox.distribution' => 'ti-send',
+            'cashbox.refund' => 'ti-arrow-back',
+            'cashbox.self_salary' => 'ti-wallet',
+            'cashbox.status_change' => 'ti-refresh',
         ];
 
         return $icons[$this->event_type] ?? 'ti-info-circle';

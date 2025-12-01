@@ -918,6 +918,8 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('notification-rules.toggle')->middleware(['auth']);
     Route::get('/notification-rules/conditions', [App\Http\Controllers\NotificationRuleController::class, 'getConditions'])
         ->name('notification-rules.conditions')->middleware(['auth']);
+    Route::get('/notification-rules/template-variables', [App\Http\Controllers\NotificationRuleController::class, 'getTemplateVariables'])
+        ->name('notification-rules.template-variables')->middleware(['auth']);
 
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');
@@ -1935,4 +1937,34 @@ Route::group(['prefix' => 'audit', 'as' => 'audit.', 'middleware' => ['auth', 'X
     Route::get('/calendar-view', [AuditLogController::class, 'calendarView'])->name('calendar.view'); // New route for calendar page
     Route::get('/calendar/{year}/{month}', [AuditLogController::class, 'calendar'])->name('calendar');
     Route::get('/day/{date}', [AuditLogController::class, 'dayDetails'])->name('day.details');
+});
+
+// Cashbox (Касса) routes
+Route::group(['prefix' => 'cashbox', 'as' => 'cashbox.', 'middleware' => ['auth', 'XSS']], function () {
+    // Period routes
+    Route::get('/', [App\Http\Controllers\CashboxController::class, 'index'])->name('index');
+    
+    // Audit route (must be before /{period} to avoid conflicts)
+    Route::get('/audit', [App\Http\Controllers\CashboxAuditController::class, 'index'])->name('audit');
+    
+    // Settings page (must be before /{period} to avoid conflicts)
+    Route::get('/settings', [App\Http\Controllers\CashboxController::class, 'settings'])->name('settings');
+    Route::post('/reset-period', [App\Http\Controllers\CashboxController::class, 'resetCurrentPeriod'])->name('reset-period');
+    
+    Route::get('/{period}', [App\Http\Controllers\CashboxController::class, 'show'])->name('show');
+    Route::post('/period', [App\Http\Controllers\CashboxController::class, 'getOrCreateCurrentPeriod'])->name('period.current');
+    
+    // Transaction routes
+    Route::post('/deposit', [App\Http\Controllers\CashTransactionController::class, 'deposit'])->name('deposit');
+    Route::post('/distribute', [App\Http\Controllers\CashTransactionController::class, 'distribute'])->name('distribute');
+    Route::post('/refund', [App\Http\Controllers\CashTransactionController::class, 'refund'])->name('refund');
+    Route::post('/self-salary', [App\Http\Controllers\CashTransactionController::class, 'selfSalary'])->name('self-salary');
+    Route::patch('/transaction/{transaction}/status', [App\Http\Controllers\CashTransactionController::class, 'updateStatus'])->name('transaction.status');
+    
+    // Diagram and balance API routes
+    Route::get('/{period}/diagram', [App\Http\Controllers\CashDiagramController::class, 'getDiagram'])->name('diagram');
+    Route::get('/{period}/balance', [App\Http\Controllers\CashDiagramController::class, 'getBalance'])->name('balance');
+    
+    // Settings route
+    Route::post('/settings', [App\Http\Controllers\CashboxController::class, 'saveSettings'])->name('settings.save');
 });
