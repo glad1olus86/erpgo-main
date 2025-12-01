@@ -40,9 +40,13 @@
 
 @push('css-page')
     <style>
-        .budget-card {
+        .budget-sidebar {
             position: sticky;
             top: 80px;
+        }
+
+        .budget-card {
+            /* Card styling */
         }
 
         .diagram-container {
@@ -249,56 +253,58 @@
 
         {{-- Budget Sidebar --}}
         <div class="col-lg-3 col-md-4">
-            <div class="card budget-card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="ti ti-wallet me-2"></i>{{ __('Бюджет') }}</h5>
+            <div class="budget-sidebar">
+                <div class="card budget-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="ti ti-wallet me-2"></i>{{ __('Бюджет') }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">{{ __('Получено') }}</small>
+                            <h4 class="text-success mb-0" id="balanceReceived">
+                                {{ formatCashboxCurrency($balance['received']) }}
+                            </h4>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">{{ __('Выдано') }}</small>
+                            <h4 class="text-danger mb-0" id="balanceSent">
+                                {{ formatCashboxCurrency($balance['sent']) }}
+                            </h4>
+                        </div>
+                        <hr>
+                        <div>
+                            <small class="text-muted">{{ __('Остаток') }}</small>
+                            <h4 class="text-primary mb-0" id="balanceRemaining">
+                                {{ formatCashboxCurrency($balance['received'] - $balance['sent']) }}
+                            </h4>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <small class="text-muted">{{ __('Получено') }}</small>
-                        <h4 class="text-success mb-0" id="balanceReceived">
-                            {{ formatCashboxCurrency($balance['received']) }}
-                        </h4>
-                    </div>
-                    <div class="mb-3">
-                        <small class="text-muted">{{ __('Выдано') }}</small>
-                        <h4 class="text-danger mb-0" id="balanceSent">
-                            {{ formatCashboxCurrency($balance['sent']) }}
-                        </h4>
-                    </div>
-                    <hr>
-                    <div>
-                        <small class="text-muted">{{ __('Остаток') }}</small>
-                        <h4 class="text-primary mb-0" id="balanceRemaining">
-                            {{ formatCashboxCurrency($balance['received'] - $balance['sent']) }}
-                        </h4>
-                    </div>
-                </div>
-            </div>
 
-            {{-- Period Info --}}
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="ti ti-info-circle me-2"></i>{{ __('Информация') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <small class="text-muted">{{ __('Период') }}</small>
-                        <p class="mb-0 fw-bold">{{ $period->name }}</p>
+                {{-- Period Info --}}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="ti ti-info-circle me-2"></i>{{ __('Информация') }}</h5>
                     </div>
-                    <div class="mb-2">
-                        <small class="text-muted">{{ __('Всего внесено') }}</small>
-                        <p class="mb-0">{{ formatCashboxCurrency($period->total_deposited) }}</p>
-                    </div>
-                    <div>
-                        <small class="text-muted">{{ __('Статус') }}</small>
-                        <p class="mb-0">
-                            @if ($period->is_frozen)
-                                <span class="badge bg-secondary">{{ __('Заморожен') }}</span>
-                            @else
-                                <span class="badge bg-success">{{ __('Активен') }}</span>
-                            @endif
-                        </p>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-muted">{{ __('Период') }}</small>
+                            <p class="mb-0 fw-bold">{{ $period->name }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">{{ __('Всего внесено') }}</small>
+                            <p class="mb-0">{{ formatCashboxCurrency($period->total_deposited) }}</p>
+                        </div>
+                        <div>
+                            <small class="text-muted">{{ __('Статус') }}</small>
+                            <p class="mb-0">
+                                @if ($period->is_frozen)
+                                    <span class="badge bg-secondary">{{ __('Заморожен') }}</span>
+                                @else
+                                    <span class="badge bg-success">{{ __('Активен') }}</span>
+                                @endif
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -422,22 +428,23 @@
                     @csrf
                     <div class="modal-body">
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Транзакция для возврата') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Транзакция для возврата') }} <span
+                                    class="text-danger">*</span></label>
                             <select name="transaction_id" id="refundTransactionId" class="form-control" required>
                                 <option value="">{{ __('Выберите транзакцию') }}</option>
-                                @foreach($refundableTransactions as $transaction)
+                                @foreach ($refundableTransactions as $transaction)
                                     <option value="{{ $transaction->id }}" data-amount="{{ $transaction->amount }}">
-                                        #{{ $transaction->id }} | 
-                                        {{ $transaction->sender->name ?? __('Неизвестно') }} | 
-                                        {{ formatCashboxCurrency($transaction->amount) }} | 
+                                        #{{ $transaction->id }} |
+                                        {{ $transaction->sender->name ?? __('Неизвестно') }} |
+                                        {{ formatCashboxCurrency($transaction->amount) }} |
                                         {{ $transaction->created_at->format('d.m.Y H:i') }}
-                                        @if($transaction->task)
+                                        @if ($transaction->task)
                                             | {{ Str::limit($transaction->task, 20) }}
                                         @endif
                                     </option>
                                 @endforeach
                             </select>
-                            @if($refundableTransactions->isEmpty())
+                            @if ($refundableTransactions->isEmpty())
                                 <small class="text-muted">{{ __('Нет транзакций для возврата') }}</small>
                             @endif
                         </div>
@@ -458,7 +465,8 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
                             data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-warning" {{ $refundableTransactions->isEmpty() ? 'disabled' : '' }}>{{ __('Вернуть') }}</button>
+                        <button type="submit" class="btn btn-warning"
+                            {{ $refundableTransactions->isEmpty() ? 'disabled' : '' }}>{{ __('Вернуть') }}</button>
                     </div>
                 </form>
             </div>
@@ -646,10 +654,10 @@
                 <p class="mb-0 fw-bold">${getTypeName(node.type)}</p>
             </div>
             ${senderName ? `
-                                        <div class="mb-3">
-                                            <label class="text-muted small">${translations.sender}</label>
-                                            <p class="mb-0">${senderName}</p>
-                                        </div>` : ''}
+                                            <div class="mb-3">
+                                                <label class="text-muted small">${translations.sender}</label>
+                                                <p class="mb-0">${senderName}</p>
+                                            </div>` : ''}
             <div class="mb-3">
                 <label class="text-muted small">${translations.recipient}</label>
                 <p class="mb-0">${recipientName}</p>
@@ -663,20 +671,20 @@
                 <p class="mb-0"><span class="badge ${getStatusBadgeClass(node.status)}">${node.status_label || getStatusName(node.status)}</span></p>
             </div>
             ${node.task ? `
-                                        <div class="mb-3">
-                                            <label class="text-muted small">${translations.task}</label>
-                                            <p class="mb-0">${escapeHtml(node.task)}</p>
-                                        </div>` : ''}
+                                            <div class="mb-3">
+                                                <label class="text-muted small">${translations.task}</label>
+                                                <p class="mb-0">${escapeHtml(node.task)}</p>
+                                            </div>` : ''}
             ${node.comment ? `
-                                        <div class="mb-3">
-                                            <label class="text-muted small">${translations.comment}</label>
-                                            <p class="mb-0">${escapeHtml(node.comment)}</p>
-                                        </div>` : ''}
+                                            <div class="mb-3">
+                                                <label class="text-muted small">${translations.comment}</label>
+                                                <p class="mb-0">${escapeHtml(node.comment)}</p>
+                                            </div>` : ''}
             ${node.created_at ? `
-                                        <div class="mb-3">
-                                            <label class="text-muted small">${translations.date}</label>
-                                            <p class="mb-0">${new Date(node.created_at).toLocaleString('ru-RU')}</p>
-                                        </div>` : ''}
+                                            <div class="mb-3">
+                                                <label class="text-muted small">${translations.date}</label>
+                                                <p class="mb-0">${new Date(node.created_at).toLocaleString('ru-RU')}</p>
+                                            </div>` : ''}
         `;
 
                 var footer = document.getElementById('transactionDetailFooter');
@@ -864,12 +872,13 @@
             // Handle refund modal - pre-select transaction if one was selected on diagram
             var refundModal = document.getElementById('refundModal');
             var refundTransactionSelect = document.getElementById('refundTransactionId');
-            
+
             if (refundModal) {
                 refundModal.addEventListener('show.bs.modal', function() {
                     if (window.selectedTransactionNode && refundTransactionSelect) {
                         // Try to select the transaction in dropdown
-                        var option = refundTransactionSelect.querySelector('option[value="' + window.selectedTransactionNode.id + '"]');
+                        var option = refundTransactionSelect.querySelector('option[value="' + window
+                            .selectedTransactionNode.id + '"]');
                         if (option) {
                             refundTransactionSelect.value = window.selectedTransactionNode.id;
                             // Trigger change to fill amount
@@ -878,7 +887,7 @@
                     }
                 });
             }
-            
+
             // Auto-fill amount when transaction is selected
             if (refundTransactionSelect) {
                 refundTransactionSelect.addEventListener('change', function() {
@@ -896,14 +905,16 @@
             // Distribution type hint
             var distributionTypeSelect = document.getElementById('distributionTypeSelect');
             var distributionTypeHint = document.getElementById('distributionTypeHintMain');
-            
+
             if (distributionTypeSelect && distributionTypeHint) {
                 distributionTypeSelect.addEventListener('change', function() {
                     var value = this.value;
                     if (value === 'salary') {
-                        distributionTypeHint.textContent = '{{ __("Конечная выдача зарплаты. Транзакция будет сразу завершена.") }}';
+                        distributionTypeHint.textContent =
+                            '{{ __('Конечная выдача зарплаты. Транзакция будет сразу завершена.') }}';
                     } else if (value === 'transfer') {
-                        distributionTypeHint.textContent = '{{ __("Передача денег для дальнейшего распределения другим сотрудникам.") }}';
+                        distributionTypeHint.textContent =
+                            '{{ __('Передача денег для дальнейшего распределения другим сотрудникам.') }}';
                     } else {
                         distributionTypeHint.textContent = '';
                     }

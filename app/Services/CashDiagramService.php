@@ -33,13 +33,45 @@ class CashDiagramService
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Start with deposit transactions (root nodes)
-        $deposits = $transactions->where('type', CashTransaction::TYPE_DEPOSIT);
+        // Start with deposit transactions (root nodes), sorted by time
+        $deposits = $transactions->where('type', CashTransaction::TYPE_DEPOSIT)->values();
         
         $tree = [];
         
-        foreach ($deposits as $deposit) {
-            $tree[] = $this->buildNodeWithChildren($deposit, $transactions);
+        // Track which transactions have been used to avoid duplicates
+        $usedTransactionIds = collect();
+        
+        // Process each deposit with its time-bounded transactions
+        foreach ($deposits as $index => $deposit) {
+            $usedTransactionIds->push($deposit->id);
+            
+            // Get the time boundary for this deposit
+            // Transactions belong to this deposit if created AFTER this deposit and BEFORE next deposit
+            $depositTime = $deposit->created_at;
+            $nextDeposit = $deposits->get($index + 1);
+            $nextDepositTime = $nextDeposit ? $nextDeposit->created_at : null;
+            
+            // Filter transactions that belong to this deposit's time window
+            $depositTransactions = $transactions->filter(function ($t) use ($depositTime, $nextDepositTime) {
+                // Skip deposits themselves
+                if ($t->type === CashTransaction::TYPE_DEPOSIT) {
+                    return false;
+                }
+                
+                // Transaction must be created after this deposit
+                if ($t->created_at < $depositTime) {
+                    return false;
+                }
+                
+                // If there's a next deposit, transaction must be before it
+                if ($nextDepositTime && $t->created_at >= $nextDepositTime) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            $tree[] = $this->buildNodeWithChildren($deposit, $depositTransactions, $usedTransactionIds);
         }
 
         return [
@@ -60,9 +92,10 @@ class CashDiagramService
      *
      * @param CashTransaction $transaction
      * @param Collection $allTransactions
+     * @param Collection $usedTransactionIds - track used transactions to avoid duplicates
      * @return array
      */
-    protected function buildNodeWithChildren(CashTransaction $transaction, Collection $allTransactions): array
+    protected function buildNodeWithChildren(CashTransaction $transaction, Collection $allTransactions, Collection &$usedTransactionIds): array
     {
         $node = $this->formatNode($transaction);
         
@@ -73,7 +106,13 @@ class CashDiagramService
         }
 
         // Find child transactions (where this transaction's recipient is the sender)
-        $children = $allTransactions->filter(function ($t) use ($transaction) {
+        // Only include transactions that haven't been used yet
+        $children = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds) {
+            // Skip already used transactions
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            
             // Skip deposits (they are root nodes)
             if ($t->type === CashTransaction::TYPE_DEPOSIT) {
                 return false;
@@ -100,11 +139,17 @@ class CashDiagramService
         });
 
         foreach ($children as $child) {
-            $node['children'][] = $this->buildNodeWithChildren($child, $allTransactions);
+            $usedTransactionIds->push($child->id);
+            $node['children'][] = $this->buildNodeWithChildren($child, $allTransactions, $usedTransactionIds);
         }
         
         // Add self_salary transactions as special children (leaf nodes)
-        $selfSalaries = $allTransactions->filter(function ($t) use ($transaction) {
+        // Only include transactions that haven't been used yet
+        $selfSalaries = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds) {
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            
             return $t->type === CashTransaction::TYPE_SELF_SALARY &&
                    $t->sender_id === $transaction->recipient_id &&
                    $t->sender_type === $transaction->recipient_type &&
@@ -112,16 +157,22 @@ class CashDiagramService
         });
 
         foreach ($selfSalaries as $selfSalary) {
+            $usedTransactionIds->push($selfSalary->id);
             $node['children'][] = $this->formatNode($selfSalary);
         }
 
         // Add refunds as special children
-        $refunds = $allTransactions->filter(function ($t) use ($transaction) {
+        $refunds = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds) {
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            
             return $t->type === CashTransaction::TYPE_REFUND &&
                    $t->parent_transaction_id === $transaction->id;
         });
 
         foreach ($refunds as $refund) {
+            $usedTransactionIds->push($refund->id);
             $node['refunds'][] = $this->formatNode($refund);
         }
 
