@@ -124,7 +124,7 @@
             data.notifications.forEach(function(n) {
                 html += '<a href="' + n.link + '" class="dropdown-item py-2 border-bottom">';
                 html += '<div class="d-flex align-items-start">';
-                html += '<span class="avatar avatar-sm bg-' + n.color + '-subtle me-2">';
+                html += '<span class="avatar avatar-sm bg-white border me-2">';
                 html += '<i class="' + n.icon + ' text-' + n.color + '"></i></span>';
                 html += '<div class="flex-grow-1">';
                 html += '<p class="mb-0 fw-medium">' + n.title + '</p>';

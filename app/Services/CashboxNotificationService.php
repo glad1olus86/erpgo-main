@@ -80,8 +80,23 @@ class CashboxNotificationService
             ->where('entity_type', NotificationRule::ENTITY_CASHBOX)
             ->get();
 
+        \Log::info('CashboxNotification: Processing event', [
+            'eventType' => $eventType,
+            'companyId' => $companyId,
+            'rulesCount' => $rules->count(),
+            'transaction_id' => $transaction->id,
+        ]);
+
         foreach ($rules as $rule) {
-            if ($this->ruleMatchesEvent($rule, $eventType)) {
+            $matches = $this->ruleMatchesEvent($rule, $eventType);
+            \Log::info('CashboxNotification: Rule check', [
+                'rule_id' => $rule->id,
+                'rule_name' => $rule->name,
+                'conditions' => $rule->conditions,
+                'matches' => $matches,
+            ]);
+            
+            if ($matches) {
                 $this->createNotification($rule, $transaction, $eventType);
             }
         }
@@ -121,14 +136,53 @@ class CashboxNotificationService
             return;
         }
 
+        // Add target user and distribution type to data for filtering
+        $data['target_user_id'] = $targetUserId;
+        $data['distribution_type'] = $transaction->distribution_type;
+        
+        // Include distribution_type in notification type for proper grouping
+        // salary and transfer should be grouped separately
+        $distributionSuffix = $transaction->distribution_type ? '_' . $transaction->distribution_type : '';
+        $notificationType = 'cashbox_' . $eventType . $distributionSuffix;
+        
+        // If grouping is enabled, try to update existing unread notification
+        if ($rule->is_grouped) {
+            $existingNotification = SystemNotification::where('type', $notificationType)
+                ->where('created_by', $transaction->created_by)
+                ->where('is_read', false)
+                ->whereRaw("JSON_EXTRACT(data, '$.target_user_id') = ?", [$targetUserId])
+                ->first();
+            
+            if ($existingNotification) {
+                // Update existing notification with new message
+                $existingData = $existingNotification->data ?? [];
+                $messages = $existingData['messages'] ?? [$existingNotification->message];
+                $messages[] = $message;
+                $count = count($messages);
+                
+                $existingData['messages'] = $messages;
+                $existingData['count'] = $count;
+                
+                $existingNotification->update([
+                    'title' => $title . ' (' . $count . ')',
+                    'message' => implode("\n", array_slice($messages, -5)), // Show last 5 messages
+                    'data' => $existingData,
+                    'updated_at' => now(),
+                ]);
+                
+                return;
+            }
+        }
+        
+        // Create new notification
         SystemNotification::create([
-            'type' => 'cashbox_' . $eventType,
+            'type' => $notificationType,
             'title' => $title,
             'message' => $message,
             'severity' => $rule->severity,
             'data' => $data,
             'link' => $link,
-            'created_by' => $targetUserId,
+            'created_by' => $transaction->created_by,
         ]);
     }
 
@@ -156,29 +210,38 @@ class CashboxNotificationService
 
     /**
      * Build notification message
+     * Format: "sender выдал recipient сумму" - neutral, no pronouns
      */
     protected function buildMessage(CashTransaction $transaction, string $eventType): string
     {
-        $amount = formatCashboxCurrency($transaction->amount, $transaction->created_by);
+        // Use null to get currency from company settings
+        $amount = formatCashboxCurrency($transaction->amount);
         $senderName = $this->getParticipantName($transaction->sender_id, $transaction->sender_type);
         $recipientName = $this->getParticipantName($transaction->recipient_id, $transaction->recipient_type);
 
         $message = match($eventType) {
-            self::EVENT_MONEY_RECEIVED => __('Вы получили :amount от :sender', [
-                'amount' => $amount,
+            // "company выдал manager 1000 Kč" - recipient receives money
+            self::EVENT_MONEY_RECEIVED => __(':sender выдал :recipient :amount', [
                 'sender' => $senderName,
-            ]),
-            self::EVENT_MONEY_SENT => __('Вы выдали :amount для :recipient', [
-                'amount' => $amount,
                 'recipient' => $recipientName,
-            ]),
-            self::EVENT_MONEY_REFUNDED => __('Возврат :amount от :sender', [
                 'amount' => $amount,
-                'sender' => $senderName,
             ]),
+            // "company выдал manager 1000 Kč" - sender sent money
+            self::EVENT_MONEY_SENT => __(':sender выдал :recipient :amount', [
+                'sender' => $senderName,
+                'recipient' => $recipientName,
+                'amount' => $amount,
+            ]),
+            // "manager вернул company 500 Kč"
+            self::EVENT_MONEY_REFUNDED => __(':sender вернул :recipient :amount', [
+                'sender' => $senderName,
+                'recipient' => $recipientName,
+                'amount' => $amount,
+            ]),
+            // "manager взял в работу 1000 Kč"
             self::EVENT_TAKEN_TO_WORK => __(':recipient взял в работу :amount', [
-                'amount' => $amount,
                 'recipient' => $recipientName,
+                'amount' => $amount,
             ]),
             default => '',
         };
@@ -224,22 +287,51 @@ class CashboxNotificationService
 
     /**
      * Get target user ID for notification based on event type
+     * Returns the user who should receive the notification
      */
     protected function getTargetUserId(CashTransaction $transaction, string $eventType): ?int
     {
         return match($eventType) {
-            // Money received - notify recipient (if User)
-            self::EVENT_MONEY_RECEIVED => $transaction->recipient_type === User::class 
-                ? $transaction->recipient_id 
-                : null,
-            // Money sent - notify sender
-            self::EVENT_MONEY_SENT => $transaction->sender_id,
-            // Money refunded - notify the one who receives the refund (original sender)
-            self::EVENT_MONEY_REFUNDED => $transaction->recipient_id,
-            // Taken to work - notify sender about recipient's action
-            self::EVENT_TAKEN_TO_WORK => $transaction->sender_id,
+            // Money received - notify recipient (the one who receives money)
+            self::EVENT_MONEY_RECEIVED => $this->getUserIdFromParticipant(
+                $transaction->recipient_id, 
+                $transaction->recipient_type
+            ),
+            // Money sent - notify sender (the one who sent money)
+            self::EVENT_MONEY_SENT => $this->getUserIdFromParticipant(
+                $transaction->sender_id, 
+                $transaction->sender_type
+            ),
+            // Money refunded - notify recipient of refund (the one who gets money back)
+            self::EVENT_MONEY_REFUNDED => $this->getUserIdFromParticipant(
+                $transaction->recipient_id, 
+                $transaction->recipient_type
+            ),
+            // Taken to work - notify sender (so they know recipient started working)
+            self::EVENT_TAKEN_TO_WORK => $this->getUserIdFromParticipant(
+                $transaction->sender_id, 
+                $transaction->sender_type
+            ),
             default => null,
         };
+    }
+
+    /**
+     * Get User ID from participant (only Users can receive notifications)
+     */
+    protected function getUserIdFromParticipant(?int $id, ?string $type): ?int
+    {
+        if (!$id || !$type) {
+            return null;
+        }
+
+        // Only User type can receive notifications
+        // Check both full class name and short name for compatibility
+        if ($type === User::class || $type === 'App\Models\User' || $type === 'user') {
+            return $id;
+        }
+
+        return null;
     }
 
     /**

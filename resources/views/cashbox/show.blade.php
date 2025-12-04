@@ -50,11 +50,20 @@
         }
 
         .diagram-container {
-            min-height: 500px;
+            height: 600px;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 8px;
-            overflow: auto;
+            overflow-x: auto;
+            overflow-y: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .diagram-container #diagramContent {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
         }
 
         .diagram-container::-webkit-scrollbar {
@@ -555,6 +564,7 @@
                 distribution: '{{ __('Выдача') }}',
                 refund: '{{ __('Возврат') }}',
                 self_salary: '{{ __('ЗП себе') }}',
+                salary_list: '{{ __('Список ЗП') }}',
                 pending: '{{ __('Ожидает') }}',
                 in_progress: '{{ __('В работе') }}',
                 completed: '{{ __('Выполнено') }}',
@@ -578,6 +588,7 @@
             // Initialize the diagram
             diagram = new CashboxDiagram('diagramContent', {
                 translations: translations,
+                currencySymbol: currencySymbol,
                 onNodeClick: function(node) {
                     showTransactionDetail(node);
                 }
@@ -648,16 +659,53 @@
                 var senderName = node.sender ? node.sender.name : null;
                 var recipientName = node.recipient ? node.recipient.name : translations.unknown;
 
+                // Check if this is a salary list
+                if (node.is_salary_list && node.salary_recipients) {
+                    var recipientsList = node.salary_recipients.map(function(r) {
+                        return `<div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span>${escapeHtml(r.name)}</span>
+                            <span class="fw-bold text-success">${formatMoney(r.amount)}</span>
+                        </div>`;
+                    }).join('');
+                    
+                    content.innerHTML = `
+                        <div class="mb-3">
+                            <label class="text-muted small">${translations.type}</label>
+                            <p class="mb-0 fw-bold">{{ __('Список ЗП') }} №${node.salary_list_number}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">{{ __('Общая сумма') }}</label>
+                            <p class="mb-0 fw-bold text-success">${formatMoney(node.amount)}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">{{ __('Количество получателей') }}</label>
+                            <p class="mb-0">${node.salary_recipients.length}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">{{ __('Получатели') }}</label>
+                            <div class="mt-2" style="max-height: 300px; overflow-y: auto;">
+                                ${recipientsList}
+                            </div>
+                        </div>
+                    `;
+                    
+                    var footer = document.getElementById('transactionDetailFooter');
+                    footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + translations.close + '</button>';
+                    
+                    new bootstrap.Modal(document.getElementById('transactionDetailModal')).show();
+                    return;
+                }
+
                 content.innerHTML = `
             <div class="mb-3">
                 <label class="text-muted small">${translations.type}</label>
                 <p class="mb-0 fw-bold">${getTypeName(node.type)}</p>
             </div>
             ${senderName ? `
-                                            <div class="mb-3">
-                                                <label class="text-muted small">${translations.sender}</label>
-                                                <p class="mb-0">${senderName}</p>
-                                            </div>` : ''}
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">${translations.sender}</label>
+                                                    <p class="mb-0">${senderName}</p>
+                                                </div>` : ''}
             <div class="mb-3">
                 <label class="text-muted small">${translations.recipient}</label>
                 <p class="mb-0">${recipientName}</p>
@@ -666,25 +714,30 @@
                 <label class="text-muted small">${translations.amount}</label>
                 <p class="mb-0 fw-bold text-success">${formatMoney(node.amount)}</p>
             </div>
+            ${(node.original_amount && node.original_amount !== node.amount) ? `
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">{{ __('Изначально внесённая сумма') }}</label>
+                                                    <p class="mb-0 text-muted">${formatMoney(node.original_amount)}</p>
+                                                </div>` : ''}
             <div class="mb-3">
                 <label class="text-muted small">${translations.status}</label>
                 <p class="mb-0"><span class="badge ${getStatusBadgeClass(node.status)}">${node.status_label || getStatusName(node.status)}</span></p>
             </div>
             ${node.task ? `
-                                            <div class="mb-3">
-                                                <label class="text-muted small">${translations.task}</label>
-                                                <p class="mb-0">${escapeHtml(node.task)}</p>
-                                            </div>` : ''}
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">${translations.task}</label>
+                                                    <p class="mb-0">${escapeHtml(node.task)}</p>
+                                                </div>` : ''}
             ${node.comment ? `
-                                            <div class="mb-3">
-                                                <label class="text-muted small">${translations.comment}</label>
-                                                <p class="mb-0">${escapeHtml(node.comment)}</p>
-                                            </div>` : ''}
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">${translations.comment}</label>
+                                                    <p class="mb-0">${escapeHtml(node.comment)}</p>
+                                                </div>` : ''}
             ${node.created_at ? `
-                                            <div class="mb-3">
-                                                <label class="text-muted small">${translations.date}</label>
-                                                <p class="mb-0">${new Date(node.created_at).toLocaleString('ru-RU')}</p>
-                                            </div>` : ''}
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">${translations.date}</label>
+                                                    <p class="mb-0">${new Date(node.created_at).toLocaleString('ru-RU')}</p>
+                                                </div>` : ''}
         `;
 
                 var footer = document.getElementById('transactionDetailFooter');
@@ -860,7 +913,10 @@
                 });
             }
 
-            handleFormSubmit('depositForm', '{{ route('cashbox.deposit') }}');
+            handleFormSubmit('depositForm', '{{ route('cashbox.deposit') }}', function() {
+                // Reload page after deposit to show action buttons
+                window.location.reload();
+            });
             handleFormSubmit('distributeForm', '{{ route('cashbox.distribute') }}');
             handleFormSubmit('refundForm', '{{ route('cashbox.refund') }}');
             handleFormSubmit('selfSalaryForm', '{{ route('cashbox.self-salary') }}', function() {

@@ -1423,6 +1423,15 @@
                     </li>
                 @endcan
 
+                @can('document_template_read')
+                    <li class="dash-item {{ Request::segment(1) == 'documents' ? 'active' : '' }}">
+                        <a href="{{ route('documents.index') }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-file-text"></i></span>
+                            <span class="dash-mtext">{{ __('Документы') }}</span>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('view audit log')
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'audit' ? ' active dash-trigger' : '' }}">

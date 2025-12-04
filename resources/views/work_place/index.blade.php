@@ -107,6 +107,13 @@
                                                         @endcan
                                                         @can('manage work place')
                                                             <div class="action-btn ms-2">
+                                                                <a href="{{ route('work-place.positions', $workPlace->id) }}"
+                                                                    class="mx-3 btn btn-sm align-items-center bg-success"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Должности') }}">
+                                                                    <i class="ti ti-briefcase text-white"></i>
+                                                                </a>
+                                                            </div>
+                                                            <div class="action-btn ms-2">
                                                                 <a href="#"
                                                                     data-url="{{ route('work-place.workers', $workPlace->id) }}"
                                                                     data-ajax-popup="true" data-title="{{ __('Сотрудники') }}"

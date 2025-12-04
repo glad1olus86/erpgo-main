@@ -9,7 +9,7 @@ class WorkAssignment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['worker_id', 'work_place_id', 'started_at', 'ended_at', 'created_by'];
+    protected $fillable = ['worker_id', 'work_place_id', 'position_id', 'started_at', 'ended_at', 'created_by'];
 
     protected $casts = [
         'started_at' => 'date',
@@ -30,6 +30,14 @@ class WorkAssignment extends Model
     public function workPlace()
     {
         return $this->belongsTo(WorkPlace::class);
+    }
+
+    /**
+     * Get the position for this assignment
+     */
+    public function position()
+    {
+        return $this->belongsTo(Position::class);
     }
 
     /**

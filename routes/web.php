@@ -872,6 +872,18 @@ Route::group(['middleware' => ['verified']], function () {
     Route::resource('work-place', WorkPlaceController::class)->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('/work-place/{workPlace}/workers', [WorkPlaceController::class, 'showWorkers'])
         ->name('work-place.workers')->middleware(['auth', 'XSS']);
+    
+    // Position routes
+    Route::get('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'index'])
+        ->name('work-place.positions')->middleware(['auth', 'XSS']);
+    Route::post('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'store'])
+        ->name('positions.store')->middleware(['auth', 'XSS']);
+    Route::delete('/positions/{position}', [App\Http\Controllers\PositionController::class, 'destroy'])
+        ->name('positions.destroy')->middleware(['auth', 'XSS']);
+    Route::post('/positions/{position}/assign', [App\Http\Controllers\WorkAssignmentController::class, 'assignToPosition'])
+        ->name('positions.assign')->middleware(['auth', 'XSS']);
+    Route::get('/workers/unassigned', [App\Http\Controllers\WorkAssignmentController::class, 'getUnassignedWorkers'])
+        ->name('workers.unassigned')->middleware(['auth', 'XSS']);
 
     // Work Assignment routes
     Route::post('/work-place/{workPlace}/assign-worker', [WorkAssignmentController::class, 'assignWorker'])
@@ -1968,3 +1980,25 @@ Route::group(['prefix' => 'cashbox', 'as' => 'cashbox.', 'middleware' => ['auth'
     // Settings route
     Route::post('/settings', [App\Http\Controllers\CashboxController::class, 'saveSettings'])->name('settings.save');
 });
+
+
+// Document Templates routes
+Route::group(['prefix' => 'documents', 'as' => 'documents.', 'middleware' => ['auth', 'XSS']], function () {
+    Route::get('/', [App\Http\Controllers\DocumentTemplateController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\DocumentTemplateController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\DocumentTemplateController::class, 'store'])->name('store');
+    Route::get('/{template}/edit', [App\Http\Controllers\DocumentTemplateController::class, 'edit'])->name('edit');
+    Route::put('/{template}', [App\Http\Controllers\DocumentTemplateController::class, 'update'])->name('update');
+    Route::delete('/{template}', [App\Http\Controllers\DocumentTemplateController::class, 'destroy'])->name('destroy');
+});
+
+// Document Generation routes
+Route::post('/worker/{worker}/generate-document', [App\Http\Controllers\DocumentGeneratorController::class, 'generate'])
+    ->name('worker.generate-document')
+    ->middleware(['auth', 'XSS']);
+Route::get('/documents/templates-list', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplates'])
+    ->name('documents.templates-list')
+    ->middleware(['auth', 'XSS']);
+Route::get('/documents/template-fields/{template}', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplateFields'])
+    ->name('documents.template-fields')
+    ->middleware(['auth', 'XSS']);

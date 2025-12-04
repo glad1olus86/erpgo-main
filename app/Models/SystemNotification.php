@@ -34,10 +34,24 @@ class SystemNotification extends Model
 
     /**
      * Scope for current user's notifications (multi-tenancy)
+     * For cashbox notifications, also check target_user_id in data
      */
     public function scopeForCurrentUser($query)
     {
-        return $query->where('created_by', Auth::user()->creatorId());
+        $userId = Auth::user()->id;
+        $companyId = Auth::user()->creatorId();
+        
+        return $query->where(function ($q) use ($userId, $companyId) {
+            // Standard company-wide notifications
+            $q->where('created_by', $companyId)
+              ->where(function ($subQ) use ($userId) {
+                  // Either no target_user_id (broadcast to company)
+                  // Or target_user_id matches current user
+                  $subQ->whereNull('data->target_user_id')
+                       ->orWhereJsonContains('data->target_user_id', $userId)
+                       ->orWhereRaw("JSON_EXTRACT(data, '$.target_user_id') = ?", [$userId]);
+              });
+        });
     }
 
     /**

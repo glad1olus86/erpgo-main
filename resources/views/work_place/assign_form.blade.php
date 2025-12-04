@@ -3,6 +3,7 @@
         ->where('created_by', \Auth::user()->creatorId())
         ->get();
     $currentEmployees = $workPlace->currentAssignments->count();
+    $positions = $workPlace->positions()->orderBy('name')->get();
 @endphp
 
 {{ Form::open(['route' => ['work-place.assign.workers.bulk', $workPlace->id], 'method' => 'POST', 'id' => 'assign-workers-form']) }}
@@ -27,6 +28,23 @@
             <button type="button" class="btn btn-outline-primary filter-gender" data-gender="male">{{ __('Мужчины') }}</button>
             <button type="button" class="btn btn-outline-danger filter-gender" data-gender="female">{{ __('Женщины') }}</button>
         </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="position_id" class="form-label">{{ __('Должность') }} <span class="text-danger">*</span></label>
+        <select name="position_id" id="position_id" class="form-control" required>
+            <option value="">{{ __('Выберите должность') }}</option>
+            @foreach($positions as $position)
+                <option value="{{ $position->id }}">{{ $position->name }}</option>
+            @endforeach
+        </select>
+        @if($positions->isEmpty())
+            <small class="text-warning">
+                <i class="ti ti-alert-triangle"></i> 
+                {{ __('Сначала создайте должности в разделе') }} 
+                <a href="{{ route('work-place.positions', $workPlace->id) }}" target="_blank">{{ __('Должности') }}</a>
+            </small>
+        @endif
     </div>
 
     <input type="hidden" name="worker_ids" id="worker-ids-input">

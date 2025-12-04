@@ -124,6 +124,20 @@
                                 @endif
                             </div>
                         </div>
+                        {{-- Generate Document Button --}}
+                        @can('document_generate')
+                        <div class="col-md-12 mt-4">
+                            <div class="info-group">
+                                <h6>{{ __('Генерация документов') }}</h6>
+                                <div class="mt-2">
+                                    <a href="#" class="btn btn-sm btn-success"
+                                        onclick="event.preventDefault(); $('#generate-document-modal').modal('show');">
+                                        <i class="ti ti-file-text"></i> {{ __('Сгенерировать документ') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -245,11 +259,24 @@
                             <div class="col-md-3">
                                 <div class="d-flex align-items-start">
                                     <div class="theme-avtar bg-primary">
-                                        <i class="ti ti-briefcase"></i>
+                                        <i class="ti ti-building"></i>
                                     </div>
                                     <div class="ms-2">
                                         <p class="text-muted text-sm mb-0">{{ __('Рабочее место') }}</p>
                                         <h5 class="mb-0 mt-1">{{ $worker->currentWorkAssignment->workPlace->name }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="theme-avtar bg-secondary">
+                                        <i class="ti ti-briefcase"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <p class="text-muted text-sm mb-0">{{ __('Должность') }}</p>
+                                        <h5 class="mb-0 mt-1">
+                                            {{ $worker->currentWorkAssignment->position->name ?? __('Не указана') }}
+                                        </h5>
                                     </div>
                                 </div>
                             </div>
@@ -474,6 +501,11 @@
                 </div>
             </div>
         </div>
+
+        {{-- Document Generation Modal --}}
+        @can('document_generate')
+            @include('documents.generate_modal')
+        @endcan
     @endsection
 
     @push('script-page')

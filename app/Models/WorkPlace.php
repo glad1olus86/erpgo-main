@@ -42,4 +42,20 @@ class WorkPlace extends Model
     {
         return $this->currentAssignments()->count();
     }
+
+    /**
+     * Get all positions for this work place
+     */
+    public function positions()
+    {
+        return $this->hasMany(Position::class);
+    }
+
+    /**
+     * Get count of positions
+     */
+    public function getPositionCountAttribute()
+    {
+        return $this->positions()->count();
+    }
 }

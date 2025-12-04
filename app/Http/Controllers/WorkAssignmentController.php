@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Worker;
 use App\Models\WorkPlace;
 use App\Models\WorkAssignment;
+use App\Models\Position;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -107,6 +108,24 @@ class WorkAssignmentController extends Controller
     {
         if (Auth::user()->can('manage work place')) {
             if ($workPlace->created_by == Auth::user()->creatorId()) {
+                $validator = Validator::make($request->all(), [
+                    'position_id' => 'required|exists:positions,id',
+                ]);
+
+                if ($validator->fails()) {
+                    return redirect()->back()->with('error', __('Выберите должность'));
+                }
+
+                // Verify position belongs to this work place
+                $position = Position::where('id', $request->position_id)
+                    ->where('work_place_id', $workPlace->id)
+                    ->where('created_by', Auth::user()->creatorId())
+                    ->first();
+
+                if (!$position) {
+                    return redirect()->back()->with('error', __('Должность не найдена'));
+                }
+
                 $workerIds = array_filter(explode(',', $request->worker_ids ?? ''));
                 $assigned = 0;
 
@@ -120,6 +139,7 @@ class WorkAssignmentController extends Controller
                     $assignment = new WorkAssignment();
                     $assignment->worker_id = $worker->id;
                     $assignment->work_place_id = $workPlace->id;
+                    $assignment->position_id = $position->id;
                     $assignment->started_at = now();
                     $assignment->created_by = Auth::user()->creatorId();
                     $assignment->save();
@@ -163,6 +183,68 @@ class WorkAssignmentController extends Controller
             return redirect()->back()->with('error', __('Permission denied.'));
         }
         return redirect()->back()->with('error', __('Permission denied.'));
+    }
+
+    /**
+     * Assign workers to a position (bulk)
+     */
+    public function assignToPosition(Request $request, Position $position)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return redirect()->back()->with('error', __('Недостаточно прав'));
+        }
+
+        // Multi-tenancy check
+        if ($position->created_by !== Auth::user()->creatorId()) {
+            return redirect()->back()->with('error', __('Должность не найдена'));
+        }
+
+        $workerIds = array_filter(explode(',', $request->worker_ids ?? ''));
+        $assigned = 0;
+
+        foreach ($workerIds as $workerId) {
+            $worker = Worker::where('id', $workerId)
+                ->where('created_by', Auth::user()->creatorId())
+                ->first();
+
+            if (!$worker || $worker->currentWorkAssignment) {
+                continue;
+            }
+
+            WorkAssignment::create([
+                'worker_id' => $worker->id,
+                'work_place_id' => $position->work_place_id,
+                'position_id' => $position->id,
+                'started_at' => now(),
+                'created_by' => Auth::user()->creatorId(),
+            ]);
+            $assigned++;
+        }
+
+        return redirect()->back()->with('success', __('Устроено работников: :count', ['count' => $assigned]));
+    }
+
+    /**
+     * Get unassigned workers (AJAX)
+     */
+    public function getUnassignedWorkers()
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return response()->json(['error' => __('Недостаточно прав')], 403);
+        }
+
+        $assignedWorkerIds = WorkAssignment::whereNull('ended_at')
+            ->whereHas('worker', function ($q) {
+                $q->where('created_by', Auth::user()->creatorId());
+            })
+            ->pluck('worker_id');
+
+        $workers = Worker::where('created_by', Auth::user()->creatorId())
+            ->whereNotIn('id', $assignedWorkerIds)
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name']);
+
+        return response()->json($workers);
     }
 
     /**

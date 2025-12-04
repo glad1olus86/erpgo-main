@@ -62,6 +62,34 @@
                                     <input class="form-control" name="email" type="email" id="email" placeholder="{{ __('Enter Your Email Address') }}" value="{{ $userDetail->email }}" required autocomplete="email">
                                 </div>
                             </div>
+                            
+                            @if($userDetail->type == 'company')
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label for="company_address" class="col-form-label text-dark">{{__('Адрес')}}</label>
+                                    <input class="form-control" name="company_address" type="text" id="company_address" placeholder="{{ __('Введите адрес компании') }}" value="{{ $userDetail->company_address }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label for="company_ico" class="col-form-label text-dark">{{__('IČO')}}</label>
+                                    <input class="form-control" name="company_ico" type="text" id="company_ico" placeholder="{{ __('Введите IČO') }}" value="{{ $userDetail->company_ico }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label for="company_phone" class="col-form-label text-dark">{{__('Телефон')}}</label>
+                                    <input class="form-control" name="company_phone" type="text" id="company_phone" placeholder="{{ __('Введите номер телефона') }}" value="{{ $userDetail->company_phone }}">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label for="company_bank_account" class="col-form-label text-dark">{{__('Банковский счёт')}}</label>
+                                    <input class="form-control" name="company_bank_account" type="text" id="company_bank_account" placeholder="{{ __('Введите банковский счёт') }}" value="{{ $userDetail->company_bank_account }}">
+                                </div>
+                            </div>
+                            @endif
+                            
                             <div class="col-lg-6 col-md-6">
                                 <div class="form-group">
                                     <div class="theme-avtar-logo mt-4">

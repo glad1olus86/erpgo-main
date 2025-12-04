@@ -412,6 +412,15 @@ class UserController extends Controller
         }
         $user['name'] = $request['name'];
         $user['email'] = $request['email'];
+        
+        // Save company fields if user is company type
+        if ($user->type == 'company') {
+            $user['company_address'] = $request['company_address'];
+            $user['company_ico'] = $request['company_ico'];
+            $user['company_phone'] = $request['company_phone'];
+            $user['company_bank_account'] = $request['company_bank_account'];
+        }
+        
         $user->save();
         CustomField::saveData($user, $request->customField);
 

@@ -30,7 +30,7 @@
                         @foreach($notifications as $notification)
                             <div class="list-group-item d-flex align-items-start {{ !$notification->is_read ? 'bg-light' : '' }}">
                                 <div class="me-3">
-                                    <span class="avatar avatar-sm bg-{{ $notification->color }}-subtle">
+                                    <span class="avatar avatar-sm bg-white border">
                                         <i class="{{ $notification->icon }} text-{{ $notification->color }}"></i>
                                     </span>
                                 </div>
