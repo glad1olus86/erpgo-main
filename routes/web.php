@@ -819,6 +819,10 @@ Route::group(['middleware' => ['verified']], function () {
     Route::post('/worker/scan-document', [WorkerController::class, 'scanDocument'])
         ->name('worker.scan.document')->middleware(['auth', 'XSS']);
     
+    // Worker duplicate check
+    Route::post('/worker/check-duplicate', [WorkerController::class, 'checkDuplicate'])
+        ->name('worker.check.duplicate')->middleware(['auth', 'XSS']);
+    
     // Bulk actions for workers (must be before resource route)
     Route::post('/worker/bulk-assign', [WorkerController::class, 'bulkAssign'])
         ->name('worker.bulk.assign')->middleware(['auth', 'XSS']);
@@ -876,10 +880,18 @@ Route::group(['middleware' => ['verified']], function () {
     // Position routes
     Route::get('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'index'])
         ->name('work-place.positions')->middleware(['auth', 'XSS']);
+    Route::get('/work-place/{workPlace}/positions/json', [App\Http\Controllers\PositionController::class, 'getPositionsJson'])
+        ->name('work-place.positions.json')->middleware(['auth', 'XSS']);
     Route::post('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'store'])
         ->name('positions.store')->middleware(['auth', 'XSS']);
     Route::delete('/positions/{position}', [App\Http\Controllers\PositionController::class, 'destroy'])
         ->name('positions.destroy')->middleware(['auth', 'XSS']);
+    Route::get('/positions/{position}/workers', [App\Http\Controllers\PositionController::class, 'showWorkers'])
+        ->name('positions.workers')->middleware(['auth', 'XSS']);
+    Route::post('/positions/{position}/assign-workers', [App\Http\Controllers\PositionController::class, 'assignWorkers'])
+        ->name('positions.assign.workers')->middleware(['auth', 'XSS']);
+    Route::post('/positions/{position}/dismiss-workers', [App\Http\Controllers\PositionController::class, 'dismissWorkers'])
+        ->name('positions.dismiss.workers')->middleware(['auth', 'XSS']);
     Route::post('/positions/{position}/assign', [App\Http\Controllers\WorkAssignmentController::class, 'assignToPosition'])
         ->name('positions.assign')->middleware(['auth', 'XSS']);
     Route::get('/workers/unassigned', [App\Http\Controllers\WorkAssignmentController::class, 'getUnassignedWorkers'])
@@ -2001,4 +2013,18 @@ Route::get('/documents/templates-list', [App\Http\Controllers\DocumentGeneratorC
     ->middleware(['auth', 'XSS']);
 Route::get('/documents/template-fields/{template}', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplateFields'])
     ->name('documents.template-fields')
+    ->middleware(['auth', 'XSS']);
+
+// Vehicle (Transport) routes
+Route::resource('vehicles', App\Http\Controllers\VehicleController::class)->middleware(['auth', 'XSS']);
+
+// Technical Inspection routes
+Route::post('/vehicles/{vehicle}/inspections', [App\Http\Controllers\TechnicalInspectionController::class, 'store'])
+    ->name('inspections.store')
+    ->middleware(['auth', 'XSS']);
+Route::put('/inspections/{inspection}', [App\Http\Controllers\TechnicalInspectionController::class, 'update'])
+    ->name('inspections.update')
+    ->middleware(['auth', 'XSS']);
+Route::delete('/inspections/{inspection}', [App\Http\Controllers\TechnicalInspectionController::class, 'destroy'])
+    ->name('inspections.destroy')
     ->middleware(['auth', 'XSS']);

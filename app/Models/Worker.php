@@ -23,6 +23,11 @@ class Worker extends Model
         'created_by',
     ];
 
+    protected $casts = [
+        'dob' => 'date',
+        'registration_date' => 'date',
+    ];
+
 
     public function creator()
     {

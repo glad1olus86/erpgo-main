@@ -45,96 +45,148 @@ class CashDiagramService
             ->orderBy('created_at', 'asc')
             ->get();
 
-        // Start with deposit transactions (root nodes), sorted by time
+        // Get all deposit transactions
         $deposits = $transactions->where('type', CashTransaction::TYPE_DEPOSIT)->values();
         
         $tree = [];
         
+        // If no deposits, return empty tree
+        if ($deposits->isEmpty()) {
+            return [
+                'period' => [
+                    'id' => $period->id,
+                    'name' => $period->name,
+                    'year' => $period->year,
+                    'month' => $period->month,
+                    'total_deposited' => (float) $period->total_deposited,
+                    'is_frozen' => $period->is_frozen,
+                ],
+                'nodes' => [],
+            ];
+        }
+        
         // Track which transactions have been used to avoid duplicates
         $usedTransactionIds = collect();
-        
-        // Track carryover from previous deposits
-        $carryoverFromPrevious = 0;
         
         // Global counter for salary lists in this period
         $salaryListCounter = 1;
         
-        // Process each deposit with its time-bounded transactions
-        foreach ($deposits as $index => $deposit) {
+        // Combine all deposits into one node
+        $firstDeposit = $deposits->first();
+        $totalDeposited = $deposits->sum('amount');
+        
+        // Mark all deposits as used
+        foreach ($deposits as $deposit) {
             $usedTransactionIds->push($deposit->id);
-            
-            // Get the time boundary for this deposit
-            // Transactions belong to this deposit if created AFTER this deposit and BEFORE next deposit
-            $depositTime = $deposit->created_at;
-            $nextDeposit = $deposits->get($index + 1);
-            $nextDepositTime = $nextDeposit ? $nextDeposit->created_at : null;
-            
-            // Filter transactions that belong to this deposit's time window
-            $depositTransactions = $transactions->filter(function ($t) use ($depositTime, $nextDepositTime) {
-                // Skip deposits themselves
-                if ($t->type === CashTransaction::TYPE_DEPOSIT) {
-                    return false;
-                }
-                
-                // Transaction must be created after this deposit
-                if ($t->created_at < $depositTime) {
-                    return false;
-                }
-                
-                // If there's a next deposit, transaction must be before it
-                if ($nextDepositTime && $t->created_at >= $nextDepositTime) {
-                    return false;
-                }
-                
-                return true;
-            });
-            
-            // Track carryover by recipient for child transactions
-            $recipientCarryovers = [];
-            $node = $this->buildNodeWithChildren($deposit, $depositTransactions, $usedTransactionIds, $recipientCarryovers, $salaryListCounter);
-            
-            // Calculate spent amount for this deposit's transactions
-            $spentAmount = $depositTransactions->whereIn('type', [
-                CashTransaction::TYPE_DISTRIBUTION,
-                CashTransaction::TYPE_SELF_SALARY,
-            ])->where('sender_id', $deposit->recipient_id)
-              ->where('sender_type', $deposit->recipient_type)
-              ->sum('amount');
-            
-            // Calculate refunds received back
-            $refundsReceived = $depositTransactions->where('type', CashTransaction::TYPE_REFUND)
-                ->where('recipient_id', $deposit->recipient_id)
-                ->where('recipient_type', $deposit->recipient_type)
-                ->sum('amount');
-            
-            // Total available = deposit amount + carryover from previous
-            $totalAvailable = $deposit->amount + $carryoverFromPrevious;
-            
-            // Calculate remaining balance for this deposit period
-            // Available = total available + refunds - spent
-            $availableForThisDeposit = $totalAvailable + $refundsReceived - $spentAmount;
-            
-            // Add carryover info from previous deposit and update amount
-            if ($carryoverFromPrevious > 0) {
-                $node['carryover_received'] = (float) $carryoverFromPrevious;
-                // Update amount to show total (original deposit + carryover)
-                $node['amount'] = (float) $totalAvailable;
-            }
-            
-            // If there's a next deposit and remaining balance, carryover goes there
-            if ($nextDeposit && $availableForThisDeposit > 0) {
-                $node['carryover_to_next'] = (float) $availableForThisDeposit;
-                // Money moved to next deposit - show 0 on this one
-                $node['current_balance'] = 0;
-                $carryoverFromPrevious = $availableForThisDeposit;
-            } else {
-                // No next deposit - show actual remaining balance
-                $node['current_balance'] = max(0, (float) $availableForThisDeposit);
-                $carryoverFromPrevious = 0;
-            }
-            
-            $tree[] = $node;
         }
+        
+        // Get all non-deposit transactions
+        $allDistributions = $transactions->filter(function ($t) {
+            return $t->type !== CashTransaction::TYPE_DEPOSIT;
+        });
+        
+        // Build combined deposit node
+        $node = $this->formatNode($firstDeposit, (float) $totalDeposited);
+        $node['amount'] = (float) $totalDeposited;
+        $node['original_amount'] = (float) $totalDeposited;
+        
+        // Add deposit history if multiple deposits
+        if ($deposits->count() > 1) {
+            $depositHistory = [];
+            foreach ($deposits->take(5) as $dep) {
+                $depositHistory[] = [
+                    'amount' => (float) $dep->amount,
+                    'date' => $dep->created_at->toIso8601String(),
+                ];
+            }
+            $node['deposit_history'] = $depositHistory;
+            $node['deposit_count'] = $deposits->count();
+            $node['has_multiple_deposits'] = true;
+        }
+        
+        // Track carryover by recipient for child transactions
+        $recipientCarryovers = [];
+        
+        // Build children from all distributions
+        $childNodes = [];
+        $workerSalaryNodes = [];
+        
+        // Get direct distributions from the deposit recipient (boss)
+        $directDistributions = $allDistributions->filter(function ($t) use ($firstDeposit, $usedTransactionIds) {
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            if ($t->type === CashTransaction::TYPE_REFUND) {
+                return false;
+            }
+            return $t->sender_id === $firstDeposit->recipient_id &&
+                   $t->sender_type === $firstDeposit->recipient_type;
+        });
+        
+        foreach ($directDistributions as $child) {
+            $usedTransactionIds->push($child->id);
+            
+            $childNode = $this->buildNodeWithChildren($child, $allDistributions, $usedTransactionIds, $recipientCarryovers, $salaryListCounter);
+            
+            // Check if this is a salary to a worker - collect for grouping
+            if ($child->distribution_type === CashTransaction::DISTRIBUTION_TYPE_SALARY && 
+                $child->recipient_type === Worker::class) {
+                $workerSalaryNodes[] = $childNode;
+            } else {
+                $childNodes[] = $childNode;
+            }
+        }
+        
+        // Group worker salary nodes into lists if there are enough
+        $childNodes = array_merge($childNodes, $this->groupWorkerSalaries($workerSalaryNodes, $salaryListCounter));
+        
+        // Add self_salary transactions
+        $selfSalaries = $allDistributions->filter(function ($t) use ($firstDeposit, $usedTransactionIds) {
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            return $t->type === CashTransaction::TYPE_SELF_SALARY &&
+                   $t->sender_id === $firstDeposit->recipient_id &&
+                   $t->sender_type === $firstDeposit->recipient_type;
+        });
+
+        foreach ($selfSalaries as $selfSalary) {
+            $usedTransactionIds->push($selfSalary->id);
+            $childNodes[] = $this->formatNode($selfSalary, (float) $selfSalary->amount);
+        }
+        
+        // Add refunds
+        $refundNodes = [];
+        $refundsReceived = 0;
+        $refunds = $allDistributions->filter(function ($t) use ($firstDeposit, $usedTransactionIds) {
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            return $t->type === CashTransaction::TYPE_REFUND &&
+                   $t->recipient_id === $firstDeposit->recipient_id &&
+                   $t->recipient_type === $firstDeposit->recipient_type;
+        });
+
+        foreach ($refunds as $refund) {
+            $usedTransactionIds->push($refund->id);
+            $refundsReceived += $refund->amount;
+            $refundNodes[] = $this->formatNode($refund);
+        }
+        
+        $node['children'] = $childNodes;
+        $node['refunds'] = $refundNodes;
+        
+        // Calculate remaining balance
+        $spentAmount = $allDistributions->whereIn('type', [
+            CashTransaction::TYPE_DISTRIBUTION,
+            CashTransaction::TYPE_SELF_SALARY,
+        ])->where('sender_id', $firstDeposit->recipient_id)
+          ->where('sender_type', $firstDeposit->recipient_type)
+          ->sum('amount');
+        
+        $node['current_balance'] = max(0, (float) ($totalDeposited + $refundsReceived - $spentAmount));
+        
+        $tree[] = $node;
 
         return [
             'period' => [
@@ -174,9 +226,24 @@ class CashDiagramService
             return $node;
         }
 
+        // Find the time boundary for this transaction
+        // Children belong to this transaction if created AFTER this transaction
+        // and BEFORE the next transaction to the same recipient
+        $transactionTime = $transaction->created_at;
+        
+        // Find next transaction to the same recipient (to determine time boundary)
+        $nextToSameRecipient = $allTransactions->filter(function ($t) use ($transaction) {
+            return $t->type === CashTransaction::TYPE_DISTRIBUTION &&
+                   $t->recipient_id === $transaction->recipient_id &&
+                   $t->recipient_type === $transaction->recipient_type &&
+                   $t->created_at > $transaction->created_at;
+        })->sortBy('created_at')->first();
+        
+        $nextTransactionTime = $nextToSameRecipient ? $nextToSameRecipient->created_at : null;
+
         // Find child transactions (where this transaction's recipient is the sender)
-        // Only include transactions that haven't been used yet
-        $children = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds) {
+        // Only include transactions within the time window
+        $children = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds, $transactionTime, $nextTransactionTime) {
             // Skip already used transactions
             if ($usedTransactionIds->contains($t->id)) {
                 return false;
@@ -203,8 +270,22 @@ class CashDiagramService
             }
             
             // Match sender to recipient of parent transaction
-            return $t->sender_id === $transaction->recipient_id &&
-                   $t->sender_type === $transaction->recipient_type;
+            if ($t->sender_id !== $transaction->recipient_id ||
+                $t->sender_type !== $transaction->recipient_type) {
+                return false;
+            }
+            
+            // Must be after this transaction
+            if ($t->created_at < $transactionTime) {
+                return false;
+            }
+            
+            // If there's a next transaction to same recipient, must be before it
+            if ($nextTransactionTime && $t->created_at >= $nextTransactionTime) {
+                return false;
+            }
+            
+            return true;
         });
 
         // Calculate how much this recipient spent from this transaction
@@ -231,16 +312,30 @@ class CashDiagramService
         $childNodes = array_merge($childNodes, $this->groupWorkerSalaries($workerSalaryNodes, $salaryListCounter));
         
         // Add self_salary transactions as special children (leaf nodes)
-        // Only include transactions that haven't been used yet
-        $selfSalaries = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds) {
+        // Only include transactions within the time window
+        $selfSalaries = $allTransactions->filter(function ($t) use ($transaction, $usedTransactionIds, $transactionTime, $nextTransactionTime) {
             if ($usedTransactionIds->contains($t->id)) {
                 return false;
             }
             
-            return $t->type === CashTransaction::TYPE_SELF_SALARY &&
-                   $t->sender_id === $transaction->recipient_id &&
-                   $t->sender_type === $transaction->recipient_type &&
-                   $t->id !== $transaction->id;
+            if ($t->type !== CashTransaction::TYPE_SELF_SALARY ||
+                $t->sender_id !== $transaction->recipient_id ||
+                $t->sender_type !== $transaction->recipient_type ||
+                $t->id === $transaction->id) {
+                return false;
+            }
+            
+            // Must be after this transaction
+            if ($t->created_at < $transactionTime) {
+                return false;
+            }
+            
+            // If there's a next transaction to same recipient, must be before it
+            if ($nextTransactionTime && $t->created_at >= $nextTransactionTime) {
+                return false;
+            }
+            
+            return true;
         });
 
         foreach ($selfSalaries as $selfSalary) {
@@ -289,13 +384,13 @@ class CashDiagramService
         }
         
         // Store carryover for next transaction to this recipient
-        // Always show actual remaining balance - carryover_to_next is just for the arrow
-        $node['current_balance'] = max(0, $remaining);
-        
-        if ($remaining > 0) {
+        // Only set carryover_to_next if there IS a next transaction to this recipient
+        if ($nextToSameRecipient && $remaining > 0) {
             $recipientCarryovers[$recipientKey] = $remaining;
             $node['carryover_to_next'] = (float) $remaining;
+            $node['current_balance'] = 0; // Money moved to next transaction
         } else {
+            $node['current_balance'] = max(0, $remaining);
             $recipientCarryovers[$recipientKey] = 0;
         }
 
@@ -613,5 +708,501 @@ class CashDiagramService
         }
         
         return $many;
+    }
+
+    /**
+     * Build tree structure for manager view
+     * Shows: incoming salary/transfers, outgoing distributions to curators with their branches
+     *
+     * @param CashPeriod $period
+     * @param User $manager
+     * @return array
+     */
+    public function buildTreeForManager(CashPeriod $period, User $manager): array
+    {
+        $transactions = CashTransaction::where('cash_period_id', $period->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $nodes = [];
+        $salaryListCounter = 1;
+        $usedTransactionIds = collect();
+        $carryoverFromPrevious = 0;
+
+        // Get incoming transactions (where manager is recipient)
+        $incoming = $this->getIncomingTransactions($transactions, $manager)->values();
+        
+        foreach ($incoming as $index => $transaction) {
+            $usedTransactionIds->push($transaction->id);
+            
+            $node = $this->formatNode($transaction, (float) $transaction->amount);
+            $node['is_incoming'] = true;
+            
+            // For transfer transactions, build children (outgoing from this money)
+            // Only include transactions within this transfer's time window
+            if ($transaction->distribution_type === CashTransaction::DISTRIBUTION_TYPE_TRANSFER) {
+                // Get time boundaries for this incoming transaction
+                $transactionTime = $transaction->created_at;
+                $nextIncoming = $incoming->get($index + 1);
+                $nextIncomingTime = $nextIncoming ? $nextIncoming->created_at : null;
+                
+                $children = $this->buildManagerOutgoingBranchTimeBounded(
+                    $transactions, 
+                    $manager, 
+                    $transactionTime,
+                    $nextIncomingTime,
+                    $salaryListCounter,
+                    $usedTransactionIds
+                );
+                $node['children'] = $children;
+                
+                // Calculate spent amount
+                $spent = collect($children)->sum('original_amount');
+                
+                // Total available = transaction amount + carryover from previous
+                $totalAvailable = $transaction->amount + $carryoverFromPrevious;
+                $remaining = $totalAvailable - $spent;
+                
+                // Add carryover info if received from previous
+                if ($carryoverFromPrevious > 0) {
+                    $node['carryover_received'] = (float) $carryoverFromPrevious;
+                    $node['amount'] = (float) $totalAvailable;
+                }
+                
+                // If there's a next incoming and remaining balance, carryover goes there
+                if ($nextIncoming && $remaining > 0) {
+                    $node['carryover_to_next'] = (float) $remaining;
+                    $node['current_balance'] = 0;
+                    $carryoverFromPrevious = $remaining;
+                } else {
+                    $node['current_balance'] = max(0, (float) $remaining);
+                    $carryoverFromPrevious = 0;
+                }
+            }
+            
+            $nodes[] = $node;
+        }
+
+        // If no incoming transfers but has outgoing, show outgoing as root
+        if (empty($incoming->where('distribution_type', CashTransaction::DISTRIBUTION_TYPE_TRANSFER)->count())) {
+            $outgoing = $this->buildManagerOutgoingBranch($transactions, $manager, $salaryListCounter);
+            foreach ($outgoing as $outNode) {
+                $outNode['is_outgoing_root'] = true;
+                $nodes[] = $outNode;
+            }
+        }
+
+        return [
+            'period' => [
+                'id' => $period->id,
+                'name' => $period->name,
+                'year' => $period->year,
+                'month' => $period->month,
+                'total_deposited' => (float) $period->total_deposited,
+                'is_frozen' => $period->is_frozen,
+            ],
+            'nodes' => $nodes,
+            'view_mode' => 'manager',
+        ];
+    }
+
+    /**
+     * Build tree structure for curator view
+     * Shows: incoming salary/transfers, outgoing worker salaries
+     *
+     * @param CashPeriod $period
+     * @param User $curator
+     * @return array
+     */
+    public function buildTreeForCurator(CashPeriod $period, User $curator): array
+    {
+        $transactions = CashTransaction::where('cash_period_id', $period->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $nodes = [];
+        $salaryListCounter = 1;
+        $usedTransactionIds = collect();
+        $carryoverFromPrevious = 0;
+
+        // Get incoming transactions (where curator is recipient)
+        $incoming = $this->getIncomingTransactions($transactions, $curator)->values();
+        
+        foreach ($incoming as $index => $transaction) {
+            $usedTransactionIds->push($transaction->id);
+            
+            $node = $this->formatNode($transaction, (float) $transaction->amount);
+            $node['is_incoming'] = true;
+            
+            // For transfer transactions, build children (worker salaries)
+            // Only include transactions within this transfer's time window
+            if ($transaction->distribution_type === CashTransaction::DISTRIBUTION_TYPE_TRANSFER) {
+                // Get time boundaries for this incoming transaction
+                $transactionTime = $transaction->created_at;
+                $nextIncoming = $incoming->get($index + 1);
+                $nextIncomingTime = $nextIncoming ? $nextIncoming->created_at : null;
+                
+                $children = $this->buildCuratorOutgoingBranchTimeBounded(
+                    $transactions, 
+                    $curator, 
+                    $transactionTime,
+                    $nextIncomingTime,
+                    $salaryListCounter,
+                    $usedTransactionIds
+                );
+                $node['children'] = $children;
+                
+                // Calculate spent amount
+                $spent = collect($children)->sum(function ($child) {
+                    return $child['original_amount'] ?? $child['amount'];
+                });
+                
+                // Total available = transaction amount + carryover from previous
+                $totalAvailable = $transaction->amount + $carryoverFromPrevious;
+                $remaining = $totalAvailable - $spent;
+                
+                // Add carryover info if received from previous
+                if ($carryoverFromPrevious > 0) {
+                    $node['carryover_received'] = (float) $carryoverFromPrevious;
+                    $node['amount'] = (float) $totalAvailable;
+                }
+                
+                // If there's a next incoming and remaining balance, carryover goes there
+                if ($nextIncoming && $remaining > 0) {
+                    $node['carryover_to_next'] = (float) $remaining;
+                    $node['current_balance'] = 0;
+                    $carryoverFromPrevious = $remaining;
+                } else {
+                    $node['current_balance'] = max(0, (float) $remaining);
+                    $carryoverFromPrevious = 0;
+                }
+            }
+            
+            $nodes[] = $node;
+        }
+
+        // If no incoming transfers but has outgoing, show outgoing as root
+        if (empty($incoming->where('distribution_type', CashTransaction::DISTRIBUTION_TYPE_TRANSFER)->count())) {
+            $outgoing = $this->buildCuratorOutgoingBranch($transactions, $curator, $salaryListCounter);
+            foreach ($outgoing as $outNode) {
+                $outNode['is_outgoing_root'] = true;
+                $nodes[] = $outNode;
+            }
+        }
+
+        return [
+            'period' => [
+                'id' => $period->id,
+                'name' => $period->name,
+                'year' => $period->year,
+                'month' => $period->month,
+                'total_deposited' => (float) $period->total_deposited,
+                'is_frozen' => $period->is_frozen,
+            ],
+            'nodes' => $nodes,
+            'view_mode' => 'curator',
+        ];
+    }
+
+    /**
+     * Get incoming transactions for a user (salary and transfers where user is recipient)
+     */
+    protected function getIncomingTransactions(Collection $transactions, User $user): Collection
+    {
+        return $transactions->filter(function ($t) use ($user) {
+            // Must be distribution type
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            
+            // User must be recipient
+            if ($t->recipient_id !== $user->id || $t->recipient_type !== User::class) {
+                return false;
+            }
+            
+            // Only salary or transfer
+            return in_array($t->distribution_type, [
+                CashTransaction::DISTRIBUTION_TYPE_SALARY,
+                CashTransaction::DISTRIBUTION_TYPE_TRANSFER,
+            ]);
+        })->values();
+    }
+
+    /**
+     * Build outgoing branch for manager (distributions to curators and their worker salaries)
+     */
+    protected function buildManagerOutgoingBranch(Collection $transactions, User $manager, int &$salaryListCounter): array
+    {
+        $children = [];
+        $usedIds = collect();
+
+        // Get distributions where manager is sender
+        $outgoing = $transactions->filter(function ($t) use ($manager) {
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            return $t->sender_id === $manager->id && $t->sender_type === User::class;
+        });
+
+        foreach ($outgoing as $transaction) {
+            if ($usedIds->contains($transaction->id)) {
+                continue;
+            }
+            $usedIds->push($transaction->id);
+
+            $node = $this->formatNode($transaction, (float) $transaction->amount);
+            
+            // If recipient is a user (curator), build their branch
+            if ($transaction->recipient_type === User::class) {
+                $curatorId = $transaction->recipient_id;
+                $curatorBranch = $this->buildCuratorBranchForManager($transactions, $curatorId, $salaryListCounter, $usedIds);
+                $node['children'] = $curatorBranch;
+                
+                // Calculate curator's remaining balance
+                $spent = collect($curatorBranch)->sum(function ($child) {
+                    return $child['original_amount'] ?? $child['amount'];
+                });
+                $node['current_balance'] = max(0, (float) $transaction->amount - $spent);
+            }
+            
+            $children[] = $node;
+        }
+
+        return $children;
+    }
+
+    /**
+     * Build outgoing branch for manager with time boundaries
+     * Only includes transactions created after startTime and before endTime
+     */
+    protected function buildManagerOutgoingBranchTimeBounded(
+        Collection $transactions, 
+        User $manager, 
+        $startTime,
+        $endTime,
+        int &$salaryListCounter,
+        Collection &$usedTransactionIds
+    ): array {
+        $children = [];
+
+        // Get distributions where manager is sender within time window
+        $outgoing = $transactions->filter(function ($t) use ($manager, $startTime, $endTime, $usedTransactionIds) {
+            // Skip already used transactions
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            if ($t->sender_id !== $manager->id || $t->sender_type !== User::class) {
+                return false;
+            }
+            
+            // Must be after start time
+            if ($t->created_at < $startTime) {
+                return false;
+            }
+            
+            // If there's an end time, must be before it
+            if ($endTime && $t->created_at >= $endTime) {
+                return false;
+            }
+            
+            return true;
+        });
+
+        foreach ($outgoing as $transaction) {
+            $usedTransactionIds->push($transaction->id);
+
+            $node = $this->formatNode($transaction, (float) $transaction->amount);
+            
+            // If recipient is a user (curator), build their branch with time bounds
+            if ($transaction->recipient_type === User::class) {
+                $curatorId = $transaction->recipient_id;
+                $curatorBranch = $this->buildCuratorBranchForManagerTimeBounded(
+                    $transactions, 
+                    $curatorId, 
+                    $startTime,
+                    $endTime,
+                    $salaryListCounter, 
+                    $usedTransactionIds
+                );
+                $node['children'] = $curatorBranch;
+                
+                // Calculate curator's remaining balance
+                $spent = collect($curatorBranch)->sum(function ($child) {
+                    return $child['original_amount'] ?? $child['amount'];
+                });
+                $node['current_balance'] = max(0, (float) $transaction->amount - $spent);
+            }
+            
+            $children[] = $node;
+        }
+
+        return $children;
+    }
+
+    /**
+     * Build curator's branch as seen by manager (worker salaries from this curator)
+     */
+    protected function buildCuratorBranchForManager(Collection $transactions, int $curatorId, int &$salaryListCounter, Collection &$usedIds): array
+    {
+        $workerSalaryNodes = [];
+
+        // Get worker salary distributions from this curator
+        $curatorDistributions = $transactions->filter(function ($t) use ($curatorId) {
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            if ($t->sender_id !== $curatorId || $t->sender_type !== User::class) {
+                return false;
+            }
+            // Only worker salaries
+            return $t->recipient_type === Worker::class && 
+                   $t->distribution_type === CashTransaction::DISTRIBUTION_TYPE_SALARY;
+        });
+
+        foreach ($curatorDistributions as $transaction) {
+            if ($usedIds->contains($transaction->id)) {
+                continue;
+            }
+            $usedIds->push($transaction->id);
+            $workerSalaryNodes[] = $this->formatNode($transaction, (float) $transaction->amount);
+        }
+
+        // Group into salary lists if enough
+        return $this->groupWorkerSalaries($workerSalaryNodes, $salaryListCounter);
+    }
+
+    /**
+     * Build curator's branch as seen by manager with time boundaries
+     */
+    protected function buildCuratorBranchForManagerTimeBounded(
+        Collection $transactions, 
+        int $curatorId, 
+        $startTime,
+        $endTime,
+        int &$salaryListCounter, 
+        Collection &$usedIds
+    ): array {
+        $workerSalaryNodes = [];
+
+        // Get worker salary distributions from this curator within time window
+        $curatorDistributions = $transactions->filter(function ($t) use ($curatorId, $startTime, $endTime, $usedIds) {
+            // Skip already used transactions
+            if ($usedIds->contains($t->id)) {
+                return false;
+            }
+            
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            if ($t->sender_id !== $curatorId || $t->sender_type !== User::class) {
+                return false;
+            }
+            
+            // Must be after start time
+            if ($t->created_at < $startTime) {
+                return false;
+            }
+            
+            // If there's an end time, must be before it
+            if ($endTime && $t->created_at >= $endTime) {
+                return false;
+            }
+            
+            // Only worker salaries
+            return $t->recipient_type === Worker::class && 
+                   $t->distribution_type === CashTransaction::DISTRIBUTION_TYPE_SALARY;
+        });
+
+        foreach ($curatorDistributions as $transaction) {
+            $usedIds->push($transaction->id);
+            $workerSalaryNodes[] = $this->formatNode($transaction, (float) $transaction->amount);
+        }
+
+        // Group into salary lists if enough
+        return $this->groupWorkerSalaries($workerSalaryNodes, $salaryListCounter);
+    }
+
+    /**
+     * Build outgoing branch for curator (worker salaries only)
+     */
+    protected function buildCuratorOutgoingBranch(Collection $transactions, User $curator, int &$salaryListCounter): array
+    {
+        $workerSalaryNodes = [];
+
+        // Get worker salary distributions from this curator
+        $outgoing = $transactions->filter(function ($t) use ($curator) {
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            if ($t->sender_id !== $curator->id || $t->sender_type !== User::class) {
+                return false;
+            }
+            // Only worker salaries
+            return $t->recipient_type === Worker::class && 
+                   $t->distribution_type === CashTransaction::DISTRIBUTION_TYPE_SALARY;
+        });
+
+        foreach ($outgoing as $transaction) {
+            $workerSalaryNodes[] = $this->formatNode($transaction, (float) $transaction->amount);
+        }
+
+        // Group into salary lists if enough
+        return $this->groupWorkerSalaries($workerSalaryNodes, $salaryListCounter);
+    }
+
+    /**
+     * Build outgoing branch for curator with time boundaries
+     * Only includes transactions created after startTime and before endTime
+     */
+    protected function buildCuratorOutgoingBranchTimeBounded(
+        Collection $transactions, 
+        User $curator, 
+        $startTime,
+        $endTime,
+        int &$salaryListCounter,
+        Collection &$usedTransactionIds
+    ): array {
+        $workerSalaryNodes = [];
+
+        // Get worker salary distributions from this curator within time window
+        $outgoing = $transactions->filter(function ($t) use ($curator, $startTime, $endTime, $usedTransactionIds) {
+            // Skip already used transactions
+            if ($usedTransactionIds->contains($t->id)) {
+                return false;
+            }
+            
+            if ($t->type !== CashTransaction::TYPE_DISTRIBUTION) {
+                return false;
+            }
+            if ($t->sender_id !== $curator->id || $t->sender_type !== User::class) {
+                return false;
+            }
+            
+            // Must be after start time
+            if ($t->created_at < $startTime) {
+                return false;
+            }
+            
+            // If there's an end time, must be before it
+            if ($endTime && $t->created_at >= $endTime) {
+                return false;
+            }
+            
+            // Only worker salaries
+            return $t->recipient_type === Worker::class && 
+                   $t->distribution_type === CashTransaction::DISTRIBUTION_TYPE_SALARY;
+        });
+
+        foreach ($outgoing as $transaction) {
+            $usedTransactionIds->push($transaction->id);
+            $workerSalaryNodes[] = $this->formatNode($transaction, (float) $transaction->amount);
+        }
+
+        // Group into salary lists if enough
+        return $this->groupWorkerSalaries($workerSalaryNodes, $salaryListCounter);
     }
 }

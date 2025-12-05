@@ -33,16 +33,26 @@
     <div class="mb-3">
         <label for="position_id" class="form-label">{{ __('Должность') }} <span class="text-danger">*</span></label>
         <select name="position_id" id="position_id" class="form-control" required>
-            <option value="">{{ __('Выберите должность') }}</option>
-            @foreach($positions as $position)
-                <option value="{{ $position->id }}">{{ $position->name }}</option>
-            @endforeach
+            @if($positions->count() === 1)
+                {{-- Auto-select if only one position --}}
+                <option value="{{ $positions->first()->id }}" selected>{{ $positions->first()->name }}</option>
+            @else
+                <option value="">{{ __('Выберите должность') }}</option>
+                @foreach($positions as $position)
+                    <option value="{{ $position->id }}">{{ $position->name }}</option>
+                @endforeach
+            @endif
         </select>
         @if($positions->isEmpty())
             <small class="text-warning">
                 <i class="ti ti-alert-triangle"></i> 
                 {{ __('Сначала создайте должности в разделе') }} 
                 <a href="{{ route('work-place.positions', $workPlace->id) }}" target="_blank">{{ __('Должности') }}</a>
+            </small>
+        @elseif($positions->count() === 1)
+            <small class="text-success">
+                <i class="ti ti-check"></i> 
+                {{ __('Должность выбрана автоматически') }}
             </small>
         @endif
     </div>

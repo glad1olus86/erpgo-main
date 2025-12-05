@@ -313,7 +313,7 @@ class DocumentGeneratorService
             '{worker_gender}' => $worker->gender ?? '',
             
             // Company variables
-            '{company_name}' => $company ? ($company->name ?? '') : '',
+            '{company_name}' => $company ? (!empty($company->company_name) ? $company->company_name : $company->name) : '',
             '{company_address}' => $company ? ($company->company_address ?? '') : '',
             '{company_ico}' => $company ? ($company->company_ico ?? '') : '',
             '{company_phone}' => $company ? ($company->company_phone ?? '') : '',
@@ -399,13 +399,56 @@ class DocumentGeneratorService
 
     /**
      * Generate filename
+     * Format: {FullName_Latin}_{DocumentName}_{Date}.{ext}
      */
     protected function generateFilename(DocumentTemplate $template, Worker $worker, string $extension): string
     {
-        $name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $template->name);
-        $workerName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $worker->first_name . '_' . $worker->last_name);
+        // Convert worker name to Latin characters
+        $workerName = $this->transliterate($worker->first_name . '_' . $worker->last_name);
+        $workerName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $workerName);
+        $workerName = preg_replace('/_+/', '_', $workerName); // Remove multiple underscores
+        $workerName = trim($workerName, '_');
         
-        return $name . '_' . $workerName . '_' . date('Y-m-d') . '.' . $extension;
+        // Keep original document name (just clean special chars for filename)
+        $documentName = preg_replace('/[\/\\\\:*?"<>|]/', '_', $template->name);
+        $documentName = preg_replace('/_+/', '_', $documentName);
+        $documentName = trim($documentName, '_');
+        
+        return $workerName . '_' . $documentName . '_' . date('Y-m-d') . '.' . $extension;
+    }
+    
+    /**
+     * Transliterate Cyrillic to Latin
+     */
+    protected function transliterate(string $text): string
+    {
+        $cyr = [
+            'а','б','в','г','д','е','ё','ж','з','и','й','к','л','м','н','о','п',
+            'р','с','т','у','ф','х','ц','ч','ш','щ','ъ','ы','ь','э','ю','я',
+            'А','Б','В','Г','Д','Е','Ё','Ж','З','И','Й','К','Л','М','Н','О','П',
+            'Р','С','Т','У','Ф','Х','Ц','Ч','Ш','Щ','Ъ','Ы','Ь','Э','Ю','Я',
+            'ě','š','č','ř','ž','ý','á','í','é','ů','ú','ň','ť','ď','ó',
+            'Ě','Š','Č','Ř','Ž','Ý','Á','Í','É','Ů','Ú','Ň','Ť','Ď','Ó',
+            'ą','ć','ę','ł','ń','ś','ź','ż','ó',
+            'Ą','Ć','Ę','Ł','Ń','Ś','Ź','Ż','Ó',
+            'ä','ö','ü','ß',
+            'Ä','Ö','Ü'
+        ];
+        
+        $lat = [
+            'a','b','v','g','d','e','yo','zh','z','i','y','k','l','m','n','o','p',
+            'r','s','t','u','f','kh','ts','ch','sh','shch','','y','','e','yu','ya',
+            'A','B','V','G','D','E','Yo','Zh','Z','I','Y','K','L','M','N','O','P',
+            'R','S','T','U','F','Kh','Ts','Ch','Sh','Shch','','Y','','E','Yu','Ya',
+            'e','s','c','r','z','y','a','i','e','u','u','n','t','d','o',
+            'E','S','C','R','Z','Y','A','I','E','U','U','N','T','D','O',
+            'a','c','e','l','n','s','z','z','o',
+            'A','C','E','L','N','S','Z','Z','O',
+            'ae','oe','ue','ss',
+            'Ae','Oe','Ue'
+        ];
+        
+        return str_replace($cyr, $lat, $text);
     }
 
     /**

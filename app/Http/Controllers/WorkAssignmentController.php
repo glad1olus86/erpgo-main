@@ -258,6 +258,7 @@ class WorkAssignmentController extends Controller
                     $request->all(),
                     [
                         'work_place_id' => 'required|exists:work_places,id',
+                        'position_id' => 'required|exists:positions,id',
                     ]
                 );
 
@@ -272,6 +273,16 @@ class WorkAssignmentController extends Controller
                     return redirect()->back()->with('error', __('Permission denied.'));
                 }
 
+                // Verify position belongs to this work place
+                $position = Position::where('id', $request->position_id)
+                    ->where('work_place_id', $workPlace->id)
+                    ->where('created_by', Auth::user()->creatorId())
+                    ->first();
+
+                if (!$position) {
+                    return redirect()->back()->with('error', __('Должность не найдена'));
+                }
+
                 // Check if worker already has an active work assignment
                 if ($worker->currentWorkAssignment) {
                     return redirect()->back()->with('error', __('Работник уже устроен на работу. Сначала уволите его.'));
@@ -281,6 +292,7 @@ class WorkAssignmentController extends Controller
                 $assignment = new WorkAssignment();
                 $assignment->worker_id = $worker->id;
                 $assignment->work_place_id = $workPlace->id;
+                $assignment->position_id = $position->id;
                 $assignment->started_at = now();
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();

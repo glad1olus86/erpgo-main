@@ -44,6 +44,7 @@
                                 @endif
                             </div>
                             
+                            @if($canViewTotalDeposited)
                             <div class="d-flex align-items-center">
                                 <div class="theme-avtar bg-primary">
                                     <i class="ti ti-cash"></i>
@@ -53,6 +54,7 @@
                                     <h6 class="mb-0">{{ formatCashboxCurrency($period->total_deposited) }}</h6>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </a>

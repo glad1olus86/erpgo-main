@@ -415,6 +415,7 @@ class UserController extends Controller
         
         // Save company fields if user is company type
         if ($user->type == 'company') {
+            $user['company_name'] = $request['company_name'];
             $user['company_address'] = $request['company_address'];
             $user['company_ico'] = $request['company_ico'];
             $user['company_phone'] = $request['company_phone'];

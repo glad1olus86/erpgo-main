@@ -76,4 +76,123 @@ class PositionController extends Controller
 
         return redirect()->back()->with('success', __('Должность удалена'));
     }
+
+    /**
+     * Get positions for a work place as JSON (for AJAX)
+     */
+    public function getPositionsJson(WorkPlace $workPlace)
+    {
+        // Allow access for users who can manage workers or work places
+        if (!Auth::user()->can('manage work place') && !Auth::user()->can('manage worker')) {
+            return response()->json(['error' => __('Недостаточно прав')], 403);
+        }
+
+        if ($workPlace->created_by !== Auth::user()->creatorId()) {
+            return response()->json(['error' => __('Рабочее место не найдено')], 404);
+        }
+
+        $positions = $workPlace->positions()->orderBy('name')->get(['id', 'name']);
+
+        return response()->json($positions);
+    }
+
+    /**
+     * Show workers assigned to a specific position (AJAX popup)
+     */
+    public function showWorkers(Position $position)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return response()->json(['error' => __('Недостаточно прав')], 403);
+        }
+
+        // Multi-tenancy check
+        if ($position->created_by !== Auth::user()->creatorId()) {
+            return response()->json(['error' => __('Должность не найдена')], 404);
+        }
+
+        $position->load(['workPlace', 'currentAssignments.worker']);
+
+        return view('work_place.position_workers', compact('position'));
+    }
+
+    /**
+     * Assign workers to a position (bulk)
+     */
+    public function assignWorkers(Request $request, Position $position)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return redirect()->back()->with('error', __('Недостаточно прав'));
+        }
+
+        // Multi-tenancy check
+        if ($position->created_by !== Auth::user()->creatorId()) {
+            return redirect()->back()->with('error', __('Должность не найдена'));
+        }
+
+        $request->validate([
+            'worker_ids' => 'required|string',
+        ]);
+
+        $workerIds = array_filter(explode(',', $request->worker_ids));
+        $assigned = 0;
+
+        foreach ($workerIds as $workerId) {
+            $worker = \App\Models\Worker::where('id', $workerId)
+                ->where('created_by', Auth::user()->creatorId())
+                ->first();
+
+            if (!$worker) continue;
+
+            // Skip if already has active work assignment
+            if ($worker->currentWorkAssignment) continue;
+
+            $assignment = new \App\Models\WorkAssignment();
+            $assignment->worker_id = $worker->id;
+            $assignment->work_place_id = $position->work_place_id;
+            $assignment->position_id = $position->id;
+            $assignment->started_at = now();
+            $assignment->created_by = Auth::user()->creatorId();
+            $assignment->save();
+            $assigned++;
+        }
+
+        return redirect()->back()->with('success', __('Устроено работников: :count', ['count' => $assigned]));
+    }
+
+    /**
+     * Dismiss workers from a position (bulk)
+     */
+    public function dismissWorkers(Request $request, Position $position)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return redirect()->back()->with('error', __('Недостаточно прав'));
+        }
+
+        // Multi-tenancy check
+        if ($position->created_by !== Auth::user()->creatorId()) {
+            return redirect()->back()->with('error', __('Должность не найдена'));
+        }
+
+        $request->validate([
+            'worker_ids' => 'required|string',
+        ]);
+
+        $workerIds = array_filter(explode(',', $request->worker_ids));
+        $dismissed = 0;
+
+        foreach ($workerIds as $workerId) {
+            $assignment = \App\Models\WorkAssignment::where('worker_id', $workerId)
+                ->where('position_id', $position->id)
+                ->whereNull('ended_at')
+                ->first();
+
+            if ($assignment) {
+                $assignment->ended_at = now();
+                $assignment->save();
+                $dismissed++;
+            }
+        }
+
+        return redirect()->back()->with('success', __('Уволено работников: :count', ['count' => $dismissed]));
+    }
 }

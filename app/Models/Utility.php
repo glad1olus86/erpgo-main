@@ -3500,6 +3500,11 @@ class Utility extends Model
             'delete zoom meeting',
             'manage biometric attendance',
             'biometric attendance synchronize',
+            'vehicle_read',
+            'vehicle_create',
+            'vehicle_edit',
+            'vehicle_delete',
+            'technical_inspection_manage',
         ];
         foreach ($arrPermissions as $ap) {
             // check if permission is not created then create it.
@@ -3568,6 +3573,11 @@ class Utility extends Model
             'show pos',
             'manage biometric attendance',
             'biometric attendance synchronize',
+            'vehicle_read',
+            'vehicle_create',
+            'vehicle_edit',
+            'vehicle_delete',
+            'technical_inspection_manage',
         ];
         foreach ($companyNewPermission as $op) {
             // check if permission is not assign to owner then assign.

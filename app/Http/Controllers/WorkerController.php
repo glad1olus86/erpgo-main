@@ -208,6 +208,55 @@ class WorkerController extends Controller
     }
 
     /**
+     * Check if worker with same name already exists
+     * Returns list of potential duplicates
+     */
+    public function checkDuplicate(Request $request)
+    {
+        if (!Auth::user()->can('create worker')) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|min:2',
+            'last_name' => 'required|string|min:2',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        $firstName = trim($request->first_name);
+        $lastName = trim($request->last_name);
+
+        // Find workers with same first and last name (case insensitive)
+        $duplicates = Worker::where('created_by', Auth::user()->creatorId())
+            ->whereRaw('LOWER(first_name) = ?', [strtolower($firstName)])
+            ->whereRaw('LOWER(last_name) = ?', [strtolower($lastName)])
+            ->get(['id', 'first_name', 'last_name', 'dob', 'nationality', 'created_at']);
+
+        if ($duplicates->count() > 0) {
+            return response()->json([
+                'has_duplicates' => true,
+                'duplicates' => $duplicates->map(function ($worker) {
+                    return [
+                        'id' => $worker->id,
+                        'name' => $worker->first_name . ' ' . $worker->last_name,
+                        'dob' => $worker->dob ? $worker->dob->format('d.m.Y') : null,
+                        'nationality' => $worker->nationality,
+                        'created_at' => $worker->created_at->format('d.m.Y'),
+                    ];
+                }),
+                'message' => __('Работник с таким именем и фамилией уже существует!'),
+            ]);
+        }
+
+        return response()->json([
+            'has_duplicates' => false,
+        ]);
+    }
+
+    /**
      * Scan document image and extract worker data using Gemini API
      * Also saves the scanned document for later attachment to worker
      */

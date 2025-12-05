@@ -1414,6 +1414,15 @@
                     </li>
                 @endcan
 
+                @can('vehicle_read')
+                    <li class="dash-item {{ Request::segment(1) == 'vehicles' ? 'active' : '' }}">
+                        <a href="{{ route('vehicles.index') }}" class="dash-link">
+                            <span class="dash-micon"><i class="ti ti-car"></i></span>
+                            <span class="dash-mtext">{{ __('Транспорт') }}</span>
+                        </a>
+                    </li>
+                @endcan
+
                 @can('cashbox_access')
                     <li class="dash-item {{ Request::segment(1) == 'cashbox' ? 'active' : '' }}">
                         <a href="{{ route('cashbox.index') }}" class="dash-link">
@@ -1721,6 +1730,7 @@
                             class="dash-mtext">{{ __('Support System') }}</span>
                     </a>
                 </li>
+
             </ul>
         @endif
         @if (\Auth::user()->type == 'super admin')

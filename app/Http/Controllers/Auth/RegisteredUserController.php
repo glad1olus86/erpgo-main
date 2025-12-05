@@ -76,8 +76,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'string',
-                         'min:8','confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string', 'min:8', Rules\Password::defaults()],
             'terms' => 'required',
         ]);
 
@@ -95,7 +94,7 @@ class RegisteredUserController extends Controller
             'lang' => Utility::getValByName('default_language'),
             'avatar' => '',
             'referral_code'=> $code,
-            'used_referral_code'=>$request->ref_code,
+            'used_referral_code'=> $request->ref_code ?? '',
             'created_by' => 1,
         ]);
         \Auth::login($user);

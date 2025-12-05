@@ -266,4 +266,30 @@ class CashHierarchyService
         // Boss has no limit, Manager has limit
         return in_array('self_once', $allowedRoles);
     }
+
+    /**
+     * Get the view permission level for cashbox diagram
+     * Determines what level of detail user can see in the diagram
+     * Priority: boss > manager > curator
+     *
+     * @param User $user
+     * @return string|null 'boss', 'manager', 'curator' or null if no access
+     */
+    public function getViewPermissionLevel(User $user): ?string
+    {
+        // Check permissions in priority order (highest first)
+        if ($user->can('cashbox_view_boss')) {
+            return self::ROLE_BOSS;
+        }
+        
+        if ($user->can('cashbox_view_manager')) {
+            return self::ROLE_MANAGER;
+        }
+        
+        if ($user->can('cashbox_view_curator')) {
+            return self::ROLE_CURATOR;
+        }
+        
+        return null;
+    }
 }

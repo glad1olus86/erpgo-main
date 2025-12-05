@@ -300,10 +300,12 @@
                             <small class="text-muted">{{ __('Период') }}</small>
                             <p class="mb-0 fw-bold">{{ $period->name }}</p>
                         </div>
+                        @if($canViewTotalDeposited)
                         <div class="mb-2">
                             <small class="text-muted">{{ __('Всего внесено') }}</small>
                             <p class="mb-0">{{ formatCashboxCurrency($period->total_deposited) }}</p>
                         </div>
+                        @endif
                         <div>
                             <small class="text-muted">{{ __('Статус') }}</small>
                             <p class="mb-0">
@@ -696,6 +698,51 @@
                     return;
                 }
 
+                // Check if this is a deposit with multiple deposits
+                if (node.type === 'deposit' && node.has_multiple_deposits && node.deposit_history) {
+                    var depositsList = node.deposit_history.map(function(d) {
+                        return `<div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <span class="text-muted small">${new Date(d.date).toLocaleString('ru-RU')}</span>
+                            <span class="fw-bold text-success">+${formatMoney(d.amount)}</span>
+                        </div>`;
+                    }).join('');
+                    
+                    content.innerHTML = `
+                        <div class="mb-3">
+                            <label class="text-muted small">${translations.type}</label>
+                            <p class="mb-0 fw-bold">${getTypeName(node.type)}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">${translations.recipient}</label>
+                            <p class="mb-0">${recipientName}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">{{ __('Актуальная сумма') }}</label>
+                            <p class="mb-0 fw-bold text-success" style="font-size: 1.25rem;">${formatMoney(node.amount)}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">{{ __('Количество внесений') }}</label>
+                            <p class="mb-0">${node.deposit_count}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">{{ __('Последние внесения') }}</label>
+                            <div class="mt-2" style="max-height: 200px; overflow-y: auto;">
+                                ${depositsList}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">${translations.status}</label>
+                            <p class="mb-0"><span class="badge ${getStatusBadgeClass(node.status)}">${node.status_label || getStatusName(node.status)}</span></p>
+                        </div>
+                    `;
+                    
+                    var footer = document.getElementById('transactionDetailFooter');
+                    footer.innerHTML = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + translations.close + '</button>';
+                    
+                    new bootstrap.Modal(document.getElementById('transactionDetailModal')).show();
+                    return;
+                }
+
                 content.innerHTML = `
             <div class="mb-3">
                 <label class="text-muted small">${translations.type}</label>
@@ -714,7 +761,16 @@
                 <label class="text-muted small">${translations.amount}</label>
                 <p class="mb-0 fw-bold text-success">${formatMoney(node.amount)}</p>
             </div>
-            ${(node.original_amount && node.original_amount !== node.amount) ? `
+            ${(node.carryover_received && node.carryover_received > 0) ? `
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">{{ __('Изначальная сумма перевода') }}</label>
+                                                    <p class="mb-0 text-muted">${formatMoney(node.amount - node.carryover_received)}</p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="text-muted small">{{ __('Получено из предыдущего перечисления') }}</label>
+                                                    <p class="mb-0 text-success">+${formatMoney(node.carryover_received)}</p>
+                                                </div>` : ''}
+            ${(node.original_amount && node.original_amount !== node.amount && !node.carryover_received) ? `
                                                 <div class="mb-3">
                                                     <label class="text-muted small">{{ __('Изначально внесённая сумма') }}</label>
                                                     <p class="mb-0 text-muted">${formatMoney(node.original_amount)}</p>

@@ -123,7 +123,12 @@
 
     CashboxDiagram.prototype.setData = function (data) {
         this.data = data;
+        this.viewMode = data.view_mode || 'boss';
         this.render();
+    };
+
+    CashboxDiagram.prototype.getViewMode = function () {
+        return this.viewMode || 'boss';
     };
 
     CashboxDiagram.prototype.render = function () {
@@ -175,36 +180,11 @@
     };
 
     /**
-     * Draw carryover connectors between deposits and between child nodes
+     * Draw carryover connectors between child nodes (not deposits)
      * Shows remaining balance transferred from one transaction to the next
      */
     CashboxDiagram.prototype.drawCarryoverConnectors = function (layout) {
         var self = this;
-        var depositNodes = [];
-
-        // Find all deposit nodes (root level, no parent)
-        layout.forEach(function (item) {
-            if (item.node.type === 'deposit' && item.parentX === undefined) {
-                depositNodes.push(item);
-            }
-        });
-
-        // Draw carryover arrows between consecutive deposits
-        for (var i = 0; i < depositNodes.length - 1; i++) {
-            var currentDeposit = depositNodes[i];
-            var nextDeposit = depositNodes[i + 1];
-
-            // Check if there's a carryover amount
-            if (currentDeposit.node.carryover_to_next && currentDeposit.node.carryover_to_next > 0) {
-                self.drawCarryoverArrow(
-                    currentDeposit.x + self.options.nodeWidth,
-                    currentDeposit.y + self.options.nodeHeight / 2,
-                    nextDeposit.x,
-                    nextDeposit.y + self.options.nodeHeight / 2,
-                    currentDeposit.node.carryover_to_next
-                );
-            }
-        }
         
         // Draw carryover arrows between child nodes of same recipient
         // Only for "transfer" type distributions (not salary)
@@ -541,50 +521,36 @@
         this.svg.appendChild(path);
         
         // Add amount label for transfer distributions (not salary)
+        // Position: centered above the target node (where arrow ends)
         if (node && node.type === 'distribution' && node.distribution_type === 'transfer' && node.original_amount) {
-            // Calculate label position - to the right of the connector
-            var labelX = Math.max(x1, x2) + 10;
-            var labelY = midY;
+            var labelText = '+' + self.formatMoney(node.original_amount) + ' ' + self.currencySymbol;
+            var textWidth = labelText.length * 6.5;
+            var labelHeight = 20;
             
-            // Check if there's enough space (not overlapping with other elements)
-            var hasSpace = true;
-            if (layout) {
-                layout.forEach(function(item) {
-                    // Check if label would overlap with any node
-                    if (labelX < item.x + self.options.nodeWidth + 20 && 
-                        labelX + 80 > item.x - 20 &&
-                        labelY < item.y + self.options.nodeHeight + 10 &&
-                        labelY + 20 > item.y - 10) {
-                        hasSpace = false;
-                    }
-                });
-            }
+            // Position label centered above the target node (x2, y2 is top center of target node)
+            var labelX = x2 - (textWidth + 10) / 2;
+            var labelY = y2 - 25; // 25px above the node
             
-            if (hasSpace) {
-                var labelText = '+' + self.formatMoney(node.original_amount) + ' ' + self.currencySymbol;
-                var textWidth = labelText.length * 6.5;
-                
-                // Create background rect for label
-                var labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                labelBg.setAttribute('x', labelX);
-                labelBg.setAttribute('y', labelY - 10);
-                labelBg.setAttribute('width', textWidth + 10);
-                labelBg.setAttribute('height', 20);
-                labelBg.setAttribute('rx', '3');
-                labelBg.setAttribute('fill', '#ffffff');
-                labelBg.setAttribute('stroke', '#dee2e6');
-                labelBg.setAttribute('stroke-width', '1');
-                this.svg.appendChild(labelBg);
-                
-                // Create text label
-                var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', labelX + 5);
-                text.setAttribute('y', labelY + 4);
-                text.setAttribute('font-size', '11');
-                text.setAttribute('fill', '#495057');
-                text.textContent = labelText;
-                this.svg.appendChild(text);
-            }
+            // Create background rect for label
+            var labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            labelBg.setAttribute('x', labelX);
+            labelBg.setAttribute('y', labelY - 10);
+            labelBg.setAttribute('width', textWidth + 10);
+            labelBg.setAttribute('height', labelHeight);
+            labelBg.setAttribute('rx', '3');
+            labelBg.setAttribute('fill', '#ffffff');
+            labelBg.setAttribute('stroke', '#dee2e6');
+            labelBg.setAttribute('stroke-width', '1');
+            this.svg.appendChild(labelBg);
+            
+            // Create text label
+            var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', labelX + 5);
+            text.setAttribute('y', labelY + 4);
+            text.setAttribute('font-size', '11');
+            text.setAttribute('fill', '#495057');
+            text.textContent = labelText;
+            this.svg.appendChild(text);
         }
     };
 
@@ -696,6 +662,31 @@
             originalAmountRow.style.cssText = 'font-size: 10px; color: #6c757d; margin-bottom: 4px;';
             originalAmountRow.innerHTML = '<i class="ti ti-arrow-down-right" style="margin-right: 2px;"></i>из ' + self.formatMoney(originalAmount) + ' ' + self.currencySymbol;
         }
+        
+        // Show carryover info at bottom right (for non-deposit nodes)
+        var carryoverInfoRow = null;
+        if (node.type !== 'deposit' && node.carryover_to_next && node.carryover_to_next > 0) {
+            // Money transferred to next node
+            carryoverInfoRow = document.createElement('div');
+            carryoverInfoRow.style.cssText = 'font-size: 9px; color: #6c757d; text-align: right; margin-top: 4px;';
+            carryoverInfoRow.innerHTML = '<i class="ti ti-arrow-right" style="margin-right: 2px;"></i>→ перенесено';
+            carryoverInfoRow.title = 'Остаток ' + self.formatMoney(node.carryover_to_next) + ' ' + self.currencySymbol + ' перенесён в следующее перечисление';
+        } else if (node.type !== 'deposit' && node.carryover_received && node.carryover_received > 0) {
+            // Money received from previous node
+            carryoverInfoRow = document.createElement('div');
+            carryoverInfoRow.style.cssText = 'font-size: 9px; color: #198754; text-align: right; margin-top: 4px;';
+            carryoverInfoRow.innerHTML = '<i class="ti ti-plus" style="margin-right: 2px;"></i>+ остаток';
+            carryoverInfoRow.title = 'Получено ' + self.formatMoney(node.carryover_received) + ' ' + self.currencySymbol + ' из предыдущего перечисления';
+        }
+        
+        // Show multiple deposits info for deposit nodes
+        var multipleDepositsRow = null;
+        if (node.type === 'deposit' && node.has_multiple_deposits && node.deposit_count > 1) {
+            multipleDepositsRow = document.createElement('div');
+            multipleDepositsRow.style.cssText = 'font-size: 9px; color: #198754; text-align: right; margin-top: 4px;';
+            multipleDepositsRow.innerHTML = '<i class="ti ti-plus" style="margin-right: 2px;"></i>+внесение (' + node.deposit_count + ')';
+            multipleDepositsRow.title = 'Всего ' + node.deposit_count + ' внесений';
+        }
 
         // Task (if exists)
         var taskEl = null;
@@ -711,6 +702,8 @@
         nodeEl.appendChild(amountRow);
         if (originalAmountRow) nodeEl.appendChild(originalAmountRow);
         if (taskEl) nodeEl.appendChild(taskEl);
+        if (carryoverInfoRow) nodeEl.appendChild(carryoverInfoRow);
+        if (multipleDepositsRow) nodeEl.appendChild(multipleDepositsRow);
 
         // Hover effects
         nodeEl.addEventListener('mouseenter', function () {

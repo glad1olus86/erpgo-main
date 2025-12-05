@@ -44,8 +44,12 @@ class CashboxController extends Controller
         // Get user's cashbox role for UI permissions
         $userRole = $this->hierarchyService->getUserCashboxRole(Auth::user());
         $isBoss = $userRole === CashHierarchyService::ROLE_BOSS;
+        
+        // Get view permission level for visibility control
+        $viewLevel = $this->hierarchyService->getViewPermissionLevel(Auth::user());
+        $canViewTotalDeposited = $viewLevel === 'boss';
 
-        return view('cashbox.index', compact('periods', 'currentPeriod', 'userRole', 'isBoss'));
+        return view('cashbox.index', compact('periods', 'currentPeriod', 'userRole', 'isBoss', 'canViewTotalDeposited'));
     }
 
     /**
@@ -94,6 +98,10 @@ class CashboxController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        // Get view permission level for visibility control
+        $viewLevel = $this->hierarchyService->getViewPermissionLevel($user);
+        $canViewTotalDeposited = $viewLevel === 'boss';
+
         return view('cashbox.show', compact(
             'period',
             'userRole',
@@ -102,7 +110,8 @@ class CashboxController extends Controller
             'recipients',
             'canSelfSalary',
             'hasSelfSalaryThisPeriod',
-            'refundableTransactions'
+            'refundableTransactions',
+            'canViewTotalDeposited'
         ));
     }
 

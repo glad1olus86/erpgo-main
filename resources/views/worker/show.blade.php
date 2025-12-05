@@ -304,7 +304,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 mt-3">
                                 <div class="d-flex align-items-start">
                                     <div class="theme-avtar bg-warning">
                                         <i class="ti ti-user-check"></i>
@@ -490,6 +490,16 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-12 mt-3">
+                                    <div class="form-group">
+                                        <label for="position_id"
+                                            class="form-label">{{ __('Должность') }}</label><x-required></x-required>
+                                        <select name="position_id" id="position_id" class="form-control" required disabled>
+                                            <option value="">{{ __('Сначала выберите рабочее место') }}</option>
+                                        </select>
+                                        <small class="form-text text-muted" id="position-auto-info"></small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -576,6 +586,57 @@
                         capacityInfo.removeClass('text-danger').addClass('text-success');
                     } else {
                         capacityInfo.text('');
+                    }
+                });
+
+                // Load positions when work place is selected
+                $('#work_place_id').on('change', function() {
+                    var workPlaceId = $(this).val();
+                    var positionSelect = $('#position_id');
+                    var positionInfo = $('#position-auto-info');
+
+                    if (workPlaceId) {
+                        positionSelect.prop('disabled', true);
+                        positionSelect.empty();
+                        positionSelect.append('<option value="">{{ __('Загрузка...') }}</option>');
+                        positionInfo.text('');
+
+                        $.ajax({
+                            url: '/work-place/' + workPlaceId + '/positions/json',
+                            type: 'GET',
+                            success: function(positions) {
+                                positionSelect.empty();
+                                
+                                if (positions.length === 0) {
+                                    positionSelect.append('<option value="">{{ __('Нет должностей') }}</option>');
+                                    positionInfo.text('{{ __('Сначала создайте должности для этого рабочего места') }}');
+                                    positionInfo.removeClass('text-success').addClass('text-warning');
+                                } else if (positions.length === 1) {
+                                    // Auto-select if only one position
+                                    positionSelect.append('<option value="' + positions[0].id + '" selected>' + positions[0].name + '</option>');
+                                    positionInfo.text('{{ __('Должность выбрана автоматически') }}');
+                                    positionInfo.removeClass('text-warning').addClass('text-success');
+                                    positionSelect.prop('disabled', false);
+                                } else {
+                                    positionSelect.append('<option value="">{{ __('Выберите должность') }}</option>');
+                                    $.each(positions, function(i, position) {
+                                        positionSelect.append('<option value="' + position.id + '">' + position.name + '</option>');
+                                    });
+                                    positionInfo.text('');
+                                    positionSelect.prop('disabled', false);
+                                }
+                            },
+                            error: function() {
+                                positionSelect.empty();
+                                positionSelect.append('<option value="">{{ __('Ошибка загрузки') }}</option>');
+                                positionInfo.text('');
+                            }
+                        });
+                    } else {
+                        positionSelect.empty();
+                        positionSelect.append('<option value="">{{ __('Сначала выберите рабочее место') }}</option>');
+                        positionSelect.prop('disabled', true);
+                        positionInfo.text('');
                     }
                 });
             });

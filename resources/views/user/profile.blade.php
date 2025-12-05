@@ -64,6 +64,13 @@
                             </div>
                             
                             @if($userDetail->type == 'company')
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                    <label for="company_name" class="col-form-label text-dark">{{__('Полное название компании')}}</label>
+                                    <input class="form-control" name="company_name" type="text" id="company_name" placeholder="{{ __('Введите полное название компании') }}" value="{{ $userDetail->company_name }}">
+                                    <small class="text-muted">{{ __('Используется в документообороте и переменной {company_name}') }}</small>
+                                </div>
+                            </div>
                             <div class="col-lg-6 col-sm-6">
                                 <div class="form-group">
                                     <label for="company_address" class="col-form-label text-dark">{{__('Адрес')}}</label>

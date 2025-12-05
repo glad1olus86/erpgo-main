@@ -561,6 +561,17 @@ class ContractController extends Controller
 
         if($contract)
         {
+            // Replace variables in contract_description
+            $creator = User::find($contract->created_by);
+            $companyName = $creator->company_name ?? $creator->name;
+            
+            $contract->contract_description = str_replace('{contract_subject}', $contract->subject, $contract->contract_description);
+            $contract->contract_description = str_replace('{contract_project}', $contract->project ? $contract->project->name : '', $contract->contract_description);
+            $contract->contract_description = str_replace('{company_name}', $companyName, $contract->contract_description);
+            $contract->contract_description = str_replace('{contract_value}', $creator->priceFormat($contract->value), $contract->contract_description);
+            $contract->contract_description = str_replace('{contract_start_date}', $creator->dateFormat($contract->start_date), $contract->contract_description);
+            $contract->contract_description = str_replace('{contract_end_date}', $creator->dateFormat($contract->end_date), $contract->contract_description);
+
             $color      = '#' . $settings['invoice_color'];
             $font_color = Utility::getFontColor($color);
 
@@ -731,6 +742,21 @@ class ContractController extends Controller
         }
 
         $contract  = Contract::findOrFail($id);
+        
+        // Replace variables in contract_description
+        $creator = User::find($contract->created_by);
+        
+        // Debug: check what we're getting
+        // dd($creator->id, $creator->name, $creator->company_name, $contract->created_by);
+        
+        $companyName = !empty($creator->company_name) ? $creator->company_name : $creator->name;
+        
+        $contract->contract_description = str_replace('{contract_subject}', $contract->subject, $contract->contract_description);
+        $contract->contract_description = str_replace('{contract_project}', $contract->project ? $contract->project->name : '', $contract->contract_description);
+        $contract->contract_description = str_replace('{company_name}', $companyName, $contract->contract_description);
+        $contract->contract_description = str_replace('{contract_value}', $creator->priceFormat($contract->value), $contract->contract_description);
+        $contract->contract_description = str_replace('{contract_start_date}', $creator->dateFormat($contract->start_date), $contract->contract_description);
+        $contract->contract_description = str_replace('{contract_end_date}', $creator->dateFormat($contract->end_date), $contract->contract_description);
 
         return view('contract.template', compact('contract'));
 

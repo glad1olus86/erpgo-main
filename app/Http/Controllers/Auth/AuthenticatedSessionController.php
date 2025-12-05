@@ -270,7 +270,7 @@ class AuthenticatedSessionController extends Controller
 
         $settings = Utility::settings();
 
-        return view('auth.login', compact('lang','settings'));
+        return view('auth.login-custom', compact('lang','settings'));
     }
 
     public function showLinkRequestForm($lang = '')
