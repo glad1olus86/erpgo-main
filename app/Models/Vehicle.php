@@ -40,7 +40,7 @@ class Vehicle extends Model
      */
     public function assignedPerson()
     {
-        return $this->morphTo('assigned', 'assigned_type', 'assigned_id');
+        return $this->morphTo(__FUNCTION__, 'assigned_type', 'assigned_id');
     }
 
     /**
@@ -115,14 +115,27 @@ class Vehicle extends Model
      */
     public function getAssignedNameAttribute(): ?string
     {
-        if (!$this->assignedPerson) {
+        if (!$this->assigned_id || !$this->assigned_type) {
             return null;
         }
 
-        if ($this->assigned_type === Worker::class) {
-            return $this->assignedPerson->first_name . ' ' . $this->assignedPerson->last_name;
+        // Load relation if not loaded
+        if (!$this->relationLoaded('assignedPerson')) {
+            $this->load('assignedPerson');
         }
 
-        return $this->assignedPerson->name ?? null;
+        $person = $this->assignedPerson;
+        
+        if (!$person) {
+            return null;
+        }
+
+        // Check if it's a Worker (has first_name/last_name)
+        if (str_contains($this->assigned_type, 'Worker')) {
+            return trim(($person->first_name ?? '') . ' ' . ($person->last_name ?? ''));
+        }
+
+        // Otherwise it's a User
+        return $person->name ?? null;
     }
 }
