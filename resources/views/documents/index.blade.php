@@ -41,7 +41,13 @@
                                 @forelse ($templates as $template)
                                     <tr>
                                         <td>
-                                            <span class="fw-medium">{{ $template->name }}</span>
+                                            @can('document_template_edit')
+                                                <a href="{{ route('documents.edit', $template->id) }}" class="text-primary fw-medium">
+                                                    {{ $template->name }}
+                                                </a>
+                                            @else
+                                                <span class="fw-medium">{{ $template->name }}</span>
+                                            @endcan
                                         </td>
                                         <td>
                                             <span class="text-muted">{{ Str::limit($template->description, 50) }}</span>

@@ -4113,6 +4113,27 @@ class User extends Authenticatable implements MustVerifyEmail
         );
     }
 
+    /**
+     * Copy theme settings from super admin to new user
+     */
+    public static function copyThemeSettings($user_id)
+    {
+        // Get super admin settings (created_by = 1)
+        $superAdminSettings = \DB::table('settings')
+            ->where('created_by', 1)
+            ->whereIn('name', ['color', 'color_flag', 'cust_darklayout', 'cust_theme_bg', 'SITE_RTL'])
+            ->pluck('value', 'name')
+            ->toArray();
+
+        // Copy settings to new user
+        foreach ($superAdminSettings as $name => $value) {
+            \DB::table('settings')->updateOrInsert(
+                ['name' => $name, 'created_by' => $user_id],
+                ['value' => $value]
+            );
+        }
+    }
+
     public function extraKeyword()
     {
         $keyArr = [

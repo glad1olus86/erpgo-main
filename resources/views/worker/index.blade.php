@@ -11,6 +11,13 @@
 
 @section('action-btn')
     <div class="float-end">
+        @can('document_generate')
+            <a href="#" id="bulk-generate-doc-btn"
+                data-bs-toggle="tooltip" title="{{ __('Генерация документов') }}"
+                class="btn btn-sm btn-info me-1">
+                <i class="ti ti-file-text"></i>
+            </a>
+        @endcan
         @can('manage worker')
             <a href="#" data-url="{{ route('worker.export.modal') }}" data-ajax-popup="true"
                 data-title="{{ __('Экспорт работников') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
@@ -62,6 +69,11 @@
                             @can('manage worker')
                                 <button type="button" class="btn btn-sm btn-danger" id="bulk-checkout-btn">
                                     <i class="ti ti-door-exit me-1"></i>{{ __('Выселить') }}
+                                </button>
+                            @endcan
+                            @can('document_generate')
+                                <button type="button" class="btn btn-sm btn-info bulk-generate-doc-btn">
+                                    <i class="ti ti-file-text me-1"></i>{{ __('Документ') }}
                                 </button>
                             @endcan
                             <button type="button" class="btn btn-sm btn-secondary" id="bulk-clear-btn">
@@ -283,6 +295,92 @@
             </div>
         </div>
     </div>
+
+    {{-- Bulk Document Generation Modal --}}
+    <div class="modal fade" id="bulkDocumentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('Генерация документов') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="bulk-document-form" method="POST" action="{{ route('worker.bulk.generate-documents') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="worker_ids" id="doc-worker-ids">
+                        
+                        {{-- Worker selection (shown when no bulk selection) --}}
+                        <div class="form-group mb-3" id="doc-worker-select-group">
+                            <label class="form-label">{{ __('Работник') }} <span class="text-danger">*</span></label>
+                            <select name="single_worker_id" id="doc-single-worker" class="form-control">
+                                <option value="">{{ __('Выберите работника') }}</option>
+                                @foreach ($workers as $worker)
+                                    <option value="{{ $worker->id }}">{{ $worker->first_name }} {{ $worker->last_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        {{-- Selected workers info (shown when bulk selection) --}}
+                        <div class="mb-3" id="doc-selected-workers-info" style="display: none;">
+                            <label class="form-label text-info"><i class="ti ti-users me-1"></i>{{ __('Выбранные работники:') }}</label>
+                            <div id="doc-selected-workers-list" class="text-muted small"></div>
+                        </div>
+                        
+                        {{-- Template selection --}}
+                        <div class="form-group mb-3">
+                            <label class="form-label">{{ __('Шаблон документа') }} <span class="text-danger">*</span></label>
+                            <select name="template_id" id="doc-template-select" class="form-control" required>
+                                <option value="">{{ __('Выберите шаблон') }}</option>
+                                @php
+                                    $templates = \App\Models\DocumentTemplate::where('created_by', Auth::user()->creatorId())
+                                        ->where('is_active', true)
+                                        ->orderBy('name')
+                                        ->get();
+                                @endphp
+                                @foreach($templates as $template)
+                                    <option value="{{ $template->id }}">{{ $template->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        {{-- Dynamic date fields container --}}
+                        <div id="doc-dynamic-fields"></div>
+                        
+                        {{-- Format selection --}}
+                        <div class="form-group">
+                            <label class="form-label">{{ __('Формат') }} <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format-pdf" value="pdf" checked>
+                                    <label class="form-check-label" for="format-pdf">
+                                        <i class="ti ti-file-type-pdf text-danger me-1"></i>PDF
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format-docx" value="docx">
+                                    <label class="form-check-label" for="format-docx">
+                                        <i class="ti ti-file-type-doc text-primary me-1"></i>Word
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="format-xlsx" value="xlsx">
+                                    <label class="form-check-label" for="format-xlsx">
+                                        <i class="ti ti-file-spreadsheet text-success me-1"></i>Excel
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                        <button type="submit" class="btn btn-info" id="doc-generate-btn">
+                            <i class="ti ti-download me-1"></i>{{ __('Сгенерировать') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('script-page')
@@ -488,6 +586,97 @@ document.addEventListener('DOMContentLoaded', function() {
     workersTable.on('datatable.sort', function() {
         selectAllCheckbox.checked = false;
     });
+
+    // Bulk Document Generation - function to open modal
+    function openDocumentModal() {
+        var selected = getSelectedWorkers();
+        
+        var workerSelectGroup = document.getElementById('doc-worker-select-group');
+        var selectedWorkersInfo = document.getElementById('doc-selected-workers-info');
+        var singleWorkerSelect = document.getElementById('doc-single-worker');
+        var workerIdsInput = document.getElementById('doc-worker-ids');
+        
+        if (selected.length >= 2) {
+            // Bulk mode - hide worker select, show selected workers
+            workerSelectGroup.style.display = 'none';
+            selectedWorkersInfo.style.display = 'block';
+            singleWorkerSelect.removeAttribute('required');
+            
+            document.getElementById('doc-selected-workers-list').innerHTML = selected.map(function(w) { 
+                return '• ' + w.name; 
+            }).join('<br>');
+            
+            workerIdsInput.value = selected.map(function(w) { return w.id; }).join(',');
+        } else {
+            // Single mode - show worker select
+            workerSelectGroup.style.display = 'block';
+            selectedWorkersInfo.style.display = 'none';
+            singleWorkerSelect.setAttribute('required', 'required');
+            workerIdsInput.value = '';
+            
+            // If one worker selected, pre-select in dropdown
+            if (selected.length === 1) {
+                singleWorkerSelect.value = selected[0].id;
+            } else {
+                singleWorkerSelect.value = '';
+            }
+        }
+        
+        // Reset template and format
+        document.getElementById('doc-template-select').value = '';
+        document.getElementById('doc-dynamic-fields').innerHTML = '';
+        document.getElementById('format-pdf').checked = true;
+        
+        new bootstrap.Modal(document.getElementById('bulkDocumentModal')).show();
+    }
+    
+    // Header button (top right)
+    var bulkDocBtn = document.getElementById('bulk-generate-doc-btn');
+    if (bulkDocBtn) {
+        bulkDocBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openDocumentModal();
+        });
+    }
+    
+    // Bulk panel button (in bulk actions panel)
+    document.querySelectorAll('.bulk-generate-doc-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openDocumentModal();
+        });
+    });
+    
+    // Load dynamic fields when template changes
+    var templateSelect = document.getElementById('doc-template-select');
+    if (templateSelect) {
+        templateSelect.addEventListener('change', function() {
+            var templateId = this.value;
+            var dynamicFieldsContainer = document.getElementById('doc-dynamic-fields');
+            dynamicFieldsContainer.innerHTML = '';
+            
+            if (!templateId) return;
+            
+            fetch('{{ url("/documents/template-fields") }}/' + templateId)
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.fields && data.fields.length > 0) {
+                        var html = '<div class="mb-3"><label class="form-label">{{ __("Дополнительные поля") }}</label>';
+                        data.fields.forEach(function(field) {
+                            html += '<div class="mb-2">';
+                            html += '<label class="form-label small">' + field.label + '</label>';
+                            html += '<input type="date" class="form-control form-control-sm" name="' + field.field_name + '">';
+                            html += '</div>';
+                        });
+                        html += '</div>';
+                        dynamicFieldsContainer.innerHTML = html;
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Error loading template fields:', err);
+                });
+        });
+    }
 });
 </script>
 @endpush

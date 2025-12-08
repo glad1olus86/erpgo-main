@@ -16,7 +16,8 @@ class WorkPlaceController extends Controller
     {
         if (Auth::user()->can('manage work place')) {
             $workPlaces = WorkPlace::where('created_by', '=', Auth::user()->creatorId())
-                ->with(['currentAssignments.worker'])
+                ->with(['currentAssignments.worker', 'positions'])
+                ->withCount('positions')
                 ->get();
 
             return view('work_place.index', compact('workPlaces'));

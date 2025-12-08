@@ -643,6 +643,82 @@
                 right: 5px;
                 top: 10px;
             }
+
+            /* Modal mobile styles */
+            .login-modal .modal-dialog {
+                max-width: calc(100% - 30px);
+                margin: 15px auto;
+            }
+
+            .login-modal .modal-content {
+                border-radius: 35px;
+                padding: 15px;
+                min-height: auto;
+            }
+
+            .login-modal .modal-inner {
+                border-radius: 35px;
+                padding: 40px 25px 50px;
+                min-height: auto;
+            }
+
+            .login-modal .modal-header {
+                margin-bottom: 40px;
+            }
+
+            .login-modal .modal-title {
+                font-size: 20px;
+                line-height: 26px;
+            }
+
+            .login-modal .btn-close-custom {
+                top: -10px;
+                right: -10px;
+                width: 45px;
+                height: 45px;
+            }
+
+            .login-modal .btn-close-custom svg {
+                width: 45px;
+                height: 45px;
+            }
+
+            .login-modal .input-wrapper {
+                width: 100%;
+                height: 55px;
+                border-radius: 15px;
+            }
+
+            .login-modal .form-control {
+                font-size: 16px;
+            }
+
+            .login-modal .forgot-link {
+                font-size: 16px;
+            }
+
+            .login-modal .forgot-wrapper {
+                margin-top: 20px;
+                margin-bottom: 25px;
+            }
+
+            /* Register modal mobile */
+            .register-modal .modal-inner {
+                padding: 35px 25px 45px;
+            }
+
+            .register-modal .modal-header {
+                margin-bottom: 30px;
+            }
+
+            .register-modal .terms-wrapper {
+                margin-top: 25px;
+                margin-bottom: 20px;
+            }
+
+            .register-modal .terms-label {
+                font-size: 14px;
+            }
         }
     </style>
 </head>

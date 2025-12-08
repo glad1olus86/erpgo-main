@@ -51,7 +51,7 @@
                                                    data-ajax-popup="true"
                                                    data-title="{{ __('Сотрудники') }}: {{ $position->name }}"
                                                    data-size="lg"
-                                                   class="text-primary fw-medium text-decoration-none">
+                                                   class="text-primary fw-bold">
                                                     <i class="ti ti-briefcase me-2"></i>
                                                     {{ $position->name }}
                                                 </a>

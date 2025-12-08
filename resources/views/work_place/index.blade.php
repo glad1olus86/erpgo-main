@@ -51,7 +51,27 @@
                                         @foreach ($workPlaces as $workPlace)
                                             <tr>
                                                 <td>
-                                                    <strong>{{ $workPlace->name }}</strong>
+                                                    @if($workPlace->positions_count == 1)
+                                                        {{-- Одна должность - открываем модалку с работниками --}}
+                                                        <a href="#"
+                                                            data-url="{{ route('positions.workers', $workPlace->positions->first()->id) }}"
+                                                            data-ajax-popup="true"
+                                                            data-title="{{ __('Сотрудники') }}: {{ $workPlace->name }}"
+                                                            data-size="lg"
+                                                            class="text-primary fw-bold">
+                                                            {{ $workPlace->name }}
+                                                        </a>
+                                                    @elseif($workPlace->positions_count > 1)
+                                                        {{-- Несколько должностей - переходим к списку должностей --}}
+                                                        <a href="{{ route('work-place.positions', $workPlace->id) }}" class="text-primary fw-bold">
+                                                            {{ $workPlace->name }}
+                                                        </a>
+                                                    @else
+                                                        {{-- Нет должностей - переходим к созданию --}}
+                                                        <a href="{{ route('work-place.positions', $workPlace->id) }}" class="text-muted fw-bold">
+                                                            {{ $workPlace->name }}
+                                                        </a>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     @if($workPlace->currentAssignments->count() > 0)

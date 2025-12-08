@@ -1605,11 +1605,7 @@
                                             class="dash-link">{{ __('Setup Subscription Plan') }}</a>
                                     </li>
                                 @endif
-                                <li
-                                    class="dash-item{{ Request::route()->getName() == 'referral-program.company' ? ' active' : '' }}">
-                                    <a href="{{ route('referral-program.company') }}"
-                                        class="dash-link">{{ __('Referral Program') }}</a>
-                                </li>
+                                
 
                                 <li
                                     class="dash-item{{ Request::route()->getName() == 'notification-rules.index' ? ' active' : '' }}">
@@ -1625,10 +1621,14 @@
                                     </li>
                                 @endcan
 
-                                @if (Gate::check('manage order') && Auth::user()->type == 'company')
+                                @if (Gate::check('manage order_nevershow') && Auth::user()->type == 'company')
                                     <li class="dash-item {{ Request::segment(1) == 'order' ? 'active' : '' }}">
                                         <a href="{{ route('order.index') }}"
                                             class="dash-link">{{ __('Order') }}</a>
+                                    </li>
+                                    <li class="dash-item{{ Request::route()->getName() == 'referral-program.company' ? ' active' : '' }}">
+                                    <a href="{{ route('referral-program.company') }}"
+                                        class="dash-link">{{ __('Referral Program') }}</a>
                                     </li>
                                 @endif
                             </ul>
@@ -1788,7 +1788,7 @@
                         </a>
                     </li>
                 @endif
-                @if (Gate::check('manage order'))
+                @if (Gate::check('manage order_nevershow'))
                     <li class="dash-item dash-hasmenu  {{ Request::segment(1) == 'orders' ? 'active' : '' }}">
                         <a href="{{ route('order.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-shopping-cart-plus"></i></span><span

@@ -830,6 +830,8 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('worker.bulk.dismiss')->middleware(['auth', 'XSS']);
     Route::post('/worker/bulk-checkout', [WorkerController::class, 'bulkCheckout'])
         ->name('worker.bulk.checkout')->middleware(['auth', 'XSS']);
+    Route::post('/worker/bulk-generate-documents', [App\Http\Controllers\DocumentGeneratorController::class, 'bulkGenerate'])
+        ->name('worker.bulk.generate-documents')->middleware(['auth', 'XSS']);
 
     Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
 

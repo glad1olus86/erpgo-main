@@ -468,4 +468,80 @@ class DocumentGeneratorService
         
         return $d . ' ' . $months[$m] . ' ' . $y . ' г.';
     }
+
+    /**
+     * Generate bulk documents as ZIP archive
+     */
+    public function generateBulkZip(DocumentTemplate $template, $workers, string $format, array $dynamicData = []): StreamedResponse
+    {
+        $zipFilename = $this->transliterate($template->name) . '_' . date('Y-m-d') . '.zip';
+        $zipFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $zipFilename);
+        
+        return response()->streamDownload(function () use ($template, $workers, $format, $dynamicData) {
+            $zip = new \ZipArchive();
+            $tempFile = tempnam(sys_get_temp_dir(), 'bulk_docs_');
+            
+            if ($zip->open($tempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                throw new \Exception('Cannot create ZIP archive');
+            }
+            
+            foreach ($workers as $worker) {
+                $content = $this->replaceVariables($template->content, $worker, $dynamicData);
+                $filename = $this->generateFilename($template, $worker, $format);
+                
+                switch ($format) {
+                    case 'pdf':
+                        $content = $this->cleanHtmlForPdf($content);
+                        $html = $this->wrapHtml($content);
+                        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+                        $pdf->setPaper('a4', 'portrait');
+                        $zip->addFromString($filename, $pdf->output());
+                        break;
+                        
+                    case 'docx':
+                        $content = $this->convertToXhtml($content);
+                        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+                        $section = $phpWord->addSection();
+                        \PhpOffice\PhpWord\Shared\Html::addHtml($section, $content, false, false);
+                        
+                        $tempDocx = tempnam(sys_get_temp_dir(), 'docx_');
+                        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                        $writer->save($tempDocx);
+                        $zip->addFile($tempDocx, $filename);
+                        break;
+                        
+                    case 'xlsx':
+                        $plainText = strip_tags($content);
+                        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+                        $sheet = $spreadsheet->getActiveSheet();
+                        $sheet->setCellValue('A1', $template->name);
+                        $sheet->setCellValue('A2', '');
+                        
+                        $lines = explode("\n", $plainText);
+                        $row = 3;
+                        foreach ($lines as $line) {
+                            $line = trim($line);
+                            if (!empty($line)) {
+                                $sheet->setCellValue('A' . $row, $line);
+                                $row++;
+                            }
+                        }
+                        
+                        $tempXlsx = tempnam(sys_get_temp_dir(), 'xlsx_');
+                        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                        $writer->save($tempXlsx);
+                        $zip->addFile($tempXlsx, $filename);
+                        break;
+                }
+            }
+            
+            $zip->close();
+            
+            readfile($tempFile);
+            unlink($tempFile);
+            
+        }, $zipFilename, [
+            'Content-Type' => 'application/zip',
+        ]);
+    }
 }

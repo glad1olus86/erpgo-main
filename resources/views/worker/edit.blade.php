@@ -16,7 +16,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('dob', __('Дата рождения'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::date('dob', null, ['class' => 'form-control', 'required' => 'required']) }}
+                {{ Form::date('dob', $worker->dob ? $worker->dob->format('Y-m-d') : null, ['class' => 'form-control', 'required' => 'required']) }}
             </div>
         </div>
         <div class="col-md-6">
@@ -34,7 +34,7 @@
         <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('registration_date', __('Дата регистрации'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::date('registration_date', null, ['class' => 'form-control', 'required' => 'required']) }}
+                {{ Form::date('registration_date', $worker->registration_date ? $worker->registration_date->format('Y-m-d') : null, ['class' => 'form-control', 'required' => 'required']) }}
             </div>
         </div>
         <div class="col-md-6">

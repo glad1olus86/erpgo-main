@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\Http;
 class DocumentScannerService
 {
     /**
-     * Gemini API Key
-     * You can also put this in .env as GEMINI_API_KEY
+     * Gemini API Key from .env
      */
-    protected $apiKey = 'AIzaSyD1o5ZmkVvzEzRIfL9sfxCkyuLUagrDZtw';
+    protected $apiKey;
+
+    public function __construct()
+    {
+        $this->apiKey = env('SCANNER_API_KEY');
+    }
 
     /**
      * Scan document image and extract worker data using Gemini 1.5 Flash
@@ -30,15 +34,15 @@ class DocumentScannerService
 
 Верни ТОЛЬКО JSON без markdown, без ```json, просто чистый JSON в таком формате:
 {
-    "first_name": "Имя на кириллице, ",
-    "last_name": "Фамилия на кириллице", 
+    "first_name": "Имя на латинице, ",
+    "last_name": "Фамилия на латинице", 
     "dob": "YYYY-MM-DD",
     "gender": "male или female",
-    "nationality": "Страна на русском"
+    "nationality": "Страна на английском"
 }
 
 Важно:
-- Имя и фамилию пиши на кириллице с большой буквы, но не всё имя и фамилию большими буквами (русский/украинский)
+- Имя и фамилию пиши на латинице с большой буквы, но не всё имя и фамилию большими буквами
 - Дату рождения в формате YYYY-MM-DD
 - Пол: male для мужчин, female для женщин
 - Если поле не найдено, поставь null';

@@ -116,6 +116,8 @@ class RegisteredUserController extends Controller
 
                 //default bank account for new company
                 $user->userDefaultBankAccount($user->id);
+                // Copy theme settings from super admin
+                User::copyThemeSettings($user->id);
 
                 Utility::chartOfAccountTypeData($user->id);
                 // Utility::chartOfAccountData($user);
@@ -154,6 +156,8 @@ class RegisteredUserController extends Controller
             $user->userDefaultDataRegister($user->id);
             //default bank account for new company
             $user->userDefaultBankAccount($user->id);
+            // Copy theme settings from super admin
+            User::copyThemeSettings($user->id);
 
             Utility::chartOfAccountTypeData($user->id);
             // Utility::chartOfAccountData($user);

@@ -48,7 +48,16 @@
                                             @endphp
                                             @foreach ($rooms as $room)
                                                 <tr>
-                                                    <td>{{ $room->room_number }}</td>
+                                                    <td>
+                                                        <a href="#"
+                                                            data-url="{{ route('room.show', $room->id) }}"
+                                                            data-ajax-popup="true"
+                                                            data-title="{{ __('Жильцы комнаты') }} {{ $room->room_number }}"
+                                                            data-size="lg"
+                                                            class="text-primary fw-medium">
+                                                            {{ $room->room_number }}
+                                                        </a>
+                                                    </td>
                                                     <td>{{ $room->currentAssignments->count() }} / {{ $room->capacity }}
                                                     </td>
                                                     <td>{{ number_format($room->monthly_price, 2) }} €</td>

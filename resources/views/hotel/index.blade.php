@@ -66,7 +66,11 @@
                                                             : 'bg-success');
                                             @endphp
                                             <tr>
-                                                <td>{{ $hotel->name }}</td>
+                                                <td>
+                                                    <a href="{{ route('hotel.rooms', $hotel->id) }}" class="text-primary fw-medium">
+                                                        {{ $hotel->name }}
+                                                    </a>
+                                                </td>
                                                 <td>{{ $hotel->address }}</td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
