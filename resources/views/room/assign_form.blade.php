@@ -10,22 +10,22 @@
     <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted">
-                {{ __('Комната') }}: <strong>{{ $room->room_number }}</strong> | 
-                {{ __('Свободно мест') }}: <strong id="available-spots">{{ $availableSpots }}</strong> {{ __('из') }} {{ $room->capacity }}
+                {{ __('Room') }}: <strong>{{ $room->room_number }}</strong> | 
+                {{ __('Available spots') }}: <strong id="available-spots">{{ $availableSpots }}</strong> {{ __('of') }} {{ $room->capacity }}
             </span>
-            <span class="badge bg-primary" id="selected-count-badge">{{ __('Выбрано') }}: 0</span>
+            <span class="badge bg-primary" id="selected-count-badge">{{ __('Selected') }}: 0</span>
         </div>
     </div>
     
     <div class="mb-3">
-        <input type="text" class="form-control" id="worker-search" placeholder="{{ __('Поиск по имени...') }}">
+        <input type="text" class="form-control" id="worker-search" placeholder="{{ __('Search by name...') }}">
     </div>
     
     <div class="mb-2">
         <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn btn-outline-secondary filter-gender active" data-gender="all">{{ __('Все') }}</button>
-            <button type="button" class="btn btn-outline-primary filter-gender" data-gender="male">{{ __('Мужчины') }}</button>
-            <button type="button" class="btn btn-outline-danger filter-gender" data-gender="female">{{ __('Женщины') }}</button>
+            <button type="button" class="btn btn-outline-secondary filter-gender active" data-gender="all">{{ __('All') }}</button>
+            <button type="button" class="btn btn-outline-primary filter-gender" data-gender="male">{{ __('Men') }}</button>
+            <button type="button" class="btn btn-outline-danger filter-gender" data-gender="female">{{ __('Women') }}</button>
         </div>
     </div>
 
@@ -36,9 +36,9 @@
             <thead class="sticky-top bg-white">
                 <tr>
                     <th style="width: 40px;"></th>
-                    <th>{{ __('Имя Фамилия') }}</th>
-                    <th>{{ __('Пол') }}</th>
-                    <th>{{ __('Национальность') }}</th>
+                    <th>{{ __('Full Name') }}</th>
+                    <th>{{ __('Gender') }}</th>
+                    <th>{{ __('Nationality') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,16 +54,16 @@
                         <td>{{ $worker->first_name }} {{ $worker->last_name }}</td>
                         <td>
                             @if($worker->gender == 'male')
-                                <span class="badge bg-primary">{{ __('М') }}</span>
+                                <span class="badge bg-primary">{{ __('M') }}</span>
                             @else
-                                <span class="badge bg-danger">{{ __('Ж') }}</span>
+                                <span class="badge bg-danger">{{ __('F') }}</span>
                             @endif
                         </td>
                         <td>{{ $worker->nationality }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted">{{ __('Нет доступных работников для заселения') }}</td>
+                        <td colspan="4" class="text-center text-muted">{{ __('No available workers for check-in') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -71,8 +71,8 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-    <button type="submit" class="btn btn-primary" id="assign-submit-btn" disabled>{{ __('Заселить') }}</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+    <button type="submit" class="btn btn-primary" id="assign-submit-btn" disabled>{{ __('Check In') }}</button>
 </div>
 {{ Form::close() }}
 
@@ -90,7 +90,7 @@
     var currentGenderFilter = 'all';
 
     function updateUI() {
-        selectedCountBadge.textContent = '{{ __("Выбрано") }}: ' + selectedWorkers.length + ' / ' + maxSelectable;
+        selectedCountBadge.textContent = '{{ __("Selected") }}: ' + selectedWorkers.length + ' / ' + maxSelectable;
         workerIdsInput.value = selectedWorkers.join(',');
         submitBtn.disabled = selectedWorkers.length === 0;
         

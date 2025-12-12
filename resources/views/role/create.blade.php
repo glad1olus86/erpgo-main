@@ -1452,6 +1452,120 @@
                                                         </div>
                                                     @endif
                                                 @endif
+                                                @if(in_array('cashbox_view_manager',(array) $permissions))
+                                                    @if($key = array_search('cashbox_view_manager',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_cashboxspecial','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('View Manager'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('cashbox_view_curator',(array) $permissions))
+                                                    @if($key = array_search('cashbox_view_curator',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_cashboxspecial','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('View Curator'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('cashbox_view_boss',(array) $permissions))
+                                                    @if($key = array_search('cashbox_view_boss',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_cashboxspecial','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('View Boss'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {{-- Document permissions --}}
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input ischeck agency_checkall" data-id="documents"></td>
+                                        <td><label class="ischeck agency_checkall" data-id="documents">{{ __('Documents') }}</label></td>
+                                        <td>
+                                            <div class="row">
+                                                @if(in_array('document_template_read',(array) $permissions))
+                                                    @if($key = array_search('document_template_read',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_documents','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('View Templates'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('document_template_create',(array) $permissions))
+                                                    @if($key = array_search('document_template_create',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_documents','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Create Template'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('document_template_edit',(array) $permissions))
+                                                    @if($key = array_search('document_template_edit',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_documents','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Edit Template'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('document_template_delete',(array) $permissions))
+                                                    @if($key = array_search('document_template_delete',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_documents','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Delete Template'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('document_generate',(array) $permissions))
+                                                    @if($key = array_search('document_generate',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_documents','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Generate Documents'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {{-- Transport/Vehicle permissions --}}
+                                    <tr>
+                                        <td><input type="checkbox" class="form-check-input ischeck agency_checkall" data-id="transport"></td>
+                                        <td><label class="ischeck agency_checkall" data-id="transport">{{ __('Transport') }}</label></td>
+                                        <td>
+                                            <div class="row">
+                                                @if(in_array('vehicle_read',(array) $permissions))
+                                                    @if($key = array_search('vehicle_read',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_transport','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('View'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('vehicle_create',(array) $permissions))
+                                                    @if($key = array_search('vehicle_create',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_transport','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Create'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('vehicle_edit',(array) $permissions))
+                                                    @if($key = array_search('vehicle_edit',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_transport','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Edit'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                                @if(in_array('vehicle_delete',(array) $permissions))
+                                                    @if($key = array_search('vehicle_delete',$permissions))
+                                                        <div class="col-md-3 custom-control custom-checkbox">
+                                                            {{Form::checkbox('permissions[]',$key,false, ['class'=>'form-check-input isscheck agency_checkall isscheck_transport','id' =>'permission'.$key])}}
+                                                            {{Form::label('permission'.$key,__('Delete'),['class'=>'custom-control-label'])}}<br>
+                                                        </div>
+                                                    @endif
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

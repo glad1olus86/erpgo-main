@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Worker;
 use App\Services\DocumentScannerService;
+use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -65,6 +66,11 @@ class WorkerController extends Controller
     public function store(Request $request)
     {
         if (Auth::user()->can('create worker')) {
+            // Check plan limit
+            if (!PlanLimitService::canCreateWorker()) {
+                return redirect()->back()->with('error', __('Worker limit reached for your plan.'));
+            }
+
             $validator = Validator::make(
                 $request->all(),
                 [
@@ -118,6 +124,10 @@ class WorkerController extends Controller
             }
 
             $worker->save();
+
+            if ($request->input('redirect_to') === 'mobile') {
+                return redirect()->route('mobile.workers.index')->with('success', __('Worker successfully created.'));
+            }
 
             return redirect()->route('worker.index')->with('success', __('Worker successfully created.'));
         } else {
@@ -184,6 +194,10 @@ class WorkerController extends Controller
 
                 $worker->save();
 
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.workers.show', $worker->id)->with('success', __('Worker successfully updated.'));
+                }
+
                 return redirect()->route('worker.index')->with('success', __('Worker successfully updated.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -193,11 +207,16 @@ class WorkerController extends Controller
         }
     }
 
-    public function destroy(Worker $worker)
+    public function destroy(Request $request, Worker $worker)
     {
         if (Auth::user()->can('delete worker')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
                 $worker->delete();
+                
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.workers.index')->with('success', __('Worker successfully deleted.'));
+                }
+                
                 return redirect()->route('worker.index')->with('success', __('Worker successfully deleted.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -247,7 +266,7 @@ class WorkerController extends Controller
                         'created_at' => $worker->created_at->format('d.m.Y'),
                     ];
                 }),
-                'message' => __('Работник с таким именем и фамилией уже существует!'),
+                'message' => __('Worker with this first and last name already exists!'),
             ]);
         }
 
@@ -293,7 +312,7 @@ class WorkerController extends Controller
 
         } catch (\Exception $e) {
             return response()->json([
-                'error' => __('Ошибка сканирования: ') . $e->getMessage()
+                'error' => __('Scan error: ') . $e->getMessage()
             ], 500);
         }
     }
@@ -348,9 +367,9 @@ class WorkerController extends Controller
             $assigned++;
         }
 
-        $message = __('Устроено работников: :assigned', ['assigned' => $assigned]);
+        $message = __('Workers assigned: :assigned', ['assigned' => $assigned]);
         if ($skipped > 0) {
-            $message .= '. ' . __('Пропущено (уже работают): :skipped', ['skipped' => $skipped]);
+            $message .= '. ' . __('Skipped (already working): :skipped', ['skipped' => $skipped]);
         }
 
         return redirect()->back()->with('success', $message);
@@ -391,7 +410,7 @@ class WorkerController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', __('Уволено работников: :count', ['count' => $dismissed]));
+        return redirect()->back()->with('success', __('Workers dismissed: :count', ['count' => $dismissed]));
     }
 
     /**
@@ -429,6 +448,6 @@ class WorkerController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', __('Выселено работников: :count', ['count' => $checkedOut]));
+        return redirect()->back()->with('success', __('Workers checked out: :count', ['count' => $checkedOut]));
     }
 }

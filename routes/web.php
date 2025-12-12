@@ -354,6 +354,59 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('/crm-dashboard', [DashboardController::class, 'crm_dashboard_index'])->name('crm.dashboard')->middleware(['auth', 'XSS', 'revalidate']);
     Route::get('/pos-dashboard', [DashboardController::class, 'pos_dashboard_index'])->name('pos.dashboard')->middleware(['auth', 'XSS', 'revalidate']);
 
+    // JOBSI Dashboard
+    Route::get('/jobsi-dashboard', [\App\Http\Controllers\JobsiDashboardController::class, 'index'])->name('jobsi.dashboard')->middleware(['auth', 'XSS', 'revalidate', 'mobile.redirect']);
+    
+    // Mobile Dashboard
+    Route::get('/mobile/jobsi-dashboard', [\App\Http\Controllers\MobileDashboardController::class, 'index'])->name('mobile.dashboard')->middleware(['auth', 'XSS', 'revalidate']);
+    
+    // Mobile Routes Group
+    Route::prefix('mobile')->middleware(['auth', 'XSS', 'revalidate'])->group(function () {
+        // Workers
+        Route::get('/workers', [\App\Http\Controllers\MobileController::class, 'workers'])->name('mobile.workers.index');
+        Route::get('/workers/{id}', [\App\Http\Controllers\MobileController::class, 'workerShow'])->name('mobile.workers.show');
+        
+        // Hotels
+        Route::get('/hotels', [\App\Http\Controllers\MobileController::class, 'hotels'])->name('mobile.hotels.index');
+        Route::get('/hotels/{id}/rooms', [\App\Http\Controllers\MobileController::class, 'hotelRooms'])->name('mobile.hotels.rooms');
+        
+        // Rooms
+        Route::get('/rooms/{id}', [\App\Http\Controllers\MobileController::class, 'roomShow'])->name('mobile.rooms.show');
+        
+        // Workplaces
+        Route::get('/workplaces', [\App\Http\Controllers\MobileController::class, 'workplaces'])->name('mobile.workplaces.index');
+        Route::get('/workplaces/{id}', [\App\Http\Controllers\MobileController::class, 'workplaceShow'])->name('mobile.workplaces.show');
+        
+        // Vehicles
+        Route::get('/vehicles', [\App\Http\Controllers\MobileController::class, 'vehicles'])->name('mobile.vehicles.index');
+        Route::get('/vehicles/create', [\App\Http\Controllers\MobileController::class, 'vehicleCreate'])->name('mobile.vehicles.create');
+        Route::get('/vehicles/{id}', [\App\Http\Controllers\MobileController::class, 'vehicleShow'])->name('mobile.vehicles.show');
+        Route::get('/vehicles/{id}/edit', [\App\Http\Controllers\MobileController::class, 'vehicleEdit'])->name('mobile.vehicles.edit');
+        
+        // Cashbox
+        Route::get('/cashbox', [\App\Http\Controllers\MobileController::class, 'cashbox'])->name('mobile.cashbox.index');
+        Route::get('/cashbox/{id}', [\App\Http\Controllers\MobileController::class, 'cashboxShow'])->name('mobile.cashbox.show');
+        
+        // Documents
+        Route::get('/documents', [\App\Http\Controllers\MobileController::class, 'documents'])->name('mobile.documents.index');
+        
+        // Calendar
+        Route::get('/calendar', [\App\Http\Controllers\MobileController::class, 'calendar'])->name('mobile.calendar.index');
+        
+        // Audit
+        Route::get('/audit', [\App\Http\Controllers\MobileController::class, 'audit'])->name('mobile.audit.index');
+        
+        // Notifications
+        Route::get('/notifications', [\App\Http\Controllers\MobileController::class, 'notifications'])->name('mobile.notifications.index');
+        
+        // Profile
+        Route::get('/profile', [\App\Http\Controllers\MobileController::class, 'profile'])->name('mobile.profile.index');
+    });
+    
+    Route::get('/jobsi-dashboard/hotel-stats', [\App\Http\Controllers\JobsiDashboardController::class, 'getHotelStats'])->name('jobsi.dashboard.hotel-stats')->middleware(['auth', 'XSS']);
+    Route::get('/jobsi-dashboard/workplace-stats', [\App\Http\Controllers\JobsiDashboardController::class, 'getWorkplaceStats'])->name('jobsi.dashboard.workplace-stats')->middleware(['auth', 'XSS']);
+    Route::get('/jobsi-dashboard/cashbox-stats', [\App\Http\Controllers\JobsiDashboardController::class, 'getCashboxStats'])->name('jobsi.dashboard.cashbox-stats')->middleware(['auth', 'XSS']);
+
     Route::get('profile', [UserController::class, 'profile'])->name('profile')->middleware(['auth', 'XSS', 'revalidate']);
 
     Route::any('edit-profile', [UserController::class, 'editprofile'])->name('update.account')->middleware(['auth', 'XSS', 'revalidate']);
@@ -922,6 +975,10 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('notifications.read')->middleware(['auth']);
     Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
         ->name('notifications.read.all')->middleware(['auth']);
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.mark-all-read')->middleware(['auth']);
+    Route::post('/notifications/clear-all', [App\Http\Controllers\NotificationController::class, 'clearAll'])
+        ->name('notifications.clear-all')->middleware(['auth']);
     Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])
         ->name('notifications.destroy')->middleware(['auth']);
     Route::post('/notifications/settings', [App\Http\Controllers\NotificationController::class, 'saveSettings'])
@@ -1986,6 +2043,7 @@ Route::group(['prefix' => 'cashbox', 'as' => 'cashbox.', 'middleware' => ['auth'
     Route::post('/refund', [App\Http\Controllers\CashTransactionController::class, 'refund'])->name('refund');
     Route::post('/self-salary', [App\Http\Controllers\CashTransactionController::class, 'selfSalary'])->name('self-salary');
     Route::patch('/transaction/{transaction}/status', [App\Http\Controllers\CashTransactionController::class, 'updateStatus'])->name('transaction.status');
+    Route::get('/transaction/{transaction}', [App\Http\Controllers\CashTransactionController::class, 'show'])->name('transaction.show');
     
     // Diagram and balance API routes
     Route::get('/{period}/diagram', [App\Http\Controllers\CashDiagramController::class, 'getDiagram'])->name('diagram');
@@ -2018,6 +2076,9 @@ Route::get('/documents/template-fields/{template}', [App\Http\Controllers\Docume
     ->middleware(['auth', 'XSS']);
 
 // Vehicle (Transport) routes
+Route::post('/vehicles/scan-document', [App\Http\Controllers\VehicleController::class, 'scanDocument'])
+    ->name('vehicles.scan.document')
+    ->middleware(['auth', 'XSS']);
 Route::resource('vehicles', App\Http\Controllers\VehicleController::class)->middleware(['auth', 'XSS']);
 
 // Technical Inspection routes

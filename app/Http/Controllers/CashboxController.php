@@ -42,14 +42,20 @@ class CashboxController extends Controller
             ->get();
 
         // Get user's cashbox role for UI permissions
-        $userRole = $this->hierarchyService->getUserCashboxRole(Auth::user());
+        $user = Auth::user();
+        $userRole = $this->hierarchyService->getUserCashboxRole($user);
         $isBoss = $userRole === CashHierarchyService::ROLE_BOSS;
         
+        // Check specific permissions (company type OR has permission)
+        $canDeposit = $user->type === 'company' || $user->can('cashbox_deposit');
+        $canDistribute = $user->type === 'company' || $user->can('cashbox_distribute');
+        $canRefund = $user->type === 'company' || $user->can('cashbox_refund');
+        
         // Get view permission level for visibility control
-        $viewLevel = $this->hierarchyService->getViewPermissionLevel(Auth::user());
-        $canViewTotalDeposited = $viewLevel === 'boss';
+        $viewLevel = $this->hierarchyService->getViewPermissionLevel($user);
+        $canViewTotalDeposited = $viewLevel === 'boss' || $user->can('cashbox_view_boss');
 
-        return view('cashbox.index', compact('periods', 'currentPeriod', 'userRole', 'isBoss', 'canViewTotalDeposited'));
+        return view('cashbox.index', compact('periods', 'currentPeriod', 'userRole', 'isBoss', 'canViewTotalDeposited', 'canDeposit', 'canDistribute', 'canRefund'));
     }
 
     /**
@@ -71,6 +77,11 @@ class CashboxController extends Controller
         $userRole = $this->hierarchyService->getUserCashboxRole($user);
         $isBoss = $userRole === CashHierarchyService::ROLE_BOSS;
         
+        // Check specific permissions (company type OR has permission)
+        $canDeposit = $user->type === 'company' || $user->can('cashbox_deposit');
+        $canDistribute = $user->type === 'company' || $user->can('cashbox_distribute');
+        $canRefund = $user->type === 'company' || $user->can('cashbox_refund');
+        
         // Get user's balance for this period
         $balance = $this->cashboxService->getBalance($period, $user);
         
@@ -78,7 +89,7 @@ class CashboxController extends Controller
         $recipients = $this->hierarchyService->getAvailableRecipients($user, $period->created_by);
         
         // Check if user can take self-salary
-        $canSelfSalary = $this->hierarchyService->canDistributeToSelf($user);
+        $canSelfSalary = ($user->type === 'company' || $user->can('cashbox_self_salary')) && $this->hierarchyService->canDistributeToSelf($user);
         $hasSelfSalaryThisPeriod = $canSelfSalary 
             ? $this->cashboxService->hasSelfSalaryThisPeriod($period, $user) 
             : false;
@@ -100,7 +111,7 @@ class CashboxController extends Controller
 
         // Get view permission level for visibility control
         $viewLevel = $this->hierarchyService->getViewPermissionLevel($user);
-        $canViewTotalDeposited = $viewLevel === 'boss';
+        $canViewTotalDeposited = $viewLevel === 'boss' || $user->can('cashbox_view_boss');
 
         return view('cashbox.show', compact(
             'period',
@@ -111,7 +122,10 @@ class CashboxController extends Controller
             'canSelfSalary',
             'hasSelfSalaryThisPeriod',
             'refundableTransactions',
-            'canViewTotalDeposited'
+            'canViewTotalDeposited',
+            'canDeposit',
+            'canDistribute',
+            'canRefund'
         ));
     }
 
@@ -150,9 +164,13 @@ class CashboxController extends Controller
             return redirect()->back()->with('error', __('Permission denied.'));
         }
 
-        $companyId = Auth::user()->creatorId();
-        $userRole = $this->hierarchyService->getUserCashboxRole(Auth::user());
+        $user = Auth::user();
+        $companyId = $user->creatorId();
+        $userRole = $this->hierarchyService->getUserCashboxRole($user);
         $isBoss = $userRole === CashHierarchyService::ROLE_BOSS;
+        
+        // Check specific permissions
+        $canManageSettings = $user->type === 'company' || $isBoss;
         
         // Get current currency setting
         $currentCurrency = \DB::table('settings')
@@ -163,7 +181,7 @@ class CashboxController extends Controller
         // Get current period for reset button
         $currentPeriod = $this->cashboxService->getOrCreateCurrentPeriod($companyId);
 
-        return view('cashbox.settings', compact('currentCurrency', 'currentPeriod', 'userRole', 'isBoss'));
+        return view('cashbox.settings', compact('currentCurrency', 'currentPeriod', 'userRole', 'isBoss', 'canManageSettings'));
     }
 
     /**
@@ -225,6 +243,6 @@ class CashboxController extends Controller
             $currentPeriod->update(['total_deposited' => 0]);
         });
 
-        return redirect()->back()->with('success', __('Период успешно сброшен.'));
+        return redirect()->back()->with('success', __('Period successfully reset.'));
     }
 }

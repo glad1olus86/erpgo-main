@@ -4176,10 +4176,10 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="mb-0">{{ __('Notification Settings') }}</h5>
-                                    <small class="text-muted">{{ __('Настройки системных уведомлений для всех пользователей') }}</small>
+                                    <small class="text-muted">{{ __('System notification settings for all users') }}</small>
                                 </div>
                                 <a href="{{ route('notification-rules.index') }}" class="btn btn-sm btn-primary">
-                                    <i class="ti ti-puzzle me-1"></i>{{ __('Конструктор уведомлений') }}
+                                    <i class="ti ti-puzzle me-1"></i>{{ __('Notification Builder') }}
                                 </a>
                             </div>
                         </div>
@@ -4188,48 +4188,48 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Уведомления включены') }}</label>
+                                        <label class="form-label">{{ __('Notifications Enabled') }}</label>
                                         <div class="form-check form-switch">
                                             <input type="checkbox" class="form-check-input" name="notifications_enabled" 
                                                 id="notifications_enabled" {{ ($notificationSettings['notifications_enabled'] ?? 'on') == 'on' ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="notifications_enabled">{{ __('Включить систему уведомлений') }}</label>
+                                            <label class="form-check-label" for="notifications_enabled">{{ __('Enable notification system') }}</label>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label" for="notification_poll_interval">{{ __('Интервал проверки браузером (минуты)') }}</label>
+                                        <label class="form-label" for="notification_poll_interval">{{ __('Browser check interval (minutes)') }}</label>
                                         <input type="number" class="form-control" name="notification_poll_interval" 
                                             id="notification_poll_interval" min="1" max="60" 
                                             value="{{ $notificationSettings['notification_poll_interval'] ?? 1 }}">
-                                        <small class="text-muted">{{ __('Как часто браузер проверяет новые уведомления') }}</small>
+                                        <small class="text-muted">{{ __('How often browser checks for new notifications') }}</small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label" for="notification_create_interval">{{ __('Интервал создания уведомлений (минуты)') }}</label>
+                                        <label class="form-label" for="notification_create_interval">{{ __('Notification creation interval (minutes)') }}</label>
                                         <input type="number" class="form-control" name="notification_create_interval" 
                                             id="notification_create_interval" min="1" max="1440" 
                                             value="{{ $notificationSettings['notification_create_interval'] ?? 60 }}">
-                                        <small class="text-muted">{{ __('Как часто создавать новые уведомления (например, 60 = раз в час)') }}</small>
+                                        <small class="text-muted">{{ __('How often to create new notifications (e.g., 60 = once per hour)') }}</small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label" for="notification_hotel_occupancy_threshold">{{ __('Порог заполненности отеля (%)') }}</label>
+                                        <label class="form-label" for="notification_hotel_occupancy_threshold">{{ __('Hotel occupancy threshold (%)') }}</label>
                                         <input type="number" class="form-control" name="notification_hotel_occupancy_threshold" 
                                             id="notification_hotel_occupancy_threshold" min="1" max="100" 
                                             value="{{ $notificationSettings['notification_hotel_occupancy_threshold'] ?? 50 }}">
-                                        <small class="text-muted">{{ __('Уведомление если заполненность ниже этого процента') }}</small>
+                                        <small class="text-muted">{{ __('Notification if occupancy is below this percentage') }}</small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label" for="notification_unemployed_days">{{ __('Дней без работы') }}</label>
+                                        <label class="form-label" for="notification_unemployed_days">{{ __('Days without work') }}</label>
                                         <input type="number" class="form-control" name="notification_unemployed_days" 
                                             id="notification_unemployed_days" min="1" max="30" 
                                             value="{{ $notificationSettings['notification_unemployed_days'] ?? 3 }}">
-                                        <small class="text-muted">{{ __('Уведомление если работник живёт в отеле без работы дольше этого срока') }}</small>
+                                        <small class="text-muted">{{ __('Notification if worker lives in hotel without work longer than this period') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -4251,7 +4251,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h5 class="mb-0">{{ __('Cashbox Settings') }}</h5>
-                                    <small class="text-muted">{{ __('Настройки модуля кассы') }}</small>
+                                    <small class="text-muted">{{ __('Cashbox module settings') }}</small>
                                 </div>
                             </div>
                         </div>
@@ -4260,7 +4260,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label" for="cashbox_currency">{{ __('Валюта кассы') }}</label>
+                                        <label class="form-label" for="cashbox_currency">{{ __('Cashbox Currency') }}</label>
                                         <select class="form-control" name="cashbox_currency" id="cashbox_currency">
                                             @foreach($cashboxCurrencies as $code => $name)
                                                 <option value="{{ $code }}" {{ $currentCashboxCurrency == $code ? 'selected' : '' }}>
@@ -4268,17 +4268,17 @@
                                                 </option>
                                             @endforeach
                                         </select>
-                                        <small class="text-muted">{{ __('Выберите валюту для отображения сумм в кассе') }}</small>
+                                        <small class="text-muted">{{ __('Select currency for displaying amounts in cashbox') }}</small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Пример форматирования') }}</label>
+                                        <label class="form-label">{{ __('Formatting Example') }}</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="currency_preview" 
                                                 value="{{ \App\Helpers\CashboxCurrencyHelper::format(1234567.89, $currentCashboxCurrency) }}" readonly>
                                         </div>
-                                        <small class="text-muted">{{ __('Так будут отображаться суммы в кассе') }}</small>
+                                        <small class="text-muted">{{ __('This is how amounts will be displayed in cashbox') }}</small>
                                     </div>
                                 </div>
                             </div>

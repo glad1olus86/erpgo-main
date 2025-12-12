@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ __('Экспорт рабочих мест') }}</title>
+    <title>{{ __('Export Work Places') }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -46,17 +46,17 @@
     </style>
 </head>
 <body>
-    <h1>{{ __('Рабочие места') }}</h1>
-    <div class="generated-at">{{ __('Сформировано:') }} {{ $generatedAt }}</div>
+    <h1>{{ __('Work Places') }}</h1>
+    <div class="generated-at">{{ __('Generated:') }} {{ $generatedAt }}</div>
     
     <table>
         <thead>
             <tr>
-                <th>{{ __('Название') }}</th>
-                <th>{{ __('Адрес') }}</th>
-                <th>{{ __('Кол-во') }}</th>
-                <th>{{ __('Сотрудники') }}</th>
-                <th>{{ __('Телефон') }}</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Address') }}</th>
+                <th>{{ __('Count') }}</th>
+                <th>{{ __('Employees') }}</th>
+                <th>{{ __('Phone') }}</th>
                 <th>{{ __('Email') }}</th>
             </tr>
         </thead>

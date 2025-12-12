@@ -12,11 +12,11 @@ class TechnicalInspectionController extends Controller
     public function store(Request $request, Vehicle $vehicle)
     {
         if (!Auth::user()->can('technical_inspection_manage')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         if ($vehicle->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Автомобиль не найден'));
+            return redirect()->back()->with('error', __('Vehicle not found'));
         }
 
         $request->validate([
@@ -39,18 +39,23 @@ class TechnicalInspectionController extends Controller
             'created_by' => Auth::user()->creatorId(),
         ]);
 
+        if ($request->has('redirect_to') && str_starts_with($request->redirect_to, 'mobile_vehicle_')) {
+            return redirect()->route('mobile.vehicles.show', $vehicle->id)
+                ->with('success', __('Inspection record added'));
+        }
+
         return redirect()->route('vehicles.show', $vehicle)
-            ->with('success', __('Запись техосмотра добавлена'));
+            ->with('success', __('Inspection record added'));
     }
 
     public function update(Request $request, TechnicalInspection $inspection)
     {
         if (!Auth::user()->can('technical_inspection_manage')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         if ($inspection->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Запись не найдена'));
+            return redirect()->back()->with('error', __('Record not found'));
         }
 
         $request->validate([
@@ -72,23 +77,23 @@ class TechnicalInspectionController extends Controller
         ]);
 
         return redirect()->route('vehicles.show', $inspection->vehicle_id)
-            ->with('success', __('Запись техосмотра обновлена'));
+            ->with('success', __('Inspection record updated'));
     }
 
     public function destroy(TechnicalInspection $inspection)
     {
         if (!Auth::user()->can('technical_inspection_manage')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         if ($inspection->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Запись не найдена'));
+            return redirect()->back()->with('error', __('Record not found'));
         }
 
         $vehicleId = $inspection->vehicle_id;
         $inspection->delete();
 
         return redirect()->route('vehicles.show', $vehicleId)
-            ->with('success', __('Запись техосмотра удалена'));
+            ->with('success', __('Inspection record deleted'));
     }
 }

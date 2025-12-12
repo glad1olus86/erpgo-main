@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Аудит кассы') }}
+    {{ __('Cashbox Audit') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('cashbox.index') }}">{{ __('Касса') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Аудит') }}</li>
+    <li class="breadcrumb-item"><a href="{{ route('cashbox.index') }}">{{ __('Cashbox') }}</a></li>
+    <li class="breadcrumb-item">{{ __('Audit') }}</li>
 @endsection
 
 @section('content')
@@ -20,23 +20,23 @@
                         <div class="row align-items-end">
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="start_date" class="form-label">{{ __('Дата от') }}</label>
+                                    <label for="start_date" class="form-label">{{ __('Date From') }}</label>
                                     <input type="date" class="form-control" name="start_date" id="start_date"
                                         value="{{ request('start_date') }}">
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="end_date" class="form-label">{{ __('Дата до') }}</label>
+                                    <label for="end_date" class="form-label">{{ __('Date To') }}</label>
                                     <input type="date" class="form-control" name="end_date" id="end_date"
                                         value="{{ request('end_date') }}">
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="period_id" class="form-label">{{ __('Период') }}</label>
+                                    <label for="period_id" class="form-label">{{ __('Period') }}</label>
                                     <select name="period_id" id="period_id" class="form-control select2">
-                                        <option value="">{{ __('Все периоды') }}</option>
+                                        <option value="">{{ __('All Periods') }}</option>
                                         @foreach ($periods as $id => $name)
                                             <option value="{{ $id }}"
                                                 {{ request('period_id') == $id ? 'selected' : '' }}>
@@ -48,9 +48,9 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="user_id" class="form-label">{{ __('Пользователь') }}</label>
+                                    <label for="user_id" class="form-label">{{ __('User') }}</label>
                                     <select name="user_id" id="user_id" class="form-control select2">
-                                        <option value="">{{ __('Все пользователи') }}</option>
+                                        <option value="">{{ __('All Users') }}</option>
                                         @foreach ($users as $id => $name)
                                             <option value="{{ $id }}"
                                                 {{ request('user_id') == $id ? 'selected' : '' }}>
@@ -62,9 +62,9 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
-                                    <label for="event_type" class="form-label">{{ __('Тип операции') }}</label>
+                                    <label for="event_type" class="form-label">{{ __('Operation Type') }}</label>
                                     <select name="event_type" id="event_type" class="form-control select2">
-                                        <option value="">{{ __('Все операции') }}</option>
+                                        <option value="">{{ __('All Operations') }}</option>
                                         @foreach ($eventTypes as $key => $label)
                                             <option value="{{ $key }}"
                                                 {{ request('event_type') == $key ? 'selected' : '' }}>
@@ -77,7 +77,7 @@
                             <div class="col-md-2">
                                 <div class="form-group d-flex gap-2" style="margin-top: 28px;">
                                     <button type="submit" class="btn btn-primary flex-grow-1">
-                                        <i class="ti ti-filter"></i> {{ __('Применить') }}
+                                        <i class="ti ti-filter"></i> {{ __('Apply') }}
                                     </button>
                                     <a href="{{ route('cashbox.audit') }}" class="btn btn-secondary">
                                         <i class="ti ti-refresh"></i>
@@ -92,11 +92,11 @@
                         <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Дата/Время') }}</th>
-                                    <th>{{ __('Пользователь') }}</th>
-                                    <th>{{ __('Операция') }}</th>
-                                    <th>{{ __('Описание') }}</th>
-                                    <th>{{ __('Детали') }}</th>
+                                    <th>{{ __('Date/Time') }}</th>
+                                    <th>{{ __('User') }}</th>
+                                    <th>{{ __('Operation') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Details') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -138,7 +138,7 @@
                                                     <div class="modal-dialog modal-lg">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h5 class="modal-title">{{ __('Детали операции') }}</h5>
+                                                                <h5 class="modal-title">{{ __('Operation Details') }}</h5>
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                     aria-label="Close"></button>
                                                             </div>
@@ -146,13 +146,13 @@
                                                                 <div class="row">
                                                                     @if (!empty($log->old_values))
                                                                         <div class="col-md-6">
-                                                                            <h6 class="text-danger">{{ __('Старые значения') }}</h6>
+                                                                            <h6 class="text-danger">{{ __('Old Values') }}</h6>
                                                                             <pre class="bg-light p-2 rounded">@json($log->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)</pre>
                                                                         </div>
                                                                     @endif
                                                                     @if (!empty($log->new_values))
                                                                         <div class="col-md-{{ empty($log->old_values) ? '12' : '6' }}">
-                                                                            <h6 class="text-success">{{ __('Данные операции') }}</h6>
+                                                                            <h6 class="text-success">{{ __('Operation Data') }}</h6>
                                                                             <pre class="bg-light p-2 rounded">@json($log->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)</pre>
                                                                         </div>
                                                                     @endif
@@ -160,7 +160,7 @@
                                                                 <hr>
                                                                 <div class="row">
                                                                     <div class="col-md-6">
-                                                                        <small class="text-muted">{{ __('IP адрес:') }}</small>
+                                                                        <small class="text-muted">{{ __('IP Address:') }}</small>
                                                                         <p>{{ $log->ip_address ?? '-' }}</p>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -182,7 +182,7 @@
                                         <td colspan="5" class="text-center py-4">
                                             <div class="text-muted">
                                                 <i class="ti ti-search" style="font-size: 48px; opacity: 0.5;"></i>
-                                                <p class="mt-2">{{ __('Операций не найдено') }}</p>
+                                                <p class="mt-2">{{ __('No operations found') }}</p>
                                             </div>
                                         </td>
                                     </tr>

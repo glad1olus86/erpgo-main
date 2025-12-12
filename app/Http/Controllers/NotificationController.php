@@ -115,6 +115,20 @@ class NotificationController extends Controller
     }
 
     /**
+     * Clear all notifications
+     */
+    public function clearAll()
+    {
+        SystemNotification::forCurrentUser()->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->back()->with('success', __('All notifications cleared.'));
+    }
+
+    /**
      * Save notification settings (super admin only)
      */
     public function saveSettings(Request $request)

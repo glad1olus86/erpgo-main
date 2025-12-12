@@ -148,9 +148,19 @@ $(document).ready(function () {
     }
 
     if ($(".pc-dt-simple").length > 0) {
+        // Use translations from PHP (defined in footer.blade.php)
+        var labels = typeof dtLabels !== 'undefined' ? dtLabels : {
+            placeholder: "Search...",
+            perPage: "entries per page",
+            noRows: "No entries found",
+            info: "Showing {start} to {end} of {rows} entries"
+        };
+        
         $( $(".pc-dt-simple") ).each(function( index,element ) {
             var id = $(element).attr('id');
-            const dataTable = new simpleDatatables.DataTable("#"+id);
+            const dataTable = new simpleDatatables.DataTable("#"+id, {
+                labels: labels
+            });
         });
     }
 

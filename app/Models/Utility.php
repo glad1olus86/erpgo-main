@@ -4740,6 +4740,7 @@ class Utility extends Model
         $languages = [
             "ar" => "Arabic",
             "zh" => "Chinese",
+            "cs" => "Czech",
             "da" => "Danish",
             "de" => "German",
             "en" => "English",
@@ -4753,6 +4754,7 @@ class Utility extends Model
             "pt" => "Portuguese",
             "ru" => "Russian",
             "tr" => "Turkish",
+            "uk" => "Ukrainian",
             "pt-br" => "Portuguese (Brazil)",
         ];
         return $languages;

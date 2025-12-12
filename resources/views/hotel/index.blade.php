@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Управление отелями') }}
+    {{ __('Hotel Management') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Отели') }}</li>
+    <li class="breadcrumb-item">{{ __('Hotels') }}</li>
 @endsection
 
 
@@ -20,7 +20,7 @@
             <div class="my-3 d-flex justify-content-end">
                 @can('manage hotel')
                     <a href="#" data-url="{{ route('hotel.export.modal') }}" data-ajax-popup="true"
-                        data-title="{{ __('Экспорт отелей') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
+                        data-title="{{ __('Export Hotels') }}" data-bs-toggle="tooltip" title="{{ __('Export') }}"
                         data-size="lg"
                         class="btn btn-sm btn-secondary me-1">
                         <i class="ti ti-file-export"></i>
@@ -28,7 +28,7 @@
                 @endcan
                 @can('create hotel')
                     <a href="#" data-url="{{ route('hotel.create') }}" data-ajax-popup="true"
-                        data-title="{{ __('Создать новый отель') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"
+                        data-title="{{ __('Create New Hotel') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
                         class="btn btn-sm btn-primary">
                         <i class="ti ti-plus"></i>
                     </a>
@@ -42,11 +42,11 @@
                                 <table class="table datatable">
                                     <thead>
                                         <tr>
-                                            <th>{{ __('Название') }}</th>
-                                            <th>{{ __('Адрес') }}</th>
-                                            <th>{{ __('Вместимость') }}</th>
-                                            <th>{{ __('Контакты') }}</th>
-                                            <th width="200px">{{ __('Действие') }}</th>
+                                            <th>{{ __('Name') }}</th>
+                                            <th>{{ __('Address') }}</th>
+                                            <th>{{ __('Capacity') }}</th>
+                                            <th>{{ __('Contacts') }}</th>
+                                            <th width="200px">{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-style">
@@ -92,7 +92,7 @@
                                                         <div><i class="ti ti-mail"></i> {{ $hotel->email }}</div>
                                                     @endif
                                                     @if (!$hotel->phone && !$hotel->email)
-                                                        <span class="text-muted">{{ __('Нет данных') }}</span>
+                                                        <span class="text-muted">{{ __('No data') }}</span>
                                                     @endif
                                                 </td>
 
@@ -104,9 +104,9 @@
                                                                 <a href="#"
                                                                     data-url="{{ URL::to('hotel/' . $hotel->id . '/edit') }}"
                                                                     data-ajax-popup="true"
-                                                                    data-title="{{ __('Редактировать отель') }}"
+                                                                    data-title="{{ __('Edit Hotel') }}"
                                                                     class="mx-3 btn btn-sm align-items-center bg-info"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Редактировать') }}"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Edit') }}"
                                                                     data-original-title="{{ __('Edit') }}">
                                                                     <i class="ti ti-pencil text-white"></i></a>
                                                             </div>
@@ -122,9 +122,9 @@
 
                                                                 <a href="#"
                                                                     class="mx-3 btn btn-sm  align-items-center bs-pass-para bg-danger"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Delete') }}"
                                                                     data-original-title="{{ __('Delete') }}"
-                                                                    data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить. Вы хотите продолжить?') }}"
+                                                                    data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
                                                                     data-confirm-yes="document.getElementById('delete-form-{{ $hotel->id }}').submit();"><i
                                                                         class="ti ti-trash text-white"></i></a>
                                                                 {!! Form::close() !!}
@@ -134,7 +134,7 @@
                                                             <a href="{{ route('hotel.rooms', $hotel->id) }}"
                                                                 class="mx-3 btn btn-sm align-items-center bg-warning"
                                                                 data-bs-toggle="tooltip"
-                                                                title="{{ __('Просмотреть комнаты') }}">
+                                                                title="{{ __('View Rooms') }}">
                                                                 <i class="ti ti-eye text-white"></i>
                                                             </a>
                                                         </div>

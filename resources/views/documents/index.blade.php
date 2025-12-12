@@ -1,19 +1,19 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Шаблоны документов') }}
+    {{ __('Document Templates') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Шаблоны документов') }}</li>
+    <li class="breadcrumb-item">{{ __('Document Templates') }}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
         @can('document_template_create')
             <a href="{{ route('documents.create') }}"
-                class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{ __('Создать шаблон') }}">
+                class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{ __('Create Template') }}">
                 <i class="ti ti-plus"></i>
             </a>
         @endcan
@@ -29,12 +29,12 @@
                         <table class="table" id="templates-table">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Название') }}</th>
-                                    <th>{{ __('Описание') }}</th>
-                                    <th>{{ __('Переменных') }}</th>
-                                    <th>{{ __('Статус') }}</th>
-                                    <th>{{ __('Создан') }}</th>
-                                    <th>{{ __('Действие') }}</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                    <th>{{ __('Variables') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Created') }}</th>
+                                    <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,9 +57,9 @@
                                         </td>
                                         <td>
                                             @if($template->is_active)
-                                                <span class="badge bg-success">{{ __('Активен') }}</span>
+                                                <span class="badge bg-success">{{ __('Active') }}</span>
                                             @else
-                                                <span class="badge bg-secondary">{{ __('Неактивен') }}</span>
+                                                <span class="badge bg-secondary">{{ __('Inactive') }}</span>
                                             @endif
                                         </td>
                                         <td>{{ $template->formatted_created_at }}</td>
@@ -69,7 +69,7 @@
                                                     <div class="action-btn me-2">
                                                         <a href="{{ route('documents.edit', $template->id) }}"
                                                             class="mx-3 btn btn-sm align-items-center bg-info"
-                                                            data-bs-toggle="tooltip" title="{{ __('Редактировать') }}">
+                                                            data-bs-toggle="tooltip" title="{{ __('Edit') }}">
                                                             <i class="ti ti-pencil text-white"></i>
                                                         </a>
                                                     </div>
@@ -83,8 +83,8 @@
                                                         ]) !!}
                                                         <a href="#"
                                                             class="mx-3 btn btn-sm align-items-center bs-pass-para bg-danger"
-                                                            data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
-                                                            data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить. Вы хотите продолжить?') }}"
+                                                            data-bs-toggle="tooltip" title="{{ __('Delete') }}"
+                                                            data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
                                                             data-confirm-yes="document.getElementById('delete-form-{{ $template->id }}').submit();">
                                                             <i class="ti ti-trash text-white"></i>
                                                         </a>
@@ -98,10 +98,10 @@
                                     <tr>
                                         <td colspan="6" class="text-center text-muted py-4">
                                             <i class="ti ti-file-text" style="font-size: 48px;"></i>
-                                            <p class="mt-2">{{ __('Шаблоны документов не найдены') }}</p>
+                                            <p class="mt-2">{{ __('No document templates found') }}</p>
                                             @can('document_template_create')
                                                 <a href="{{ route('documents.create') }}" class="btn btn-primary btn-sm">
-                                                    <i class="ti ti-plus me-1"></i>{{ __('Создать первый шаблон') }}
+                                                    <i class="ti ti-plus me-1"></i>{{ __('Create First Template') }}
                                                 </a>
                                             @endcan
                                         </td>

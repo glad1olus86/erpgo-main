@@ -11,33 +11,33 @@
     <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted">
-                {{ __('Рабочее место') }}: <strong>{{ $workPlace->name }}</strong> | 
-                {{ __('Сотрудников') }}: <strong>{{ $currentEmployees }}</strong>
+                {{ __('Work Place') }}: <strong>{{ $workPlace->name }}</strong> | 
+                {{ __('Employees') }}: <strong>{{ $currentEmployees }}</strong>
             </span>
-            <span class="badge bg-primary" id="selected-count-badge">{{ __('Выбрано') }}: 0</span>
+            <span class="badge bg-primary" id="selected-count-badge">{{ __('Selected') }}: 0</span>
         </div>
     </div>
     
     <div class="mb-3">
-        <input type="text" class="form-control" id="worker-search" placeholder="{{ __('Поиск по имени...') }}">
+        <input type="text" class="form-control" id="worker-search" placeholder="{{ __('Search by name...') }}">
     </div>
     
     <div class="mb-2">
         <div class="btn-group btn-group-sm" role="group">
-            <button type="button" class="btn btn-outline-secondary filter-gender active" data-gender="all">{{ __('Все') }}</button>
-            <button type="button" class="btn btn-outline-primary filter-gender" data-gender="male">{{ __('Мужчины') }}</button>
-            <button type="button" class="btn btn-outline-danger filter-gender" data-gender="female">{{ __('Женщины') }}</button>
+            <button type="button" class="btn btn-outline-secondary filter-gender active" data-gender="all">{{ __('All') }}</button>
+            <button type="button" class="btn btn-outline-primary filter-gender" data-gender="male">{{ __('Men') }}</button>
+            <button type="button" class="btn btn-outline-danger filter-gender" data-gender="female">{{ __('Women') }}</button>
         </div>
     </div>
 
     <div class="mb-3">
-        <label for="position_id" class="form-label">{{ __('Должность') }} <span class="text-danger">*</span></label>
+        <label for="position_id" class="form-label">{{ __('Position') }} <span class="text-danger">*</span></label>
         <select name="position_id" id="position_id" class="form-control" required>
             @if($positions->count() === 1)
                 {{-- Auto-select if only one position --}}
                 <option value="{{ $positions->first()->id }}" selected>{{ $positions->first()->name }}</option>
             @else
-                <option value="">{{ __('Выберите должность') }}</option>
+                <option value="">{{ __('Select Position') }}</option>
                 @foreach($positions as $position)
                     <option value="{{ $position->id }}">{{ $position->name }}</option>
                 @endforeach
@@ -46,13 +46,13 @@
         @if($positions->isEmpty())
             <small class="text-warning">
                 <i class="ti ti-alert-triangle"></i> 
-                {{ __('Сначала создайте должности в разделе') }} 
-                <a href="{{ route('work-place.positions', $workPlace->id) }}" target="_blank">{{ __('Должности') }}</a>
+                {{ __('First create positions in section') }} 
+                <a href="{{ route('work-place.positions', $workPlace->id) }}" target="_blank">{{ __('Positions') }}</a>
             </small>
         @elseif($positions->count() === 1)
             <small class="text-success">
                 <i class="ti ti-check"></i> 
-                {{ __('Должность выбрана автоматически') }}
+                {{ __('Position selected automatically') }}
             </small>
         @endif
     </div>
@@ -64,9 +64,9 @@
             <thead class="sticky-top bg-white">
                 <tr>
                     <th style="width: 40px;"></th>
-                    <th>{{ __('Имя Фамилия') }}</th>
-                    <th>{{ __('Пол') }}</th>
-                    <th>{{ __('Национальность') }}</th>
+                    <th>{{ __('First Name Last Name') }}</th>
+                    <th>{{ __('Gender') }}</th>
+                    <th>{{ __('Nationality') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,9 +82,9 @@
                         <td>{{ $worker->first_name }} {{ $worker->last_name }}</td>
                         <td>
                             @if($worker->gender == 'male')
-                                <span class="badge bg-primary">{{ __('М') }}</span>
+                                <span class="badge bg-primary">{{ __('M') }}</span>
                             @else
-                                <span class="badge bg-danger">{{ __('Ж') }}</span>
+                                <span class="badge bg-danger">{{ __('F') }}</span>
                             @endif
                         </td>
                         <td>{{ $worker->nationality }}</td>
@@ -93,7 +93,7 @@
                     <tr>
                         <td colspan="4" class="text-center text-muted py-4">
                             <i class="ti ti-users-minus" style="font-size: 24px;"></i><br>
-                            {{ __('Нет доступных работников без работы') }}
+                            {{ __('No available workers without job') }}
                         </td>
                     </tr>
                 @endforelse
@@ -102,9 +102,9 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
     <button type="submit" class="btn btn-primary" id="assign-submit-btn" disabled>
-        <i class="ti ti-briefcase me-1"></i>{{ __('Устроить на работу') }}
+        <i class="ti ti-briefcase me-1"></i>{{ __('Assign to Work') }}
     </button>
 </div>
 {{ Form::close() }}
@@ -121,7 +121,7 @@
     var currentGenderFilter = 'all';
 
     function updateUI() {
-        selectedCountBadge.textContent = '{{ __("Выбрано") }}: ' + selectedWorkers.length;
+        selectedCountBadge.textContent = '{{ __("Selected") }}: ' + selectedWorkers.length;
         workerIdsInput.value = selectedWorkers.join(',');
         submitBtn.disabled = selectedWorkers.length === 0;
     }

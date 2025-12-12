@@ -3,27 +3,27 @@
     {{-- Rule Name --}}
     <div class="row mb-3">
         <div class="col-12">
-            <label class="form-label">{{ __('Название правила') }} <span class="text-danger">*</span></label>
-            <input type="text" name="name" class="form-control" placeholder="{{ __('Например: Работник без работы') }}" required>
+            <label class="form-label">{{ __('Rule Name') }} <span class="text-danger">*</span></label>
+            <input type="text" name="name" class="form-control" placeholder="{{ __('Example: Worker without work') }}" required>
         </div>
     </div>
 
     {{-- Rule Builder --}}
     <div class="card bg-light mb-3">
         <div class="card-body p-3">
-            <h6 class="mb-3"><i class="ti ti-puzzle me-1"></i>{{ __('Конструктор правила') }}</h6>
+            <h6 class="mb-3"><i class="ti ti-puzzle me-1"></i>{{ __('Rule Builder') }}</h6>
             
             <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="rule-preview">
-                <span class="badge bg-dark fs-6">{{ __('ЕСЛИ') }}</span>
-                <span class="badge bg-secondary fs-6" id="preview-entity">{{ __('Выберите сущность') }}</span>
+                <span class="badge bg-dark fs-6">{{ __('IF') }}</span>
+                <span class="badge bg-secondary fs-6" id="preview-entity">{{ __('Select entity') }}</span>
             </div>
 
             {{-- Entity Type --}}
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label class="form-label">{{ __('Сущность') }} <span class="text-danger">*</span></label>
+                    <label class="form-label">{{ __('Entity') }} <span class="text-danger">*</span></label>
                     <select name="entity_type" id="entity-type" class="form-control" required>
-                        <option value="">{{ __('Выберите...') }}</option>
+                        <option value="">{{ __('Select...') }}</option>
                         @foreach($entityTypes as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach
@@ -33,18 +33,18 @@
 
             {{-- Conditions Container --}}
             <div id="conditions-container" style="display: none;">
-                <label class="form-label">{{ __('Условия') }} <span class="text-danger">*</span></label>
+                <label class="form-label">{{ __('Conditions') }} <span class="text-danger">*</span></label>
                 <div id="conditions-list" class="mb-2"></div>
                 <button type="button" class="btn btn-sm btn-outline-primary" id="add-condition-btn">
-                    <i class="ti ti-plus me-1"></i>{{ __('Добавить условие') }}
+                    <i class="ti ti-plus me-1"></i>{{ __('Add Condition') }}
                 </button>
             </div>
 
             {{-- Template Variables (for event-based entities like cashbox) --}}
             <div id="template-variables-container" class="mt-3" style="display: none;">
-                <label class="form-label"><i class="ti ti-variable me-1"></i>{{ __('Доступные переменные для шаблонов') }}</label>
+                <label class="form-label"><i class="ti ti-variable me-1"></i>{{ __('Available template variables') }}</label>
                 <div id="template-variables-list" class="d-flex flex-wrap gap-2"></div>
-                <small class="text-muted">{{ __('Эти переменные будут автоматически заменены в уведомлениях') }}</small>
+                <small class="text-muted">{{ __('These variables will be automatically replaced in notifications') }}</small>
             </div>
         </div>
     </div>
@@ -52,21 +52,21 @@
     {{-- Period --}}
     <div class="row mb-3">
         <div class="col-md-6">
-            <label class="form-label">{{ __('Период от (дней)') }}</label>
+            <label class="form-label">{{ __('Period from (days)') }}</label>
             <input type="number" name="period_from" id="period-from" class="form-control" value="0" min="0">
-            <small class="text-muted">{{ __('0 = сразу') }}</small>
+            <small class="text-muted">{{ __('0 = immediately') }}</small>
         </div>
         <div class="col-md-6">
-            <label class="form-label">{{ __('Период до (дней)') }}</label>
-            <input type="number" name="period_to" id="period-to" class="form-control" placeholder="{{ __('Не ограничено') }}" min="1">
-            <small class="text-muted">{{ __('Оставьте пустым для "от X дней и более"') }}</small>
+            <label class="form-label">{{ __('Period to (days)') }}</label>
+            <input type="number" name="period_to" id="period-to" class="form-control" placeholder="{{ __('Unlimited') }}" min="1">
+            <small class="text-muted">{{ __('Leave empty for "from X days and more"') }}</small>
         </div>
     </div>
 
     {{-- Severity --}}
     <div class="row mb-3">
         <div class="col-md-8">
-            <label class="form-label">{{ __('Тип уведомления') }} <span class="text-danger">*</span></label>
+            <label class="form-label">{{ __('Notification Type') }} <span class="text-danger">*</span></label>
             <div class="d-flex gap-3 flex-wrap">
                 @foreach($severityLevels as $value => $info)
                     <div class="form-check">
@@ -82,28 +82,28 @@
             </div>
         </div>
         <div class="col-md-4">
-            <label class="form-label">{{ __('Группировка') }}</label>
+            <label class="form-label">{{ __('Grouping') }}</label>
             <div class="form-check form-switch">
                 <input type="checkbox" class="form-check-input" name="is_grouped" id="is-grouped" value="1">
-                <label class="form-check-label" for="is-grouped">{{ __('Группировать') }}</label>
+                <label class="form-check-label" for="is-grouped">{{ __('Group') }}</label>
             </div>
-            <small class="text-muted">{{ __('Объединить все совпадения в одно уведомление') }}</small>
+            <small class="text-muted">{{ __('Combine all matches into one notification') }}</small>
         </div>
     </div>
 
     {{-- Final Preview --}}
     <div class="alert alert-secondary mb-0">
-        <strong>{{ __('Итоговое правило:') }}</strong>
+        <strong>{{ __('Final Rule:') }}</strong>
         <div id="final-preview" class="mt-2 d-flex flex-wrap align-items-center gap-1">
-            <span class="text-muted">{{ __('Заполните форму для предпросмотра') }}</span>
+            <span class="text-muted">{{ __('Fill the form for preview') }}</span>
         </div>
     </div>
 </div>
 
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
     <button type="submit" class="btn btn-primary" id="submit-btn">
-        <i class="ti ti-check me-1"></i>{{ __('Создать правило') }}
+        <i class="ti ti-check me-1"></i>{{ __('Create Rule') }}
     </button>
 </div>
 {{ Form::close() }}
@@ -178,11 +178,11 @@
         var conditionHtml = '<div class="condition-row d-flex gap-2 align-items-center mb-2" data-index="' + conditionIndex + '">';
         
         if (conditionIndex > 0) {
-            conditionHtml += '<span class="badge bg-warning text-dark">{{ __("И") }}</span>';
+            conditionHtml += '<span class="badge bg-warning text-dark">{{ __("AND") }}</span>';
         }
         
         conditionHtml += '<select name="conditions[' + conditionIndex + '][field]" class="form-control form-control-sm condition-field" required>';
-        conditionHtml += '<option value="">{{ __("Выберите условие") }}</option>';
+        conditionHtml += '<option value="">{{ __("Select condition") }}</option>';
         
         for (var key in availableConditions) {
             conditionHtml += '<option value="' + key + '" data-type="' + availableConditions[key].type + '">' + availableConditions[key].label + '</option>';
@@ -256,7 +256,7 @@
         var preview = document.getElementById('final-preview');
         var html = '';
         
-        html += '<span class="badge bg-dark">{{ __("ЕСЛИ") }}</span> ';
+        html += '<span class="badge bg-dark">{{ __("IF") }}</span> ';
         
         if (entityType) {
             html += '<span class="badge bg-primary">' + entityLabels[entityType] + '</span> ';
@@ -278,7 +278,7 @@
             if (conditions.length > 0) {
                 html += '<span class="badge bg-secondary">(</span> ';
                 conditions.forEach(function(cond, i) {
-                    if (i > 0) html += '<span class="badge bg-warning text-dark">{{ __("И") }}</span> ';
+                    if (i > 0) html += '<span class="badge bg-warning text-dark">{{ __("AND") }}</span> ';
                     html += '<span class="badge bg-info">' + cond + '</span> ';
                 });
                 html += '<span class="badge bg-secondary">)</span> ';
@@ -291,9 +291,9 @@
         if (periodFrom > 0 || periodTo) {
             var periodText = '';
             if (periodTo) {
-                periodText = periodFrom + '-' + periodTo + ' {{ __("дней") }}';
+                periodText = periodFrom + '-' + periodTo + ' {{ __("days") }}';
             } else if (periodFrom > 0) {
-                periodText = '{{ __("от") }} ' + periodFrom + ' {{ __("дней") }}';
+                periodText = '{{ __("from") }} ' + periodFrom + ' {{ __("days") }}';
             }
             if (periodText) {
                 html += '<span class="badge bg-secondary">' + periodText + '</span> ';
@@ -309,7 +309,7 @@
         preview.innerHTML = html;
         
         // Update entity preview
-        document.getElementById('preview-entity').textContent = entityType ? entityLabels[entityType] : '{{ __("Выберите сущность") }}';
+        document.getElementById('preview-entity').textContent = entityType ? entityLabels[entityType] : '{{ __("Select entity") }}';
         document.getElementById('preview-entity').className = 'badge fs-6 ' + (entityType ? 'bg-primary' : 'bg-secondary');
     }
 

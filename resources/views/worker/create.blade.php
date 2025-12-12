@@ -1,4 +1,5 @@
 {{ Form::open(['url' => 'worker', 'method' => 'post', 'enctype' => 'multipart/form-data', 'id' => 'worker_create_form']) }}
+<input type="hidden" name="redirect_to" id="redirect_to_field" value="{{ request('redirect_to', '') }}">
 <div class="modal-body">
     {{-- Scan Document Button --}}
     <div class="row mb-3">
@@ -7,13 +8,13 @@
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h6 class="mb-1"><i class="ti ti-scan me-2"></i>{{ __('Автозаполнение из документа') }}</h6>
-                            <small class="text-muted">{{ __('Загрузите фото паспорта или ID для автоматического заполнения формы') }}</small>
+                            <h6 class="mb-1"><i class="ti ti-scan me-2"></i>{{ __('Auto-fill from Document') }}</h6>
+                            <small class="text-muted">{{ __('Upload passport or ID photo for automatic form filling') }}</small>
                         </div>
                         <div>
                             <input type="file" id="scan_document_input" accept="image/*" style="display: none;">
                             <button type="button" class="btn btn-info" id="scan_document_btn">
-                                <i class="ti ti-camera me-1"></i>{{ __('Сканировать документ') }}
+                                <i class="ti ti-camera me-1"></i>{{ __('Scan Document') }}
                             </button>
                         </div>
                     </div>
@@ -22,7 +23,7 @@
                             <div class="spinner-border spinner-border-sm text-info me-2" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
-                            <span class="text-info">{{ __('Сканирование документа...') }}</span>
+                            <span class="text-info">{{ __('Scanning document...') }}</span>
                         </div>
                     </div>
                     <div id="scan_result" class="mt-2" style="display: none;"></div>
@@ -34,58 +35,58 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('first_name', __('Имя'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::text('first_name', null, ['class' => 'form-control', 'placeholder' => __('Введите имя'), 'required' => 'required', 'id' => 'first_name']) }}
+                {{ Form::label('first_name', __('First Name'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::text('first_name', null, ['class' => 'form-control', 'placeholder' => __('Enter first name'), 'required' => 'required', 'id' => 'first_name']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('last_name', __('Фамилия'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::text('last_name', null, ['class' => 'form-control', 'placeholder' => __('Введите фамилию'), 'required' => 'required', 'id' => 'last_name']) }}
+                {{ Form::label('last_name', __('Last Name'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::text('last_name', null, ['class' => 'form-control', 'placeholder' => __('Enter last name'), 'required' => 'required', 'id' => 'last_name']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('dob', __('Дата рождения'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::label('dob', __('Date of Birth'), ['class' => 'form-label']) }}<x-required></x-required>
                 {{ Form::date('dob', null, ['class' => 'form-control', 'required' => 'required', 'id' => 'dob']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('gender', __('Пол'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::label('gender', __('Gender'), ['class' => 'form-label']) }}<x-required></x-required>
                 <select name="gender" id="gender" class="form-control" required>
-                    <option value="male">{{ __('Мужчина') }}</option>
-                    <option value="female">{{ __('Женщина') }}</option>
+                    <option value="male">{{ __('Male') }}</option>
+                    <option value="female">{{ __('Female') }}</option>
                 </select>
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('nationality', __('Национальность'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::text('nationality', null, ['class' => 'form-control', 'placeholder' => __('Введите национальность'), 'required' => 'required', 'id' => 'nationality']) }}
+                {{ Form::label('nationality', __('Nationality'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::text('nationality', null, ['class' => 'form-control', 'placeholder' => __('Enter nationality'), 'required' => 'required', 'id' => 'nationality']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('registration_date', __('Дата регистрации'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::label('registration_date', __('Registration Date'), ['class' => 'form-label']) }}<x-required></x-required>
                 {{ Form::date('registration_date', date('Y-m-d'), ['class' => 'form-control', 'required' => 'required', 'id' => 'registration_date']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('phone', __('Телефон'), ['class' => 'form-label']) }}
-                {{ Form::text('phone', null, ['class' => 'form-control', 'placeholder' => __('Введите телефон'), 'id' => 'phone']) }}
+                {{ Form::label('phone', __('Phone'), ['class' => 'form-label']) }}
+                {{ Form::text('phone', null, ['class' => 'form-control', 'placeholder' => __('Enter phone'), 'id' => 'phone']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('email', __('Email'), ['class' => 'form-label']) }}
-                {{ Form::email('email', null, ['class' => 'form-control', 'placeholder' => __('Введите email'), 'id' => 'email']) }}
+                {{ Form::email('email', null, ['class' => 'form-control', 'placeholder' => __('Enter email'), 'id' => 'email']) }}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('document_photo', __('Фото документов'), ['class' => 'form-label']) }}
+                {{ Form::label('document_photo', __('Document Photo'), ['class' => 'form-label']) }}
                 <input type="hidden" name="scanned_document_path" id="scanned_document_path" value="">
                 <div class="choose-file form-group">
                     <label for="document_photo" class="form-label">
@@ -95,13 +96,13 @@
                     <p class="document_photo_create"></p>
                 </div>
                 <div id="scanned_document_preview" style="display: none;" class="mt-2">
-                    <span class="badge bg-success"><i class="ti ti-check me-1"></i>{{ __('Документ из сканера прикреплён') }}</span>
+                    <span class="badge bg-success"><i class="ti ti-check me-1"></i>{{ __('Scanned document attached') }}</span>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('photo', __('Фото внешности'), ['class' => 'form-label']) }}
+                {{ Form::label('photo', __('Appearance Photo'), ['class' => 'form-label']) }}
                 <div class="choose-file form-group">
                     <label for="photo" class="form-label">
                         <input type="file" class="form-control" name="photo" id="photo"
@@ -114,8 +115,8 @@
     </div>
 </div>
 <div class="modal-footer">
-    <input type="button" value="{{ __('Отменить') }}" class="btn btn-light" data-bs-dismiss="modal">
-    <button type="button" class="btn btn-primary" id="worker_submit_btn">{{ __('Сохранить') }}</button>
+    <input type="button" value="{{ __('Cancel') }}" class="btn btn-light" data-bs-dismiss="modal">
+    <button type="button" class="btn btn-primary" id="worker_submit_btn">{{ __('Save') }}</button>
 </div>
 
 {{-- Duplicate Warning Alert --}}
@@ -124,12 +125,12 @@
         <div class="d-flex align-items-start">
             <i class="ti ti-alert-triangle me-2" style="font-size: 24px;"></i>
             <div>
-                <strong>{{ __('Внимание! Возможный дубликат!') }}</strong>
+                <strong>{{ __('Warning! Possible duplicate!') }}</strong>
                 <p class="mb-2" id="duplicate_message"></p>
                 <div id="duplicate_list" class="small"></div>
                 <p class="mb-0 mt-2 text-muted">
                     <i class="ti ti-info-circle me-1"></i>
-                    {{ __('Если вы уверены, нажмите кнопку ещё раз через 5 секунд') }}
+                    {{ __('If you are sure, click the button again in 5 seconds') }}
                 </p>
             </div>
         </div>
@@ -139,8 +140,16 @@
 
 <script>
 (function() {
-    // Используем setTimeout чтобы дать время DOM элементам появиться в модальном окне
+    // Use setTimeout to give DOM elements time to appear in the modal window
     setTimeout(function() {
+        // Detect if opened from mobile page and set redirect field
+        var redirectField = document.getElementById('redirect_to_field');
+        if (redirectField && !redirectField.value) {
+            if (window.location.pathname.indexOf('/mobile') === 0) {
+                redirectField.value = 'mobile';
+            }
+        }
+        
         var scanBtn = document.getElementById('scan_document_btn');
         var scanInput = document.getElementById('scan_document_input');
         var scanStatus = document.getElementById('scan_status');
@@ -222,7 +231,7 @@
                         console.log('Scan result:', data.data);
 
                         // Show success message
-                        scanResult.innerHTML = '<div class="alert alert-success mb-0 py-2"><i class="ti ti-check me-1"></i>{{ __("Данные успешно извлечены! Документ прикреплён автоматически.") }}</div>';
+                        scanResult.innerHTML = '<div class="alert alert-success mb-0 py-2"><i class="ti ti-check me-1"></i>{{ __("Data extracted successfully! Document attached automatically.") }}</div>';
                         scanResult.style.display = 'block';
                     } else if (data.error) {
                         scanResult.innerHTML = '<div class="alert alert-danger mb-0 py-2"><i class="ti ti-alert-circle me-1"></i>' + data.error + '</div>';
@@ -232,7 +241,7 @@
                 .catch(function(error) {
                     scanStatus.style.display = 'none';
                     scanBtn.disabled = false;
-                    scanResult.innerHTML = '<div class="alert alert-danger mb-0 py-2"><i class="ti ti-alert-circle me-1"></i>{{ __("Ошибка при сканировании документа") }}</div>';
+                    scanResult.innerHTML = '<div class="alert alert-danger mb-0 py-2"><i class="ti ti-alert-circle me-1"></i>{{ __("Error scanning document") }}</div>';
                     scanResult.style.display = 'block';
                     console.error('Scan error:', error);
                 });
@@ -267,7 +276,7 @@
             }
             cooldownActive = false;
             if (submitBtn) {
-                submitBtn.textContent = '{{ __("Сохранить") }}';
+                submitBtn.textContent = '{{ __("Save") }}';
                 submitBtn.classList.remove('btn-danger');
                 submitBtn.classList.add('btn-primary');
                 submitBtn.disabled = false;
@@ -284,18 +293,18 @@
             submitBtn.disabled = true;
             submitBtn.classList.remove('btn-primary');
             submitBtn.classList.add('btn-danger');
-            submitBtn.textContent = '{{ __("Подождите") }} (' + seconds + ')';
+            submitBtn.textContent = '{{ __("Please wait") }} (' + seconds + ')';
             
             cooldownTimer = setInterval(function() {
                 seconds--;
                 if (seconds > 0) {
-                    submitBtn.textContent = '{{ __("Подождите") }} (' + seconds + ')';
+                    submitBtn.textContent = '{{ __("Please wait") }} (' + seconds + ')';
                 } else {
                     clearInterval(cooldownTimer);
                     cooldownTimer = null;
                     cooldownActive = false;
                     submitBtn.disabled = false;
-                    submitBtn.textContent = '{{ __("Создать всё равно") }}';
+                    submitBtn.textContent = '{{ __("Create anyway") }}';
                     duplicateCheckPassed = true;
                 }
             }, 1000);
@@ -334,7 +343,7 @@
                 
                 // Check for duplicates
                 submitBtn.disabled = true;
-                submitBtn.textContent = '{{ __("Проверка...") }}';
+                submitBtn.textContent = '{{ __("Checking...") }}';
                 
                 fetch('{{ route("worker.check.duplicate") }}', {
                     method: 'POST',
@@ -363,9 +372,9 @@
                         var listHtml = '<ul class="mb-0 ps-3">';
                         data.duplicates.forEach(function(dup) {
                             listHtml += '<li><strong>' + dup.name + '</strong>';
-                            if (dup.dob) listHtml += ' ({{ __("Д.р.") }}: ' + dup.dob + ')';
+                            if (dup.dob) listHtml += ' ({{ __("DOB") }}: ' + dup.dob + ')';
                             if (dup.nationality) listHtml += ' - ' + dup.nationality;
-                            listHtml += ' <span class="text-muted">[{{ __("создан") }}: ' + dup.created_at + ']</span></li>';
+                            listHtml += ' <span class="text-muted">[{{ __("created") }}: ' + dup.created_at + ']</span></li>';
                         });
                         listHtml += '</ul>';
                         duplicateList.innerHTML = listHtml;

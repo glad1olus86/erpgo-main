@@ -55,7 +55,7 @@ class WorkAssignmentController extends Controller
 
                 // Check if worker already has an active work assignment
                 if ($worker->currentWorkAssignment) {
-                    return redirect()->back()->with('error', __('Работник уже устроен на работу. Сначала уволите его.'));
+                    return redirect()->back()->with('error', __('Worker is already employed. Dismiss them first.'));
                 }
 
                 // Create the assignment
@@ -66,7 +66,7 @@ class WorkAssignmentController extends Controller
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();
 
-                return redirect()->back()->with('success', __('Работник успешно устроен на работу.'));
+                return redirect()->back()->with('success', __('Worker successfully assigned to work.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -78,21 +78,25 @@ class WorkAssignmentController extends Controller
     /**
      * Dismiss a worker from their work place (fire them).
      */
-    public function dismissWorker(Worker $worker)
+    public function dismissWorker(Request $request, Worker $worker)
     {
         if (Auth::user()->can('manage work place')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
                 $assignment = $worker->currentWorkAssignment;
 
                 if (!$assignment) {
-                    return redirect()->back()->with('error', __('Работник не устроен на работу.'));
+                    return redirect()->back()->with('error', __('Worker is not employed.'));
                 }
 
                 // Set the end date to dismiss the worker
                 $assignment->ended_at = now();
                 $assignment->save();
 
-                return redirect()->back()->with('success', __('Работник успешно уволен.'));
+                // Check if redirect to mobile
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.workers.show', $worker->id)->with('success', __('Worker successfully dismissed.'));
+                }
+                return redirect()->back()->with('success', __('Worker successfully dismissed.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -113,7 +117,7 @@ class WorkAssignmentController extends Controller
                 ]);
 
                 if ($validator->fails()) {
-                    return redirect()->back()->with('error', __('Выберите должность'));
+                    return redirect()->back()->with('error', __('Select a position'));
                 }
 
                 // Verify position belongs to this work place
@@ -123,7 +127,7 @@ class WorkAssignmentController extends Controller
                     ->first();
 
                 if (!$position) {
-                    return redirect()->back()->with('error', __('Должность не найдена'));
+                    return redirect()->back()->with('error', __('Position not found'));
                 }
 
                 $workerIds = array_filter(explode(',', $request->worker_ids ?? ''));
@@ -146,7 +150,7 @@ class WorkAssignmentController extends Controller
                     $assigned++;
                 }
 
-                return redirect()->back()->with('success', __('Устроено работников: :count', ['count' => $assigned]));
+                return redirect()->back()->with('success', __('Workers assigned: :count', ['count' => $assigned]));
             }
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -178,7 +182,7 @@ class WorkAssignmentController extends Controller
                     }
                 }
 
-                return redirect()->back()->with('success', __('Уволено работников: :count', ['count' => $dismissed]));
+                return redirect()->back()->with('success', __('Workers dismissed: :count', ['count' => $dismissed]));
             }
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -191,12 +195,12 @@ class WorkAssignmentController extends Controller
     public function assignToPosition(Request $request, Position $position)
     {
         if (!Auth::user()->can('manage work place')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($position->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Должность не найдена'));
+            return redirect()->back()->with('error', __('Position not found'));
         }
 
         $workerIds = array_filter(explode(',', $request->worker_ids ?? ''));
@@ -221,7 +225,7 @@ class WorkAssignmentController extends Controller
             $assigned++;
         }
 
-        return redirect()->back()->with('success', __('Устроено работников: :count', ['count' => $assigned]));
+        return redirect()->back()->with('success', __('Workers assigned: :count', ['count' => $assigned]));
     }
 
     /**
@@ -230,7 +234,7 @@ class WorkAssignmentController extends Controller
     public function getUnassignedWorkers()
     {
         if (!Auth::user()->can('manage work place')) {
-            return response()->json(['error' => __('Недостаточно прав')], 403);
+            return response()->json(['error' => __('Insufficient permissions')], 403);
         }
 
         $assignedWorkerIds = WorkAssignment::whereNull('ended_at')
@@ -280,12 +284,12 @@ class WorkAssignmentController extends Controller
                     ->first();
 
                 if (!$position) {
-                    return redirect()->back()->with('error', __('Должность не найдена'));
+                    return redirect()->back()->with('error', __('Position not found'));
                 }
 
                 // Check if worker already has an active work assignment
                 if ($worker->currentWorkAssignment) {
-                    return redirect()->back()->with('error', __('Работник уже устроен на работу. Сначала уволите его.'));
+                    return redirect()->back()->with('error', __('Worker is already employed. Dismiss them first.'));
                 }
 
                 // Create the assignment
@@ -297,7 +301,11 @@ class WorkAssignmentController extends Controller
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();
 
-                return redirect()->route('worker.show', $worker->id)->with('success', __('Работник успешно устроен на работу.'));
+                // Check if redirect to mobile
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.workers.show', $worker->id)->with('success', __('Worker successfully assigned to work.'));
+                }
+                return redirect()->route('worker.show', $worker->id)->with('success', __('Worker successfully assigned to work.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

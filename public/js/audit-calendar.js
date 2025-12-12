@@ -1,15 +1,83 @@
-document.addEventListener('DOMContentLoaded', function () {
+// Global calendar state and functions
+console.log('[AuditCalendar] Script loaded');
+
+window.AuditCalendar = {
+    currentYear: new Date().getFullYear(),
+    currentMonth: new Date().getMonth() + 1,
+    initialized: false,
+    fetchCalendarData: null,
+    
+    load: function() {
+        console.log('[AuditCalendar] load() called, fetchCalendarData:', !!window.AuditCalendar.fetchCalendarData);
+        if (window.AuditCalendar.fetchCalendarData) {
+            window.AuditCalendar.fetchCalendarData(
+                window.AuditCalendar.currentYear, 
+                window.AuditCalendar.currentMonth
+            );
+        } else {
+            console.log('[AuditCalendar] fetchCalendarData not available, trying init first');
+            window.AuditCalendar.init();
+            if (window.AuditCalendar.fetchCalendarData) {
+                window.AuditCalendar.fetchCalendarData(
+                    window.AuditCalendar.currentYear, 
+                    window.AuditCalendar.currentMonth
+                );
+            }
+        }
+    },
+    
+    init: function() {
+        console.log('[AuditCalendar] init() called, initialized:', window.AuditCalendar.initialized);
+        if (window.AuditCalendar.initialized) return;
+        
+        const calendarGrid = document.getElementById('calendar-grid');
+        console.log('[AuditCalendar] calendar-grid element:', calendarGrid);
+        if (!calendarGrid) {
+            console.log('[AuditCalendar] calendar-grid not found!');
+            return;
+        }
+        
+        window.AuditCalendar.initialized = true;
+        initCalendar();
+    }
+};
+
+function initCalendar() {
+    console.log('[AuditCalendar] initCalendar() called');
+    
     const calendarGrid = document.getElementById('calendar-grid');
     const monthYearTitle = document.getElementById('calendar-month-year');
     const prevMonthBtn = document.getElementById('prev-month');
     const nextMonthBtn = document.getElementById('next-month');
-    const dayDetailsModal = new bootstrap.Modal(document.getElementById('day-details-modal'));
+    
+    console.log('[AuditCalendar] Elements found:', {
+        calendarGrid: !!calendarGrid,
+        monthYearTitle: !!monthYearTitle,
+        prevMonthBtn: !!prevMonthBtn,
+        nextMonthBtn: !!nextMonthBtn
+    });
+    
+    // Check if elements exist
+    if (!calendarGrid) {
+        console.log('[AuditCalendar] calendarGrid not found, aborting');
+        return;
+    }
+    
+    const dayDetailsModalEl = document.getElementById('day-details-modal');
+    console.log('[AuditCalendar] dayDetailsModalEl:', !!dayDetailsModalEl);
+    if (!dayDetailsModalEl) {
+        console.log('[AuditCalendar] dayDetailsModalEl not found, aborting');
+        return;
+    }
+    
+    const dayDetailsModal = new bootstrap.Modal(dayDetailsModalEl);
     const dayDetailsBody = document.getElementById('day-details-body');
     const dayDetailsTitle = document.getElementById('day-details-title');
 
-    let currentDate = new Date();
-    let currentYear = currentDate.getFullYear();
-    let currentMonth = currentDate.getMonth() + 1; // 1-12
+    let currentYear = window.AuditCalendar.currentYear;
+    let currentMonth = window.AuditCalendar.currentMonth;
+    
+    console.log('[AuditCalendar] Calendar initialized for', currentYear, currentMonth);
 
     // Event colors mapping
     const eventColors = {
@@ -32,20 +100,29 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     function fetchCalendarData(year, month) {
+        console.log('[AuditCalendar] fetchCalendarData called:', year, month);
         // Show loading state
         calendarGrid.style.opacity = '0.5';
 
         fetch(`/audit/calendar/${year}/${month}`)
-            .then(response => response.json())
+            .then(response => {
+                console.log('[AuditCalendar] Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('[AuditCalendar] Data received:', data);
                 renderCalendar(data);
                 calendarGrid.style.opacity = '1';
+                console.log('[AuditCalendar] Calendar rendered');
             })
             .catch(error => {
-                console.error('Error fetching calendar data:', error);
+                console.error('[AuditCalendar] Error fetching calendar data:', error);
                 calendarGrid.style.opacity = '1';
             });
     }
+    
+    // Make fetchCalendarData available globally
+    window.AuditCalendar.fetchCalendarData = fetchCalendarData;
 
     function renderCalendar(data) {
         calendarGrid.innerHTML = '';
@@ -180,12 +257,12 @@ document.addEventListener('DOMContentLoaded', function () {
         fetchCalendarData(currentYear, currentMonth);
     });
 
-    // Initial load
-    // Only load if the calendar tab is active or when it becomes active
-    const calendarTab = document.getElementById('pills-calendar-tab');
-    if (calendarTab) {
-        calendarTab.addEventListener('shown.bs.tab', function (e) {
-            fetchCalendarData(currentYear, currentMonth);
-        });
-    }
-});
+    // Initial load - always load calendar data when initCalendar is called
+    // The visibility is controlled by the tab switching logic in index.blade.php
+    console.log('[AuditCalendar] Initial load - fetching calendar data');
+    fetchCalendarData(currentYear, currentMonth);
+}
+
+// Don't auto-initialize - let the page control when to init
+// This prevents double initialization issues
+console.log('[AuditCalendar] Script ready, waiting for init() call');

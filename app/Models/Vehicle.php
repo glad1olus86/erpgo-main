@@ -16,8 +16,13 @@ class Vehicle extends Model
         'brand',
         'color',
         'vin_code',
+        'registration_date',
+        'engine_volume',
+        'passport_fuel_consumption',
         'fuel_consumption',
         'photo',
+        'tech_passport_front',
+        'tech_passport_back',
         'assigned_type',
         'assigned_id',
         'created_by',
@@ -25,6 +30,9 @@ class Vehicle extends Model
 
     protected $casts = [
         'fuel_consumption' => 'decimal:2',
+        'passport_fuel_consumption' => 'decimal:1',
+        'registration_date' => 'date',
+        'engine_volume' => 'integer',
     ];
 
     /**
@@ -85,16 +93,66 @@ class Vehicle extends Model
     }
 
     /**
-     * Get inspection status label
+     * Get inspection status label with days count
      */
     public function getInspectionStatusLabelAttribute(): string
     {
-        return match ($this->inspection_status) {
-            'overdue' => __('Просрочено'),
-            'soon' => __('Скоро ТО'),
-            'ok' => __('В норме'),
-            'none' => __('Нет данных'),
-        };
+        $latest = $this->latestInspection;
+        
+        if (!$latest) {
+            return __('No data');
+        }
+
+        $nextDate = Carbon::parse($latest->next_inspection_date);
+        $today = Carbon::today();
+        $days = $today->diffInDays($nextDate, false); // false = can be negative
+
+        if ($days < 0) {
+            // Overdue
+            $overdueDays = abs($days);
+            return __('Overdue') . ' ' . $overdueDays . ' ' . $this->pluralizeDays($overdueDays);
+        }
+
+        // Days until inspection
+        return __('Until inspection') . ' - ' . $days . ' ' . $this->pluralizeDays($days);
+    }
+
+    /**
+     * Pluralize days word based on current locale
+     */
+    protected function pluralizeDays(int $count): string
+    {
+        $locale = app()->getLocale();
+        
+        // For Slavic languages (ru, uk, cs) use proper pluralization
+        if (in_array($locale, ['ru', 'uk'])) {
+            $mod10 = $count % 10;
+            $mod100 = $count % 100;
+            
+            if ($mod100 >= 11 && $mod100 <= 19) {
+                return __('days_many'); // дней / днів
+            }
+            if ($mod10 === 1) {
+                return __('days_one'); // день
+            }
+            if ($mod10 >= 2 && $mod10 <= 4) {
+                return __('days_few'); // дня / дні
+            }
+            return __('days_many'); // дней / днів
+        }
+        
+        if ($locale === 'cs') {
+            if ($count === 1) {
+                return __('days_one'); // den
+            }
+            if ($count >= 2 && $count <= 4) {
+                return __('days_few'); // dny
+            }
+            return __('days_many'); // dní
+        }
+        
+        // English - simple singular/plural
+        return $count === 1 ? __('day') : __('days');
     }
 
     /**

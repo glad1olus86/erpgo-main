@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ __('Список работников') }}</title>
+    <title>{{ __('Workers List') }}</title>
     <style>
         * {
             margin: 0;
@@ -73,28 +73,28 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ __('Список работников') }}</h1>
-        <div class="date">{{ __('Дата генерации:') }} {{ $generatedAt }}</div>
+        <h1>{{ __('Workers List') }}</h1>
+        <div class="date">{{ __('Generated:') }} {{ $generatedAt }}</div>
     </div>
     
     <table>
         <thead>
             <tr>
-                <th>{{ __('Имя') }}</th>
-                <th>{{ __('Фамилия') }}</th>
-                <th>{{ __('Дата рожд.') }}</th>
-                <th>{{ __('Возраст') }}</th>
-                <th>{{ __('Пол') }}</th>
-                <th>{{ __('Нац.') }}</th>
-                <th>{{ __('Дата рег.') }}</th>
-                <th>{{ __('Отель') }}</th>
-                <th>{{ __('Комната') }}</th>
-                <th>{{ __('Дата засел.') }}</th>
-                <th>{{ __('Кем засел.') }}</th>
-                <th>{{ __('Место работы') }}</th>
-                <th>{{ __('Дата труд.') }}</th>
-                <th>{{ __('Время раб.') }}</th>
-                <th>{{ __('Кем устр.') }}</th>
+                <th>{{ __('First Name') }}</th>
+                <th>{{ __('Last Name') }}</th>
+                <th>{{ __('DOB') }}</th>
+                <th>{{ __('Age') }}</th>
+                <th>{{ __('Gender') }}</th>
+                <th>{{ __('Nat.') }}</th>
+                <th>{{ __('Reg. Date') }}</th>
+                <th>{{ __('Hotel') }}</th>
+                <th>{{ __('Room') }}</th>
+                <th>{{ __('Check-in') }}</th>
+                <th>{{ __('By') }}</th>
+                <th>{{ __('Work Place') }}</th>
+                <th>{{ __('Empl. Date') }}</th>
+                <th>{{ __('Duration') }}</th>
+                <th>{{ __('By') }}</th>
             </tr>
         </thead>
         <tbody>

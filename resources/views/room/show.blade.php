@@ -2,26 +2,26 @@
     <div class="d-flex justify-content-between align-items-center mb-2">
         <div>
             <span class="text-muted">
-                {{ __('Комната') }}: <strong>{{ $room->room_number }}</strong> | 
-                {{ __('Занято') }}: <strong>{{ $room->currentAssignments->count() }}</strong> {{ __('из') }} {{ $room->capacity }}
+                {{ __('Room') }}: <strong>{{ $room->room_number }}</strong> | 
+                {{ __('Occupied') }}: <strong>{{ $room->currentAssignments->count() }}</strong> {{ __('of') }} {{ $room->capacity }}
             </span>
         </div>
         @if (!$room->isFull())
             <a href="#" data-url="{{ route('room.assign.form', $room->id) }}" data-ajax-popup="true"
-                data-title="{{ __('Заселить работников') }}" data-size="lg" class="btn btn-sm btn-primary">
-                <i class="ti ti-plus"></i> {{ __('Заселить') }}
+                data-title="{{ __('Check In Workers') }}" data-size="lg" class="btn btn-sm btn-primary">
+                <i class="ti ti-plus"></i> {{ __('Check In') }}
             </a>
         @endif
     </div>
     <div class="d-flex gap-3 flex-wrap">
         <span class="badge bg-secondary">
-            <i class="ti ti-currency-euro me-1"></i>{{ __('Цена/месяц') }}: {{ number_format($room->monthly_price, 2) }} €
+            <i class="ti ti-currency-euro me-1"></i>{{ __('Price/month') }}: {{ number_format($room->monthly_price, 2) }} €
         </span>
         @php
             $paymentLabels = [
-                'worker' => __('Платит сам'),
-                'agency' => __('Платит агенство'),
-                'partial' => __('Платит частично'),
+                'worker' => __('Worker pays'),
+                'agency' => __('Agency pays'),
+                'partial' => __('Partial payment'),
             ];
             $paymentColors = [
                 'worker' => 'info',
@@ -42,9 +42,9 @@
     {{-- Bulk Actions Panel --}}
     <div id="room-bulk-actions" class="mb-3 p-2 bg-light rounded" style="display: none;">
         <div class="d-flex align-items-center gap-2">
-            <span class="small"><strong id="room-selected-count">0</strong> {{ __('выбрано') }}</span>
+            <span class="small"><strong id="room-selected-count">0</strong> {{ __('selected') }}</span>
             <button type="button" class="btn btn-sm btn-danger" id="room-bulk-checkout-btn">
-                <i class="ti ti-door-exit me-1"></i>{{ __('Выселить выбранных') }}
+                <i class="ti ti-door-exit me-1"></i>{{ __('Check Out Selected') }}
             </button>
         </div>
     </div>
@@ -65,10 +65,10 @@
                         </div>
                     </th>
                 @endif
-                <th>{{ __('Имя Фамилия') }}</th>
-                <th>{{ __('Пол') }}</th>
-                <th>{{ __('Дата заселения') }}</th>
-                <th>{{ __('Действие') }}</th>
+                <th>{{ __('Full Name') }}</th>
+                <th>{{ __('Gender') }}</th>
+                <th>{{ __('Check-in Date') }}</th>
+                <th>{{ __('Action') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -88,16 +88,16 @@
                     </td>
                     <td>
                         @if($assignment->worker->gender == 'male')
-                            <span class="badge bg-primary">{{ __('Мужчина') }}</span>
+                            <span class="badge bg-primary">{{ __('Male') }}</span>
                         @else
-                            <span class="badge bg-danger">{{ __('Женщина') }}</span>
+                            <span class="badge bg-danger">{{ __('Female') }}</span>
                         @endif
                     </td>
                     <td>{{ \Auth::user()->dateFormat($assignment->check_in_date) }}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <a href="{{ route('worker.show', $assignment->worker->id) }}" target="_blank"
-                                class="btn btn-sm btn-info d-flex align-items-center" data-bs-toggle="tooltip" title="{{ __('Профиль') }}">
+                                class="btn btn-sm btn-info d-flex align-items-center" data-bs-toggle="tooltip" title="{{ __('Profile') }}">
                                 <i class="ti ti-user text-white"></i>
                             </a>
                             {!! Form::open([
@@ -107,11 +107,11 @@
                                 'class' => 'd-inline'
                             ]) !!}
                             <a href="#" class="btn btn-sm btn-danger d-flex align-items-center gap-1 bs-pass-para"
-                                data-bs-toggle="tooltip" title="{{ __('Выселить') }}"
-                                data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие выселит работника из комнаты.') }}"
+                                data-bs-toggle="tooltip" title="{{ __('Check Out') }}"
+                                data-confirm="{{ __('Are you sure?') . '|' . __('This action will check out the worker from the room.') }}"
                                 data-confirm-yes="document.getElementById('unassign-form-{{ $assignment->worker->id }}').submit();">
                                 <i class="ti ti-door-exit text-white"></i>
-                                <span class="text-white">{{ __('Выселить') }}</span>
+                                <span class="text-white">{{ __('Check Out') }}</span>
                             </a>
                             {!! Form::close() !!}
                         </div>
@@ -121,7 +121,7 @@
                 <tr>
                     <td colspan="5" class="text-center text-muted py-4">
                         <i class="ti ti-home-off" style="font-size: 24px;"></i><br>
-                        {{ __('В этой комнате никто не живет') }}
+                        {{ __('No one lives in this room') }}
                     </td>
                 </tr>
             @endforelse
@@ -183,7 +183,7 @@
             var selected = getSelectedWorkers();
             if (selected.length === 0) return;
             
-            if (confirm('{{ __("Вы уверены что хотите выселить") }} ' + selected.length + ' {{ __("работников?") }}')) {
+            if (confirm('{{ __("Are you sure you want to check out") }} ' + selected.length + ' {{ __("workers?") }}')) {
                 bulkForm.submit();
             }
         });

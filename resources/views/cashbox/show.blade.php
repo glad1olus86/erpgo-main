@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Касса') }} - {{ $period->name }}
+    {{ __('Cashbox') }} - {{ $period->name }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('cashbox.index') }}">{{ __('Касса') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('cashbox.index') }}">{{ __('Cashbox') }}</a></li>
     <li class="breadcrumb-item">{{ $period->name }}</li>
 @endsection
 
@@ -14,25 +14,25 @@
     <div class="float-end d-flex gap-2">
         @if ($balance['received'] > 0)
             <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#distributeModal">
-                <i class="ti ti-send"></i> {{ __('Выдать') }}
+                <i class="ti ti-send"></i> {{ __('Distribute') }}
             </button>
         @endif
 
         @if ($balance['received'] > $balance['sent'] && $userRole !== 'boss')
             <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#refundModal">
-                <i class="ti ti-arrow-back"></i> {{ __('Вернуть') }}
+                <i class="ti ti-arrow-back"></i> {{ __('Refund') }}
             </button>
         @endif
 
         @if ($canSelfSalary && !$hasSelfSalaryThisPeriod && $balance['received'] > $balance['sent'])
             <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#selfSalaryModal">
-                <i class="ti ti-wallet"></i> {{ __('ЗП себе') }}
+                <i class="ti ti-wallet"></i> {{ __('Self Salary') }}
             </button>
         @endif
 
-        @if ($isBoss)
+        @if ($canDeposit)
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#depositModal">
-                <i class="ti ti-plus"></i> {{ __('Внести') }}
+                <i class="ti ti-plus"></i> {{ __('Deposit') }}
             </button>
         @endif
     </div>
@@ -221,22 +221,22 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <h5 class="mb-0">{{ __('Диаграмма движения денег') }}</h5>
+                        <h5 class="mb-0">{{ __('Money Flow Diagram') }}</h5>
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             {{-- Status filter buttons --}}
                             <div class="btn-group" role="group" id="statusFilter">
                                 <button type="button" class="status-filter-btn active"
-                                    data-status="all">{{ __('Все') }}</button>
+                                    data-status="all">{{ __('All') }}</button>
                                 <button type="button" class="status-filter-btn filter-pending"
-                                    data-status="pending">{{ __('Ожидает') }}</button>
+                                    data-status="pending">{{ __('Pending') }}</button>
                                 <button type="button" class="status-filter-btn filter-in_progress"
-                                    data-status="in_progress">{{ __('В работе') }}</button>
+                                    data-status="in_progress">{{ __('In Progress') }}</button>
                                 <button type="button" class="status-filter-btn filter-completed"
-                                    data-status="completed">{{ __('Выполнено') }}</button>
+                                    data-status="completed">{{ __('Completed') }}</button>
                             </div>
                             @if ($period->is_frozen)
                                 <span class="badge bg-secondary">
-                                    <i class="ti ti-lock me-1"></i>{{ __('Период заморожен') }}
+                                    <i class="ti ti-lock me-1"></i>{{ __('Period Frozen') }}
                                 </span>
                             @endif
                         </div>
@@ -246,14 +246,14 @@
                     <div class="diagram-container p-3" id="diagramContainer">
                         <div class="text-center py-5" id="diagramLoading">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">{{ __('Загрузка...') }}</span>
+                                <span class="visually-hidden">{{ __('Loading...') }}</span>
                             </div>
-                            <p class="mt-2 text-muted">{{ __('Загрузка диаграммы...') }}</p>
+                            <p class="mt-2 text-muted">{{ __('Loading diagram...') }}</p>
                         </div>
                         <div id="diagramContent" style="display: none;"></div>
                         <div id="diagramEmpty" class="text-center py-5" style="display: none;">
                             <i class="ti ti-chart-dots" style="font-size: 48px; color: #ccc;"></i>
-                            <p class="mt-2 text-muted">{{ __('Нет транзакций в этом периоде') }}</p>
+                            <p class="mt-2 text-muted">{{ __('No transactions in this period') }}</p>
                         </div>
                     </div>
                 </div>
@@ -265,24 +265,24 @@
             <div class="budget-sidebar">
                 <div class="card budget-card">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="ti ti-wallet me-2"></i>{{ __('Бюджет') }}</h5>
+                        <h5 class="mb-0"><i class="ti ti-wallet me-2"></i>{{ __('Budget') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <small class="text-muted">{{ __('Получено') }}</small>
+                            <small class="text-muted">{{ __('Received') }}</small>
                             <h4 class="text-success mb-0" id="balanceReceived">
                                 {{ formatCashboxCurrency($balance['received']) }}
                             </h4>
                         </div>
                         <div class="mb-3">
-                            <small class="text-muted">{{ __('Выдано') }}</small>
+                            <small class="text-muted">{{ __('Distributed') }}</small>
                             <h4 class="text-danger mb-0" id="balanceSent">
                                 {{ formatCashboxCurrency($balance['sent']) }}
                             </h4>
                         </div>
                         <hr>
                         <div>
-                            <small class="text-muted">{{ __('Остаток') }}</small>
+                            <small class="text-muted">{{ __('Remaining') }}</small>
                             <h4 class="text-primary mb-0" id="balanceRemaining">
                                 {{ formatCashboxCurrency($balance['received'] - $balance['sent']) }}
                             </h4>
@@ -293,26 +293,26 @@
                 {{-- Period Info --}}
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="ti ti-info-circle me-2"></i>{{ __('Информация') }}</h5>
+                        <h5 class="mb-0"><i class="ti ti-info-circle me-2"></i>{{ __('Information') }}</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-2">
-                            <small class="text-muted">{{ __('Период') }}</small>
+                            <small class="text-muted">{{ __('Period') }}</small>
                             <p class="mb-0 fw-bold">{{ $period->name }}</p>
                         </div>
                         @if($canViewTotalDeposited)
                         <div class="mb-2">
-                            <small class="text-muted">{{ __('Всего внесено') }}</small>
+                            <small class="text-muted">{{ __('Total Deposited') }}</small>
                             <p class="mb-0">{{ formatCashboxCurrency($period->total_deposited) }}</p>
                         </div>
                         @endif
                         <div>
-                            <small class="text-muted">{{ __('Статус') }}</small>
+                            <small class="text-muted">{{ __('Status') }}</small>
                             <p class="mb-0">
                                 @if ($period->is_frozen)
-                                    <span class="badge bg-secondary">{{ __('Заморожен') }}</span>
+                                    <span class="badge bg-secondary">{{ __('Frozen') }}</span>
                                 @else
-                                    <span class="badge bg-success">{{ __('Активен') }}</span>
+                                    <span class="badge bg-success">{{ __('Active') }}</span>
                                 @endif
                             </p>
                         </div>
@@ -323,13 +323,13 @@
     </div>
 
 
-    {{-- Deposit Modal (only for Boss) --}}
-    @if ($isBoss)
+    {{-- Deposit Modal --}}
+    @if ($canDeposit)
         <div class="modal fade" id="depositModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Внести деньги') }}</h5>
+                        <h5 class="modal-title">{{ __('Deposit Money') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form id="depositForm">
@@ -337,7 +337,7 @@
                         <input type="hidden" name="period_id" value="{{ $period->id }}">
                         <div class="modal-body">
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Сумма') }} <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="number" name="amount" class="form-control" step="0.01"
                                         min="0.01" required>
@@ -345,14 +345,14 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">{{ __('Комментарий') }}</label>
+                                <label class="form-label">{{ __('Comment') }}</label>
                                 <textarea name="comment" class="form-control" rows="2"></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                            <button type="submit" class="btn btn-primary">{{ __('Внести') }}</button>
+                                data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Deposit') }}</button>
                         </div>
                     </form>
                 </div>
@@ -365,7 +365,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Выдать деньги') }}</h5>
+                    <h5 class="modal-title">{{ __('Distribute Money') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="distributeForm">
@@ -373,54 +373,54 @@
                     <input type="hidden" name="period_id" value="{{ $period->id }}">
                     <div class="modal-body">
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Тип выдачи') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Distribution Type') }} <span class="text-danger">*</span></label>
                             <select name="distribution_type" id="distributionTypeSelect" class="form-control" required>
-                                <option value="">{{ __('Выберите тип выдачи') }}</option>
-                                <option value="salary">{{ __('Зарплата сотруднику') }}</option>
-                                <option value="transfer">{{ __('Передача средств') }}</option>
+                                <option value="">{{ __('Select distribution type') }}</option>
+                                <option value="salary">{{ __('Employee Salary') }}</option>
+                                <option value="transfer">{{ __('Fund Transfer') }}</option>
                             </select>
                             <small class="text-muted" id="distributionTypeHintMain"></small>
                         </div>
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Получатель') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Recipient') }} <span class="text-danger">*</span></label>
                             <select name="recipient" class="form-control" required>
-                                <option value="">{{ __('Выберите получателя') }}</option>
+                                <option value="">{{ __('Select recipient') }}</option>
                                 @foreach ($recipients as $recipient)
                                     @if (!isset($recipient['is_self']))
                                         <option
                                             value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
                                             data-role="{{ $recipient['role'] }}">
                                             {{ $recipient['name'] }}
-                                            ({{ $recipient['role'] === 'manager' ? __('Менеджер') : ($recipient['role'] === 'curator' ? __('Куратор') : __('Работник')) }})
+                                            ({{ $recipient['role'] === 'manager' ? __('Manager') : ($recipient['role'] === 'curator' ? __('Curator') : __('Worker')) }})
                                         </option>
                                     @endif
                                 @endforeach
                             </select>
                         </div>
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Сумма') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="number" name="amount" class="form-control" step="0.01" min="0.01"
                                     required>
                                 <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                             </div>
-                            <small class="text-muted">{{ __('Доступно:') }} <span
+                            <small class="text-muted">{{ __('Available:') }} <span
                                     id="availableBalance">{{ formatCashboxCurrency($balance['received'] - $balance['sent']) }}</span></small>
                         </div>
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Задача') }}</label>
+                            <label class="form-label">{{ __('Task') }}</label>
                             <input type="text" name="task" class="form-control"
-                                placeholder="{{ __('Описание задачи...') }}">
+                                placeholder="{{ __('Task description...') }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">{{ __('Комментарий') }}</label>
+                            <label class="form-label">{{ __('Comment') }}</label>
                             <textarea name="comment" class="form-control" rows="2"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-success">{{ __('Выдать') }}</button>
+                            data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-success">{{ __('Distribute') }}</button>
                     </div>
                 </form>
             </div>
@@ -432,21 +432,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Вернуть деньги') }}</h5>
+                    <h5 class="modal-title">{{ __('Refund Money') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="refundForm">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Транзакция для возврата') }} <span
+                            <label class="form-label">{{ __('Transaction to Refund') }} <span
                                     class="text-danger">*</span></label>
                             <select name="transaction_id" id="refundTransactionId" class="form-control" required>
-                                <option value="">{{ __('Выберите транзакцию') }}</option>
+                                <option value="">{{ __('Select transaction') }}</option>
                                 @foreach ($refundableTransactions as $transaction)
                                     <option value="{{ $transaction->id }}" data-amount="{{ $transaction->amount }}">
                                         #{{ $transaction->id }} |
-                                        {{ $transaction->sender->name ?? __('Неизвестно') }} |
+                                        {{ $transaction->sender->name ?? __('Unknown') }} |
                                         {{ formatCashboxCurrency($transaction->amount) }} |
                                         {{ $transaction->created_at->format('d.m.Y H:i') }}
                                         @if ($transaction->task)
@@ -456,11 +456,11 @@
                                 @endforeach
                             </select>
                             @if ($refundableTransactions->isEmpty())
-                                <small class="text-muted">{{ __('Нет транзакций для возврата') }}</small>
+                                <small class="text-muted">{{ __('No transactions to refund') }}</small>
                             @endif
                         </div>
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Сумма') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="number" name="amount" class="form-control" step="0.01" min="0.01"
                                     required>
@@ -468,16 +468,16 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">{{ __('Причина возврата') }} <span
+                            <label class="form-label">{{ __('Refund Reason') }} <span
                                     class="text-danger">*</span></label>
                             <textarea name="comment" class="form-control" rows="2" required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                            data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                         <button type="submit" class="btn btn-warning"
-                            {{ $refundableTransactions->isEmpty() ? 'disabled' : '' }}>{{ __('Вернуть') }}</button>
+                            {{ $refundableTransactions->isEmpty() ? 'disabled' : '' }}>{{ __('Refund') }}</button>
                     </div>
                 </form>
             </div>
@@ -490,7 +490,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Зарплата себе') }}</h5>
+                        <h5 class="modal-title">{{ __('Self Salary') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form id="selfSalaryForm">
@@ -500,11 +500,11 @@
                             @if ($hasSelfSalaryThisPeriod)
                                 <div class="alert alert-warning">
                                     <i class="ti ti-alert-triangle me-1"></i>
-                                    {{ __('Вы уже получили зарплату в этом периоде') }}
+                                    {{ __('You have already received salary in this period') }}
                                 </div>
                             @endif
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Сумма') }} <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="number" name="amount" class="form-control" step="0.01"
                                         min="0.01" required {{ $hasSelfSalaryThisPeriod ? 'disabled' : '' }}>
@@ -512,15 +512,15 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">{{ __('Комментарий') }}</label>
+                                <label class="form-label">{{ __('Comment') }}</label>
                                 <textarea name="comment" class="form-control" rows="2" {{ $hasSelfSalaryThisPeriod ? 'disabled' : '' }}></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                                data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                             <button type="submit" class="btn btn-info"
-                                {{ $hasSelfSalaryThisPeriod ? 'disabled' : '' }}>{{ __('Получить') }}</button>
+                                {{ $hasSelfSalaryThisPeriod ? 'disabled' : '' }}>{{ __('Receive') }}</button>
                         </div>
                     </form>
                 </div>
@@ -533,7 +533,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Детали транзакции') }}</h5>
+                    <h5 class="modal-title">{{ __('Transaction Details') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="transactionDetailContent">
@@ -541,7 +541,7 @@
                 </div>
                 <div class="modal-footer" id="transactionDetailFooter">
                     <button type="button" class="btn btn-secondary"
-                        data-bs-dismiss="modal">{{ __('Закрыть') }}</button>
+                        data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -562,29 +562,29 @@
 
             // Initialize diagram with translations
             var translations = {
-                deposit: '{{ __('Внесение') }}',
-                distribution: '{{ __('Выдача') }}',
-                refund: '{{ __('Возврат') }}',
-                self_salary: '{{ __('ЗП себе') }}',
-                salary_list: '{{ __('Список ЗП') }}',
-                pending: '{{ __('Ожидает') }}',
-                in_progress: '{{ __('В работе') }}',
-                completed: '{{ __('Выполнено') }}',
-                overdue: '{{ __('Просрочено') }}',
-                unknown: '{{ __('Неизвестно') }}',
-                loading: '{{ __('Загрузка...') }}',
-                error: '{{ __('Ошибка загрузки') }}',
-                no_transactions: '{{ __('Нет транзакций в этом периоде') }}',
-                sender: '{{ __('Отправитель') }}',
-                recipient: '{{ __('Получатель') }}',
-                amount: '{{ __('Сумма') }}',
-                status: '{{ __('Статус') }}',
-                task: '{{ __('Задача') }}',
-                comment: '{{ __('Комментарий') }}',
-                date: '{{ __('Дата') }}',
-                type: '{{ __('Тип операции') }}',
-                take_to_work: '{{ __('Взять в работу') }}',
-                close: '{{ __('Закрыть') }}'
+                deposit: '{{ __('Deposit') }}',
+                distribution: '{{ __('Distribution') }}',
+                refund: '{{ __('Refund') }}',
+                self_salary: '{{ __('Self Salary') }}',
+                salary_list: '{{ __('Salary List') }}',
+                pending: '{{ __('Pending') }}',
+                in_progress: '{{ __('In Progress') }}',
+                completed: '{{ __('Completed') }}',
+                overdue: '{{ __('Overdue') }}',
+                unknown: '{{ __('Unknown') }}',
+                loading: '{{ __('Loading...') }}',
+                error: '{{ __('Loading error') }}',
+                no_transactions: '{{ __('No transactions in this period') }}',
+                sender: '{{ __('Sender') }}',
+                recipient: '{{ __('Recipient') }}',
+                amount: '{{ __('Amount') }}',
+                status: '{{ __('Status') }}',
+                task: '{{ __('Task') }}',
+                comment: '{{ __('Comment') }}',
+                date: '{{ __('Date') }}',
+                type: '{{ __('Operation Type') }}',
+                take_to_work: '{{ __('Take to Work') }}',
+                close: '{{ __('Close') }}'
             };
 
             // Initialize the diagram
@@ -622,7 +622,7 @@
                     .catch(error => {
                         document.getElementById('diagramLoading').style.display = 'none';
                         document.getElementById('diagramContent').style.display = 'block';
-                        diagram.showError('{{ __('Ошибка загрузки диаграммы') }}');
+                        diagram.showError('{{ __('Diagram loading error') }}');
                     });
             }
 
@@ -673,18 +673,18 @@
                     content.innerHTML = `
                         <div class="mb-3">
                             <label class="text-muted small">${translations.type}</label>
-                            <p class="mb-0 fw-bold">{{ __('Список ЗП') }} №${node.salary_list_number}</p>
+                            <p class="mb-0 fw-bold">{{ __('Salary List') }} №${node.salary_list_number}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="text-muted small">{{ __('Общая сумма') }}</label>
+                            <label class="text-muted small">{{ __('Total Amount') }}</label>
                             <p class="mb-0 fw-bold text-success">${formatMoney(node.amount)}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="text-muted small">{{ __('Количество получателей') }}</label>
+                            <label class="text-muted small">{{ __('Number of Recipients') }}</label>
                             <p class="mb-0">${node.salary_recipients.length}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="text-muted small">{{ __('Получатели') }}</label>
+                            <label class="text-muted small">{{ __('Recipients') }}</label>
                             <div class="mt-2" style="max-height: 300px; overflow-y: auto;">
                                 ${recipientsList}
                             </div>
@@ -717,15 +717,15 @@
                             <p class="mb-0">${recipientName}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="text-muted small">{{ __('Актуальная сумма') }}</label>
+                            <label class="text-muted small">{{ __('Current Amount') }}</label>
                             <p class="mb-0 fw-bold text-success" style="font-size: 1.25rem;">${formatMoney(node.amount)}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="text-muted small">{{ __('Количество внесений') }}</label>
+                            <label class="text-muted small">{{ __('Number of Deposits') }}</label>
                             <p class="mb-0">${node.deposit_count}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="text-muted small">{{ __('Последние внесения') }}</label>
+                            <label class="text-muted small">{{ __('Recent Deposits') }}</label>
                             <div class="mt-2" style="max-height: 200px; overflow-y: auto;">
                                 ${depositsList}
                             </div>
@@ -763,16 +763,16 @@
             </div>
             ${(node.carryover_received && node.carryover_received > 0) ? `
                                                 <div class="mb-3">
-                                                    <label class="text-muted small">{{ __('Изначальная сумма перевода') }}</label>
+                                                    <label class="text-muted small">{{ __('Original Transfer Amount') }}</label>
                                                     <p class="mb-0 text-muted">${formatMoney(node.amount - node.carryover_received)}</p>
                                                 </div>
                                                 <div class="mb-3">
-                                                    <label class="text-muted small">{{ __('Получено из предыдущего перечисления') }}</label>
+                                                    <label class="text-muted small">{{ __('Received from Previous Transfer') }}</label>
                                                     <p class="mb-0 text-success">+${formatMoney(node.carryover_received)}</p>
                                                 </div>` : ''}
             ${(node.original_amount && node.original_amount !== node.amount && !node.carryover_received) ? `
                                                 <div class="mb-3">
-                                                    <label class="text-muted small">{{ __('Изначально внесённая сумма') }}</label>
+                                                    <label class="text-muted small">{{ __('Originally Deposited Amount') }}</label>
                                                     <p class="mb-0 text-muted">${formatMoney(node.original_amount)}</p>
                                                 </div>` : ''}
             <div class="mb-3">
@@ -922,7 +922,7 @@
                     var originalText = submitBtn.innerHTML;
                     submitBtn.disabled = true;
                     submitBtn.innerHTML =
-                        '<span class="spinner-border spinner-border-sm me-1"></span>{{ __('Загрузка...') }}';
+                        '<span class="spinner-border spinner-border-sm me-1"></span>{{ __('Loading...') }}';
 
                     var formData = new FormData(form);
 
@@ -962,7 +962,7 @@
                             submitBtn.innerHTML = originalText;
                         })
                         .catch(error => {
-                            show_toastr('error', '{{ __('Произошла ошибка') }}');
+                            show_toastr('error', '{{ __('An error occurred') }}');
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = originalText;
                         });
@@ -1023,10 +1023,10 @@
                     var value = this.value;
                     if (value === 'salary') {
                         distributionTypeHint.textContent =
-                            '{{ __('Конечная выдача зарплаты. Транзакция будет сразу завершена.') }}';
+                            '{{ __('Final salary payment. Transaction will be completed immediately.') }}';
                     } else if (value === 'transfer') {
                         distributionTypeHint.textContent =
-                            '{{ __('Передача денег для дальнейшего распределения другим сотрудникам.') }}';
+                            '{{ __('Money transfer for further distribution to other employees.') }}';
                     } else {
                         distributionTypeHint.textContent = '';
                     }

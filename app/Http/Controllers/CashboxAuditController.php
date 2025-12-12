@@ -80,11 +80,11 @@ class CashboxAuditController extends Controller
 
         // Event types for filter
         $eventTypes = [
-            CashboxAuditService::EVENT_DEPOSIT => __('Внесение денег'),
-            CashboxAuditService::EVENT_DISTRIBUTION => __('Выдача денег'),
-            CashboxAuditService::EVENT_REFUND => __('Возврат денег'),
-            CashboxAuditService::EVENT_SELF_SALARY => __('ЗП себе'),
-            CashboxAuditService::EVENT_STATUS_CHANGE => __('Изменение статуса'),
+            CashboxAuditService::EVENT_DEPOSIT => __('Money deposit'),
+            CashboxAuditService::EVENT_DISTRIBUTION => __('Money distribution'),
+            CashboxAuditService::EVENT_REFUND => __('Money refund'),
+            CashboxAuditService::EVENT_SELF_SALARY => __('Self salary'),
+            CashboxAuditService::EVENT_STATUS_CHANGE => __('Status change'),
         ];
 
         return view('cashbox.audit', compact('auditLogs', 'users', 'periods', 'eventTypes'));

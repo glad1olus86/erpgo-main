@@ -26,6 +26,22 @@ class Plan extends Model
         'pos',
         'chatgpt',
         'storage_limit',
+        // JOBSI Modules
+        'module_workers',
+        'module_workplaces',
+        'module_hotels',
+        'module_vehicles',
+        'module_documents',
+        'module_cashbox',
+        'module_calendar',
+        'module_notifications',
+        // JOBSI Limits
+        'max_workers',
+        'max_roles',
+        'max_vehicles',
+        'max_hotels',
+        'max_workplaces',
+        'max_document_templates',
     ];
 
     private static $getplans = NULL;
@@ -67,5 +83,52 @@ class Plan extends Model
         }
 
         return self::$getplans;
+    }
+
+    /**
+     * Check if module is enabled in plan
+     */
+    public function hasModule(string $module): bool
+    {
+        $field = 'module_' . $module;
+        return $this->{$field} ?? true;
+    }
+
+    /**
+     * Get limit value for a resource (-1 = unlimited)
+     */
+    public function getLimit(string $resource): int
+    {
+        $field = 'max_' . $resource;
+        return $this->{$field} ?? -1;
+    }
+
+    /**
+     * Check if user can create more of a resource
+     */
+    public function canCreate(string $resource, int $currentCount): bool
+    {
+        $limit = $this->getLimit($resource);
+        if ($limit === -1) {
+            return true;
+        }
+        return $currentCount < $limit;
+    }
+
+    /**
+     * JOBSI modules list for forms
+     */
+    public static function getJobsiModules(): array
+    {
+        return [
+            'workers' => __('Workers'),
+            'workplaces' => __('Workplaces'),
+            'hotels' => __('Hotels & Rooms'),
+            'vehicles' => __('Vehicles'),
+            'documents' => __('Documents'),
+            'cashbox' => __('Cashbox'),
+            'calendar' => __('Calendar'),
+            'notifications' => __('Notifications'),
+        ];
     }
 }

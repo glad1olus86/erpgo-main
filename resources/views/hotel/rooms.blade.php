@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Комнаты отеля') }} - {{ $hotel->name }}
+    {{ __('Hotel Rooms') }} - {{ $hotel->name }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('hotel.index') }}">{{ __('Отели') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('hotel.index') }}">{{ __('Hotels') }}</a></li>
     <li class="breadcrumb-item">{{ $hotel->name }}</li>
 @endsection
 
@@ -16,7 +16,7 @@
             <div class="my-3 d-flex justify-content-end">
                 @can('create hotel')
                     <a href="#" data-url="{{ route('room.create', ['hotel_id' => $hotel->id]) }}" data-ajax-popup="true"
-                        data-title="{{ __('Создать новую комнату') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"
+                        data-title="{{ __('Create New Room') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
                         class="btn btn-sm btn-primary">
                         <i class="ti ti-plus"></i>
                     </a>
@@ -31,19 +31,19 @@
                                     <table class="table datatable">
                                         <thead>
                                             <tr>
-                                                <th>{{ __('Номер комнаты') }}</th>
-                                                <th>{{ __('Вместимость') }}</th>
-                                                <th>{{ __('Цена/месяц') }}</th>
-                                                <th>{{ __('Кто платит') }}</th>
-                                                <th width="200px">{{ __('Действие') }}</th>
+                                                <th>{{ __('Room Number') }}</th>
+                                                <th>{{ __('Capacity') }}</th>
+                                                <th>{{ __('Price/month') }}</th>
+                                                <th>{{ __('Who Pays') }}</th>
+                                                <th width="200px">{{ __('Action') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody class="font-style">
                                             @php
                                                 $paymentLabels = [
-                                                    'worker' => __('Платит сам'),
-                                                    'agency' => __('Платит агенство'),
-                                                    'partial' => __('Платит частично'),
+                                                    'worker' => __('Worker pays'),
+                                                    'agency' => __('Agency pays'),
+                                                    'partial' => __('Partial payment'),
                                                 ];
                                             @endphp
                                             @foreach ($rooms as $room)
@@ -52,7 +52,7 @@
                                                         <a href="#"
                                                             data-url="{{ route('room.show', $room->id) }}"
                                                             data-ajax-popup="true"
-                                                            data-title="{{ __('Жильцы комнаты') }} {{ $room->room_number }}"
+                                                            data-title="{{ __('Room Residents') }} {{ $room->room_number }}"
                                                             data-size="lg"
                                                             class="text-primary fw-medium">
                                                             {{ $room->room_number }}
@@ -75,11 +75,11 @@
                                                                     <a href="#"
                                                                         data-url="{{ route('room.show', $room->id) }}"
                                                                         data-ajax-popup="true"
-                                                                        data-title="{{ __('Жильцы комнаты') }}"
+                                                                        data-title="{{ __('Room Residents') }}"
                                                                         data-size="lg"
                                                                         class="mx-3 btn btn-sm align-items-center bg-warning"
                                                                         data-bs-toggle="tooltip"
-                                                                        title="{{ __('Просмотр жильцов') }}"
+                                                                        title="{{ __('View Residents') }}"
                                                                         data-original-title="{{ __('View') }}">
                                                                         <i class="ti ti-eye text-white"></i>
                                                                     </a>
@@ -91,10 +91,10 @@
                                                                     <a href="#"
                                                                         data-url="{{ URL::to('room/' . $room->id . '/edit') }}"
                                                                         data-ajax-popup="true"
-                                                                        data-title="{{ __('Редактировать комнату') }}"
+                                                                        data-title="{{ __('Edit Room') }}"
                                                                         class="mx-3 btn btn-sm align-items-center bg-info"
                                                                         data-bs-toggle="tooltip"
-                                                                        title="{{ __('Редактировать') }}"
+                                                                        title="{{ __('Edit') }}"
                                                                         data-original-title="{{ __('Edit') }}">
                                                                         <i class="ti ti-pencil text-white"></i></a>
                                                                 </div>
@@ -110,9 +110,9 @@
 
                                                                     <a href="#"
                                                                         class="mx-3 btn btn-sm  align-items-center bs-pass-para bg-danger"
-                                                                        data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
+                                                                        data-bs-toggle="tooltip" title="{{ __('Delete') }}"
                                                                         data-original-title="{{ __('Delete') }}"
-                                                                        data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить. Вы хотите продолжить?') }}"
+                                                                        data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
                                                                         data-confirm-yes="document.getElementById('delete-form-{{ $room->id }}').submit();"><i
                                                                             class="ti ti-trash text-white"></i></a>
                                                                     {!! Form::close() !!}
@@ -128,13 +128,13 @@
                             @else
                                 <div class="text-center py-5">
                                     <i class="ti ti-bed" style="font-size: 48px; opacity: 0.3;"></i>
-                                    <h5 class="mt-3">{{ __('Нет комнат') }}</h5>
-                                    <p class="text-muted">{{ __('Для этого отеля пока не созданы комнаты') }}</p>
+                                    <h5 class="mt-3">{{ __('No Rooms') }}</h5>
+                                    <p class="text-muted">{{ __('No rooms have been created for this hotel yet') }}</p>
                                     @can('create hotel')
                                         <a href="#" data-url="{{ route('room.create', ['hotel_id' => $hotel->id]) }}"
-                                            data-ajax-popup="true" data-title="{{ __('Создать новую комнату') }}"
+                                            data-ajax-popup="true" data-title="{{ __('Create New Room') }}"
                                             class="btn btn-primary mt-2">
-                                            <i class="ti ti-plus"></i> {{ __('Создать комнату') }}
+                                            <i class="ti ti-plus"></i> {{ __('Create Room') }}
                                         </a>
                                     @endcan
                                 </div>

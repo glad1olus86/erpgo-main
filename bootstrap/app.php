@@ -28,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'XSS' => \App\Http\Middleware\XSS::class,
             'revalidate' => \App\Http\Middleware\RevalidateBackHistory::class,
             'pusher' => \App\Http\Middleware\pusherConfig::class,
+            'plan.module' => \App\Http\Middleware\CheckPlanModule::class,
+            'mobile.redirect' => \App\Http\Middleware\MobileRedirect::class,
         ]);
 
         // middlewareGroups / Group Middleware

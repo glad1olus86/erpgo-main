@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Редактировать автомобиль') }}
+    {{ __('Edit Vehicle') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('vehicles.index') }}">{{ __('Транспорт') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Редактировать') }}</li>
+    <li class="breadcrumb-item"><a href="{{ route('vehicles.index') }}">{{ __('Vehicles') }}</a></li>
+    <li class="breadcrumb-item">{{ __('Edit') }}</li>
 @endsection
 
 @section('content')
@@ -15,22 +15,27 @@
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header">
-                    <h5>{{ __('Информация об автомобиле') }}</h5>
+                    <h5>{{ __('Vehicle Information') }}</h5>
                 </div>
                 <div class="card-body">
                     {{ Form::model($vehicle, ['route' => ['vehicles.update', $vehicle->id], 'method' => 'PUT', 'enctype' => 'multipart/form-data']) }}
+                    
+                    {{-- Hidden field for mobile redirect --}}
+                    @if(request('redirect_to'))
+                        <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
+                    @endif
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                {{ Form::label('license_plate', __('Номер машины'), ['class' => 'form-label']) }}
+                                {{ Form::label('license_plate', __('License Plate'), ['class' => 'form-label']) }}
                                 <x-required></x-required>
                                 {{ Form::text('license_plate', null, ['class' => 'form-control', 'required' => true]) }}
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                {{ Form::label('brand', __('Марка/Модель'), ['class' => 'form-label']) }}
+                                {{ Form::label('brand', __('Brand/Model'), ['class' => 'form-label']) }}
                                 <x-required></x-required>
                                 {{ Form::text('brand', null, ['class' => 'form-control', 'required' => true]) }}
                             </div>
@@ -40,37 +45,60 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                {{ Form::label('color', __('Цвет'), ['class' => 'form-label']) }}
+                                {{ Form::label('color', __('Color'), ['class' => 'form-label']) }}
                                 {{ Form::text('color', null, ['class' => 'form-control']) }}
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                {{ Form::label('vin_code', __('VIN-код'), ['class' => 'form-label']) }}
-                                {{ Form::text('vin_code', null, ['class' => 'form-control', 'maxlength' => 17]) }}
+                                {{ Form::label('vin_code', __('VIN Code'), ['class' => 'form-label']) }}
+                                {{ Form::text('vin_code', null, ['class' => 'form-control', 'maxlength' => 30]) }}
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                {{ Form::label('fuel_consumption', __('Расход топлива (л/100км)'), ['class' => 'form-label']) }}
+                                {{ Form::label('registration_date', __('Registration Date'), ['class' => 'form-label']) }}
+                                {{ Form::date('registration_date', $vehicle->registration_date, ['class' => 'form-control']) }}
+                                <small class="text-muted">{{ __('First registration in state registry') }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ Form::label('engine_volume', __('Engine Volume (cm³)'), ['class' => 'form-label']) }}
+                                {{ Form::number('engine_volume', null, ['class' => 'form-control', 'min' => '0', 'max' => '99999']) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ Form::label('passport_fuel_consumption', __('Passport Fuel Consumption (l/100km)'), ['class' => 'form-label']) }}
+                                {{ Form::number('passport_fuel_consumption', null, ['class' => 'form-control', 'step' => '0.1', 'min' => '0', 'max' => '99.9']) }}
+                                <small class="text-muted">{{ __('From tech passport (V.8)') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ Form::label('fuel_consumption', __('Actual Fuel Consumption (l/100km)'), ['class' => 'form-label']) }}
                                 {{ Form::number('fuel_consumption', null, ['class' => 'form-control', 'step' => '0.1', 'min' => '0', 'max' => '99.9']) }}
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('photo', __('Фото автомобиля'), ['class' => 'form-label']) }}
+                        {{ Form::label('photo', __('Vehicle Photo'), ['class' => 'form-label']) }}
                         @if ($vehicle->photo)
                             <div class="mb-2">
                                 <img src="{{ asset('uploads/vehicle_photos/' . $vehicle->photo) }}" alt="" class="rounded" style="max-width: 200px;">
                             </div>
                         @endif
                         {{ Form::file('photo', ['class' => 'form-control', 'accept' => 'image/jpeg,image/png,image/webp']) }}
-                        <small class="text-muted">{{ __('Оставьте пустым, чтобы сохранить текущее фото') }}</small>
+                        <small class="text-muted">{{ __('Leave empty to keep current photo') }}</small>
                     </div>
 
                     <hr>
-                    <h6 class="mb-3">{{ __('Ответственный (опционально)') }}</h6>
+                    <h6 class="mb-3">{{ __('Responsible (optional)') }}</h6>
 
                     @php
                         $currentType = '';
@@ -81,23 +109,23 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                {{ Form::label('assigned_type', __('Тип'), ['class' => 'form-label']) }}
-                                {{ Form::select('assigned_type', ['' => __('Не назначен'), 'worker' => __('Работник'), 'user' => __('Пользователь')], $currentType, ['class' => 'form-control', 'id' => 'assigned_type']) }}
+                                {{ Form::label('assigned_type', __('Type'), ['class' => 'form-label']) }}
+                                {{ Form::select('assigned_type', ['' => __('Not assigned'), 'worker' => __('Worker'), 'user' => __('User')], $currentType, ['class' => 'form-control', 'id' => 'assigned_type']) }}
                             </div>
                         </div>
                         <div class="col-md-8">
                             <div class="form-group">
-                                {{ Form::label('assigned_id', __('Ответственный'), ['class' => 'form-label']) }}
+                                {{ Form::label('assigned_id', __('Responsible'), ['class' => 'form-label']) }}
                                 <select name="assigned_id" id="assigned_id" class="form-control">
-                                    <option value="">{{ __('Выберите') }}</option>
+                                    <option value="">{{ __('Select') }}</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="text-end mt-4">
-                        <a href="{{ route('vehicles.index') }}" class="btn btn-secondary">{{ __('Отмена') }}</a>
-                        <button type="submit" class="btn btn-primary">{{ __('Сохранить') }}</button>
+                        <a href="{{ request('redirect_to') === 'mobile' ? route('mobile.vehicles.show', $vehicle->id) : route('vehicles.index') }}" class="btn btn-secondary">{{ __('Cancel') }}</a>
+                        <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
                     </div>
 
                     {{ Form::close() }}
@@ -121,13 +149,13 @@
         select.innerHTML = '';
 
         if (!type) {
-            select.innerHTML = '<option value="">{{ __("Сначала выберите тип") }}</option>';
+            select.innerHTML = '<option value="">{{ __("First select type") }}</option>';
             select.disabled = true;
             return;
         }
 
         var items = type === 'worker' ? workers : users;
-        select.innerHTML = '<option value="">{{ __("Выберите") }}</option>';
+        select.innerHTML = '<option value="">{{ __("Select") }}</option>';
         items.forEach(function(item) {
             var selected = (type === currentType && item.id === currentId) ? ' selected' : '';
             select.innerHTML += '<option value="' + item.id + '"' + selected + '>' + item.name + '</option>';

@@ -5,7 +5,7 @@
 @endphp
 
 <div class="d-flex flex-wrap align-items-center gap-1">
-    <span class="badge bg-dark">{{ __('ЕСЛИ') }}</span>
+    <span class="badge bg-dark">{{ __('IF') }}</span>
     <span class="badge bg-primary">{{ $entityLabel }}</span>
     
     @if(!empty($conditions))
@@ -18,7 +18,7 @@
             @endphp
             
             @if($index > 0)
-                <span class="badge bg-warning text-dark">{{ __('И') }}</span>
+                <span class="badge bg-warning text-dark">{{ __('AND') }}</span>
             @endif
             
             <span class="badge bg-info">

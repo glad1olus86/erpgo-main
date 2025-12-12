@@ -1,0 +1,170 @@
+@php
+    use App\Models\Utility;
+    $setting = \App\Models\Utility::settings();
+@endphp
+
+<nav class="dash-sidebar light-sidebar jobsi-sidebar">
+    <div class="navbar-wrapper">
+        <!-- Logo - захардкожено -->
+        <div class="m-header main-logo">
+            <a href="{{ route('jobsi.dashboard') }}" class="b-brand">
+                <img src="{{ asset('fromfigma/jobsi_logo.png') }}" alt="JOBSI">
+            </a>
+        </div>
+        
+        <div class="navbar-content">
+            <ul class="dash-navbar">
+                <!-- Главная панель -->
+                <li class="dash-item {{ Request::routeIs('jobsi.dashboard') || Request::segment(1) == 'jobsi-dashboard' ? 'active' : '' }}">
+                    <a href="{{ route('jobsi.dashboard') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/mainpanel.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Главная панель') }}</span>
+                    </a>
+                </li>
+
+                <!-- Работники -->
+                <li class="dash-item {{ Request::routeIs('worker.*') ? 'active' : '' }}">
+                    <a href="{{ route('worker.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/workers.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Работники') }}</span>
+                    </a>
+                </li>
+
+                <!-- Рабочие места -->
+                <li class="dash-item {{ Request::routeIs('work-place.*') || Request::routeIs('position.*') ? 'active' : '' }}">
+                    <a href="{{ route('work-place.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/workplaces.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Рабочие места') }}</span>
+                    </a>
+                </li>
+
+                <!-- Проживание (Hotels) -->
+                <li class="dash-item {{ Request::routeIs('hotel.*') || Request::routeIs('room.*') ? 'active' : '' }}">
+                    <a href="{{ route('hotel.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/hotel.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Проживание') }}</span>
+                    </a>
+                </li>
+
+                <!-- Транспорт -->
+                <li class="dash-item dash-hasmenu {{ Request::routeIs('vehicles.*') || Request::routeIs('inspections.*') ? 'active dash-trigger' : '' }}">
+                    <a href="{{ route('vehicles.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/vehicles.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Транспорт') }}</span>
+                    </a>
+                </li>
+
+                <!-- Документы -->
+                <li class="dash-item {{ Request::routeIs('documents.*') ? 'active' : '' }}">
+                    <a href="{{ route('documents.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/document.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Документы') }}</span>
+                    </a>
+                </li>
+
+                <!-- Касса -->
+                <li class="dash-item {{ Request::routeIs('cashbox.*') ? 'active' : '' }}">
+                    <a href="{{ route('cashbox.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/cashbox.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Касса') }}</span>
+                    </a>
+                </li>
+
+                <!-- Календарь (Audit) -->
+                <li class="dash-item {{ Request::routeIs('audit.*') ? 'active' : '' }}">
+                    <a href="{{ route('audit.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/calendar.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Календарь') }}</span>
+                    </a>
+                </li>
+
+                <!-- Уведомления -->
+                <li class="dash-item {{ Request::routeIs('notifications.*') || Request::routeIs('notification-rules.*') ? 'active' : '' }}">
+                    <a href="{{ route('notifications.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <i class="ti ti-bell" style="color: #FF0049; font-size: 12px;"></i>
+                        </span>
+                        <span class="dash-mtext">{{ __('Уведомления') }}</span>
+                    </a>
+                </li>
+
+                <!-- Сообщения -->
+                <li class="dash-item {{ Request::segment(1) == 'chatify' ? 'active' : '' }}">
+                    <a href="{{ url('chatify') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <img src="{{ asset('fromfigma/message.svg') }}" alt="">
+                        </span>
+                        <span class="dash-mtext">{{ __('Сообщения') }}</span>
+                    </a>
+                </li>
+
+                <!-- Настройки -->
+                @if (Gate::check('manage company plan') || Gate::check('manage order') || Gate::check('manage company settings'))
+                    <li class="dash-item dash-hasmenu {{ Request::segment(1) == 'settings' || Request::segment(1) == 'plans' || Request::segment(1) == 'stripe' || Request::segment(1) == 'order' || Request::routeIs('notification-rules.*') || Request::routeIs('cashbox.settings') ? 'active dash-trigger' : '' }}">
+                        <a href="#!" class="dash-link">
+                            <span class="dash-micon">
+                                <img src="{{ asset('fromfigma/settings.svg') }}" alt="">
+                            </span>
+                            <span class="dash-mtext">{{ __('Настройки') }}</span>
+                            <span class="dash-arrow"><i data-feather="chevron-right"></i></span>
+                        </a>
+                        <ul class="dash-submenu">
+                            @if (Gate::check('manage company settings') && Auth::user()->type == 'super admin')
+                                <li class="dash-item {{ Request::segment(1) == 'settings' ? 'active' : '' }}">
+                                    <a href="{{ route('settings') }}" class="dash-link">{{ __('System Settings') }}</a>
+                                </li>
+                            @endif
+                            @if (Gate::check('manage company plan'))
+                                <li class="dash-item {{ Request::routeIs('plans.index') || Request::routeIs('stripe') ? 'active' : '' }}">
+                                    <a href="{{ route('plans.index') }}" class="dash-link">{{ __('Setup Subscription Plan') }}</a>
+                                </li>
+                            @endif
+                            <li class="dash-item {{ Request::routeIs('notification-rules.index') ? 'active' : '' }}">
+                                <a href="{{ route('notification-rules.index') }}" class="dash-link">{{ __('Notification Builder') }}</a>
+                            </li>
+                            @can('cashbox_access')
+                                <li class="dash-item {{ Request::routeIs('cashbox.settings') ? 'active' : '' }}">
+                                    <a href="{{ route('cashbox.settings') }}" class="dash-link">{{ __('Cashbox Settings') }}</a>
+                                </li>
+                            @endcan
+                            @if (Gate::check('manage order') && Auth::user()->type == 'company')
+                                <li class="dash-item {{ Request::segment(1) == 'order' ? 'active' : '' }}">
+                                    <a href="{{ route('order.index') }}" class="dash-link">{{ __('Order') }}</a>
+                                </li>
+                                <li class="dash-item {{ Request::routeIs('referral-program.company') ? 'active' : '' }}">
+                                    <a href="{{ route('referral-program.company') }}" class="dash-link">{{ __('Referral Program') }}</a>
+                                </li>
+                            @endif
+                        </ul>
+                    </li>
+                @endif
+            </ul>
+        </div>
+
+        <!-- Google Reviews Block -->
+        <div class="jobsi-google-reviews">
+            <div class="review-card">
+                <span class="review-label">{{ __('Оставьте ваш отзыв') }}</span>
+                <a href="https://g.page/r/YOUR_GOOGLE_REVIEW_LINK/review" target="_blank">
+                    <img src="{{ asset('fromfigma/otzivi.png') }}" alt="Google Reviews">
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>

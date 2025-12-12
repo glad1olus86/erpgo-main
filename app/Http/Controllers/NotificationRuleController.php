@@ -64,7 +64,7 @@ class NotificationRuleController extends Controller
 
         // Validate period_to > period_from if set (skip for event-based entities like cashbox)
         if ($request->entity_type !== 'cashbox' && $request->period_to && $request->period_to <= $request->period_from) {
-            return redirect()->back()->with('error', __('Период "до" должен быть больше периода "от"'));
+            return redirect()->back()->with('error', __('Period "to" must be greater than period "from"'));
         }
 
         NotificationRule::create([
@@ -79,7 +79,7 @@ class NotificationRuleController extends Controller
             'created_by' => Auth::user()->creatorId(),
         ]);
 
-        return redirect()->route('notification-rules.index')->with('success', __('Правило уведомления создано'));
+        return redirect()->route('notification-rules.index')->with('success', __('Notification rule created'));
     }
 
     /**
@@ -129,7 +129,7 @@ class NotificationRuleController extends Controller
 
         // Validate period_to > period_from if set (skip for event-based entities like cashbox)
         if ($request->entity_type !== 'cashbox' && $request->period_to && $request->period_to <= $request->period_from) {
-            return redirect()->back()->with('error', __('Период "до" должен быть больше периода "от"'));
+            return redirect()->back()->with('error', __('Period "to" must be greater than period "from"'));
         }
 
         $notificationRule->update([
@@ -142,7 +142,7 @@ class NotificationRuleController extends Controller
             'is_grouped' => $request->has('is_grouped'),
         ]);
 
-        return redirect()->route('notification-rules.index')->with('success', __('Правило уведомления обновлено'));
+        return redirect()->route('notification-rules.index')->with('success', __('Notification rule updated'));
     }
 
     /**
@@ -161,7 +161,7 @@ class NotificationRuleController extends Controller
         $notificationRule->update(['is_active' => !$notificationRule->is_active]);
 
         return redirect()->back()->with('success', 
-            $notificationRule->is_active ? __('Правило включено') : __('Правило выключено')
+            $notificationRule->is_active ? __('Rule enabled') : __('Rule disabled')
         );
     }
 
@@ -180,7 +180,7 @@ class NotificationRuleController extends Controller
 
         $notificationRule->delete();
 
-        return redirect()->route('notification-rules.index')->with('success', __('Правило удалено'));
+        return redirect()->route('notification-rules.index')->with('success', __('Rule deleted'));
     }
 
     /**

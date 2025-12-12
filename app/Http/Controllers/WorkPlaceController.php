@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WorkPlace;
+use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -44,6 +45,11 @@ class WorkPlaceController extends Controller
     public function store(Request $request)
     {
         if (Auth::user()->can('create work place')) {
+            // Check plan limit
+            if (!PlanLimitService::canCreateWorkplace()) {
+                return redirect()->back()->with('error', __('Workplace limit reached for your plan.'));
+            }
+
             $validator = Validator::make(
                 $request->all(),
                 [
@@ -65,7 +71,12 @@ class WorkPlaceController extends Controller
             $workPlace->created_by = Auth::user()->creatorId();
             $workPlace->save();
 
-            return redirect()->route('work-place.index')->with('success', __('Рабочее место успешно создано.'));
+            // Handle mobile redirect
+            if ($request->has('redirect_to') && $request->redirect_to === 'mobile') {
+                return redirect()->route('mobile.workplaces.index')->with('success', __('Work place successfully created.'));
+            }
+
+            return redirect()->route('work-place.index')->with('success', __('Work place successfully created.'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -113,7 +124,12 @@ class WorkPlaceController extends Controller
                 $workPlace->email = $request->email;
                 $workPlace->save();
 
-                return redirect()->route('work-place.index')->with('success', __('Рабочее место успешно обновлено.'));
+                // Handle mobile redirect
+                if ($request->has('redirect_to') && $request->redirect_to === 'mobile') {
+                    return redirect()->route('mobile.workplaces.show', $workPlace->id)->with('success', __('Work place successfully updated.'));
+                }
+
+                return redirect()->route('work-place.index')->with('success', __('Work place successfully updated.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -125,12 +141,18 @@ class WorkPlaceController extends Controller
     /**
      * Remove the specified work place from storage.
      */
-    public function destroy(WorkPlace $workPlace)
+    public function destroy(Request $request, WorkPlace $workPlace)
     {
         if (Auth::user()->can('delete work place')) {
             if ($workPlace->created_by == Auth::user()->creatorId()) {
                 $workPlace->delete();
-                return redirect()->route('work-place.index')->with('success', __('Рабочее место успешно удалено.'));
+
+                // Handle mobile redirect
+                if ($request->has('redirect_to') && $request->redirect_to === 'mobile') {
+                    return redirect()->route('mobile.workplaces.index')->with('success', __('Work place successfully deleted.'));
+                }
+
+                return redirect()->route('work-place.index')->with('success', __('Work place successfully deleted.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

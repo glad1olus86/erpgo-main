@@ -33,18 +33,18 @@ class RoomAssignmentController extends Controller
 
                 // Check if worker already has an active assignment
                 if ($worker->currentAssignment) {
-                    return redirect()->back()->with('error', __('Работник уже заселён. Сначала выселите его.'));
+                    return redirect()->back()->with('error', __('Worker is already housed. Check them out first.'));
                 }
 
                 // Check if room belongs to selected hotel
                 $room = Room::find($request->room_id);
                 if ($room->hotel_id != $request->hotel_id) {
-                    return redirect()->back()->with('error', __('Комната не принадлежит выбранному отелю.'));
+                    return redirect()->back()->with('error', __('Room does not belong to the selected hotel.'));
                 }
 
                 // Check if room has available spots
                 if ($room->isFull()) {
-                    return redirect()->back()->with('error', __('Комната полностью заполнена.'));
+                    return redirect()->back()->with('error', __('Room is fully occupied.'));
                 }
 
                 // Create the assignment
@@ -56,7 +56,11 @@ class RoomAssignmentController extends Controller
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();
 
-                return redirect()->route('worker.show', $worker->id)->with('success', __('Работник успешно заселён.'));
+                // Check if redirect to mobile
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.workers.show', $worker->id)->with('success', __('Worker successfully checked in.'));
+                }
+                return redirect()->route('worker.show', $worker->id)->with('success', __('Worker successfully checked in.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -68,21 +72,25 @@ class RoomAssignmentController extends Controller
     /**
      * Unassign a worker from their current room (check-out).
      */
-    public function unassignWorker(Worker $worker)
+    public function unassignWorker(Request $request, Worker $worker)
     {
         if (Auth::user()->can('manage worker')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
                 $assignment = $worker->currentAssignment;
 
                 if (!$assignment) {
-                    return redirect()->back()->with('error', __('Работник не заселён.'));
+                    return redirect()->back()->with('error', __('Worker is not housed.'));
                 }
 
                 // Set check-out date to mark as inactive
                 $assignment->check_out_date = now();
                 $assignment->save();
 
-                return redirect()->back()->with('success', __('Работник успешно выселен.'));
+                // Check if redirect to mobile
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.workers.show', $worker->id)->with('success', __('Worker successfully checked out.'));
+                }
+                return redirect()->back()->with('success', __('Worker successfully checked out.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -124,7 +132,7 @@ class RoomAssignmentController extends Controller
                     }
                 }
 
-                return redirect()->back()->with('success', __('Выселено работников: :count', ['count' => $checkedOut]));
+                return redirect()->back()->with('success', __('Workers checked out: :count', ['count' => $checkedOut]));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -188,12 +196,12 @@ class RoomAssignmentController extends Controller
 
                 // Check if worker already has an active assignment
                 if ($worker->currentAssignment) {
-                    return redirect()->back()->with('error', __('Работник уже заселён. Сначала выселите его.'));
+                    return redirect()->back()->with('error', __('Worker is already housed. Check them out first.'));
                 }
 
                 // Check if room has available spots
                 if ($room->isFull()) {
-                    return redirect()->back()->with('error', __('Комната полностью заполнена.'));
+                    return redirect()->back()->with('error', __('Room is fully occupied.'));
                 }
 
                 // Create the assignment
@@ -205,7 +213,7 @@ class RoomAssignmentController extends Controller
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();
 
-                return redirect()->back()->with('success', __('Работник успешно заселён.'));
+                return redirect()->back()->with('success', __('Worker successfully checked in.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -269,7 +277,7 @@ class RoomAssignmentController extends Controller
                     $assigned++;
                 }
 
-                return redirect()->back()->with('success', __('Заселено работников: :count', ['count' => $assigned]));
+                return redirect()->back()->with('success', __('Workers checked in: :count', ['count' => $assigned]));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

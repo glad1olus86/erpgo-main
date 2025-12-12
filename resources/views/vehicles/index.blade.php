@@ -1,19 +1,19 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Транспорт') }}
+    {{ __('Vehicles') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Транспорт') }}</li>
+    <li class="breadcrumb-item">{{ __('Vehicles') }}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
         @can('vehicle_create')
             <a href="{{ route('vehicles.create') }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                title="{{ __('Добавить автомобиль') }}">
+                title="{{ __('Add Vehicle') }}">
                 <i class="ti ti-plus"></i>
             </a>
         @endcan
@@ -29,13 +29,13 @@
                         <table class="table" id="vehicles-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 60px;">{{ __('Фото') }}</th>
-                                    <th>{{ __('Номер') }}</th>
-                                    <th>{{ __('Марка') }}</th>
-                                    <th>{{ __('Цвет') }}</th>
-                                    <th>{{ __('Ответственный') }}</th>
-                                    <th>{{ __('Статус ТО') }}</th>
-                                    <th>{{ __('Действие') }}</th>
+                                    <th style="width: 60px;">{{ __('Photo') }}</th>
+                                    <th>{{ __('License Plate') }}</th>
+                                    <th>{{ __('Brand') }}</th>
+                                    <th>{{ __('Color') }}</th>
+                                    <th>{{ __('Responsible') }}</th>
+                                    <th>{{ __('Inspection Status') }}</th>
+                                    <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -71,7 +71,7 @@
                                                     <div class="action-btn me-2">
                                                         <a href="{{ route('vehicles.show', $vehicle) }}"
                                                             class="mx-3 btn btn-sm align-items-center bg-warning"
-                                                            data-bs-toggle="tooltip" title="{{ __('Просмотр') }}">
+                                                            data-bs-toggle="tooltip" title="{{ __('View') }}">
                                                             <i class="ti ti-eye text-white"></i>
                                                         </a>
                                                     </div>
@@ -80,7 +80,7 @@
                                                     <div class="action-btn me-2">
                                                         <a href="{{ route('vehicles.edit', $vehicle) }}"
                                                             class="mx-3 btn btn-sm align-items-center bg-info"
-                                                            data-bs-toggle="tooltip" title="{{ __('Редактировать') }}">
+                                                            data-bs-toggle="tooltip" title="{{ __('Edit') }}">
                                                             <i class="ti ti-pencil text-white"></i>
                                                         </a>
                                                     </div>
@@ -93,8 +93,8 @@
                                                             'id' => 'delete-form-' . $vehicle->id,
                                                         ]) !!}
                                                         <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para bg-danger"
-                                                            data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
-                                                            data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить.') }}"
+                                                            data-bs-toggle="tooltip" title="{{ __('Delete') }}"
+                                                            data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone.') }}"
                                                             data-confirm-yes="document.getElementById('delete-form-{{ $vehicle->id }}').submit();">
                                                             <i class="ti ti-trash text-white"></i>
                                                         </a>
@@ -108,10 +108,10 @@
                                     <tr>
                                         <td colspan="7" class="text-center text-muted py-4">
                                             <i class="ti ti-car" style="font-size: 48px;"></i>
-                                            <p class="mt-2">{{ __('Автомобили не найдены') }}</p>
+                                            <p class="mt-2">{{ __('No vehicles found') }}</p>
                                             @can('vehicle_create')
                                                 <a href="{{ route('vehicles.create') }}" class="btn btn-primary btn-sm">
-                                                    <i class="ti ti-plus me-1"></i>{{ __('Добавить первый автомобиль') }}
+                                                    <i class="ti ti-plus me-1"></i>{{ __('Add first vehicle') }}
                                                 </a>
                                             @endcan
                                         </td>

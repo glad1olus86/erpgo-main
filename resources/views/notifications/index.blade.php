@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Уведомления') }}
+    {{ __('Notifications') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Уведомления') }}</li>
+    <li class="breadcrumb-item">{{ __('Notifications') }}</li>
 @endsection
 
 @section('action-btn')
@@ -14,7 +14,7 @@
         <form action="{{ route('notifications.read.all') }}" method="POST" class="d-inline">
             @csrf
             <button type="submit" class="btn btn-sm btn-primary">
-                <i class="ti ti-checks me-1"></i>{{ __('Отметить все как прочитанные') }}
+                <i class="ti ti-checks me-1"></i>{{ __('Mark all as read') }}
             </button>
         </form>
     @endif
@@ -52,7 +52,7 @@
                                             @if(!$notification->is_read)
                                                 <form action="{{ route('notifications.read', $notification->id) }}" method="POST" class="d-inline">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('Отметить как прочитанное') }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="{{ __('Mark as read') }}">
                                                         <i class="ti ti-check"></i>
                                                     </button>
                                                 </form>
@@ -60,7 +60,7 @@
                                             <form action="{{ route('notifications.destroy', $notification->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('Удалить') }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ __('Delete') }}">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
@@ -77,7 +77,7 @@
                 @else
                     <div class="text-center py-5">
                         <i class="ti ti-bell-off text-muted" style="font-size: 48px;"></i>
-                        <p class="text-muted mt-3">{{ __('Нет уведомлений') }}</p>
+                        <p class="text-muted mt-3">{{ __('No notifications') }}</p>
                     </div>
                 @endif
             </div>

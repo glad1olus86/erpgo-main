@@ -1392,7 +1392,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'hotel' ? 'active' : '' }}">
                         <a href="{{ route('hotel.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-building-skyscraper"></i></span>
-                            <span class="dash-mtext">{{ __('Отели') }}</span>
+                            <span class="dash-mtext">{{ __('Hotels') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1400,7 +1400,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'work-place' ? 'active' : '' }}">
                         <a href="{{ route('work-place.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-briefcase"></i></span>
-                            <span class="dash-mtext">{{ __('Рабочие места') }}</span>
+                            <span class="dash-mtext">{{ __('Work Places') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1409,7 +1409,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'worker' ? 'active' : '' }}">
                         <a href="{{ route('worker.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-user"></i></span>
-                            <span class="dash-mtext">{{ __('Работники') }}</span>
+                            <span class="dash-mtext">{{ __('Workers') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1418,7 +1418,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'vehicles' ? 'active' : '' }}">
                         <a href="{{ route('vehicles.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-car"></i></span>
-                            <span class="dash-mtext">{{ __('Транспорт') }}</span>
+                            <span class="dash-mtext">{{ __('Vehicles') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1427,7 +1427,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'cashbox' ? 'active' : '' }}">
                         <a href="{{ route('cashbox.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-cash"></i></span>
-                            <span class="dash-mtext">{{ __('Касса') }}</span>
+                            <span class="dash-mtext">{{ __('Cashbox') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1436,7 +1436,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'documents' ? 'active' : '' }}">
                         <a href="{{ route('documents.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-file-text"></i></span>
-                            <span class="dash-mtext">{{ __('Документы') }}</span>
+                            <span class="dash-mtext">{{ __('Documents') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1446,7 +1446,7 @@
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'audit' ? ' active dash-trigger' : '' }}">
                         <a href="{{ route('audit.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-activity"></i></span>
-                            <span class="dash-mtext">{{ __('Аудит') }}</span>
+                            <span class="dash-mtext">{{ __('Audit') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1455,7 +1455,7 @@
                     <li class="dash-item {{ Request::segment(1) == 'notifications' ? 'active' : '' }}">
                         <a href="{{ route('notifications.index') }}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-bell"></i></span>
-                            <span class="dash-mtext">{{ __('Уведомления') }}</span>
+                            <span class="dash-mtext">{{ __('Notifications') }}</span>
                         </a>
                     </li>
                 @endcan
@@ -1605,19 +1605,19 @@
                                             class="dash-link">{{ __('Setup Subscription Plan') }}</a>
                                     </li>
                                 @endif
-                                
+
 
                                 <li
                                     class="dash-item{{ Request::route()->getName() == 'notification-rules.index' ? ' active' : '' }}">
                                     <a href="{{ route('notification-rules.index') }}"
-                                        class="dash-link">{{ __('Конструктор уведомлений') }}</a>
+                                        class="dash-link">{{ __('Notification Builder') }}</a>
                                 </li>
 
                                 @can('cashbox_access')
                                     <li
                                         class="dash-item{{ Request::route()->getName() == 'cashbox.settings' ? ' active' : '' }}">
                                         <a href="{{ route('cashbox.settings') }}"
-                                            class="dash-link">{{ __('Настройки кассы') }}</a>
+                                            class="dash-link">{{ __('Cashbox Settings') }}</a>
                                     </li>
                                 @endcan
 
@@ -1626,9 +1626,10 @@
                                         <a href="{{ route('order.index') }}"
                                             class="dash-link">{{ __('Order') }}</a>
                                     </li>
-                                    <li class="dash-item{{ Request::route()->getName() == 'referral-program.company' ? ' active' : '' }}">
-                                    <a href="{{ route('referral-program.company') }}"
-                                        class="dash-link">{{ __('Referral Program') }}</a>
+                                    <li
+                                        class="dash-item{{ Request::route()->getName() == 'referral-program.company' ? ' active' : '' }}">
+                                        <a href="{{ route('referral-program.company') }}"
+                                            class="dash-link">{{ __('Referral Program') }}</a>
                                     </li>
                                 @endif
                             </ul>

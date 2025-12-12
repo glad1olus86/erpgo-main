@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Профиль работника') }}
+    {{ __('Worker Profile') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('worker.index') }}">{{ __('Работники') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('worker.index') }}">{{ __('Workers') }}</a></li>
     <li class="breadcrumb-item">{{ $worker->first_name }} {{ $worker->last_name }}</li>
 @endsection
 
@@ -22,7 +22,7 @@
                                     <i class="ti ti-user"></i>
                                 </div>
                                 <div class="ms-2">
-                                    <p class="text-muted text-sm mb-0">{{ __('Имя Фамилия') }}</p>
+                                    <p class="text-muted text-sm mb-0">{{ __('Full Name') }}</p>
                                     <h5 class="mb-0 mt-1">{{ $worker->first_name }} {{ $worker->last_name }}</h5>
                                 </div>
                             </div>
@@ -33,7 +33,7 @@
                                     <i class="ti ti-calendar"></i>
                                 </div>
                                 <div class="ms-2">
-                                    <p class="text-muted text-sm mb-0">{{ __('Дата рождения') }}</p>
+                                    <p class="text-muted text-sm mb-0">{{ __('Date of Birth') }}</p>
                                     <h5 class="mb-0 mt-1">{{ \Auth::user()->dateFormat($worker->dob) }}</h5>
                                 </div>
                             </div>
@@ -44,8 +44,8 @@
                                     <i class="ti ti-gender-bigender"></i>
                                 </div>
                                 <div class="ms-2">
-                                    <p class="text-muted text-sm mb-0">{{ __('Пол') }}</p>
-                                    <h5 class="mb-0 mt-1">{{ $worker->gender == 'male' ? __('Мужчина') : __('Женщина') }}
+                                    <p class="text-muted text-sm mb-0">{{ __('Gender') }}</p>
+                                    <h5 class="mb-0 mt-1">{{ $worker->gender == 'male' ? __('Male') : __('Female') }}
                                     </h5>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-12 text-center">
-                            <h5 class="mb-0">{{ __('Фото внешности') }}</h5>
+                            <h5 class="mb-0">{{ __('Photo') }}</h5>
                             <div class="mt-3">
                                 @if (!empty($worker->photo))
                                     <img src="{{ asset('uploads/worker_photos/' . $worker->photo) }}" alt="photo"
@@ -81,25 +81,25 @@
         <div class="col-xl-8 col-lg-6 col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h5>{{ __('Детальная информация') }}</h5>
+                    <h5>{{ __('Detailed Information') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="info-group">
-                                <h6>{{ __('Национальность') }}</h6>
+                                <h6>{{ __('Nationality') }}</h6>
                                 <p class="mb-0">{{ $worker->nationality }}</p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="info-group">
-                                <h6>{{ __('Дата регистрации') }}</h6>
+                                <h6>{{ __('Registration Date') }}</h6>
                                 <p class="mb-0">{{ \Auth::user()->dateFormat($worker->registration_date) }}</p>
                             </div>
                         </div>
                         <div class="col-md-6 mt-4">
                             <div class="info-group">
-                                <h6>{{ __('Телефон') }}</h6>
+                                <h6>{{ __('Phone') }}</h6>
                                 <p class="mb-0">{{ !empty($worker->phone) ? $worker->phone : '-' }}</p>
                             </div>
                         </div>
@@ -111,12 +111,12 @@
                         </div>
                         <div class="col-md-12 mt-4">
                             <div class="info-group">
-                                <h6>{{ __('Фото документов') }}</h6>
+                                <h6>{{ __('Document Photo') }}</h6>
                                 @if (!empty($worker->document_photo))
                                     <div class="mt-2">
                                         <a href="{{ asset('uploads/worker_documents/' . $worker->document_photo) }}"
                                             target="_blank" class="btn btn-sm btn-primary">
-                                            <i class="ti ti-file"></i> {{ __('Просмотреть документ') }}
+                                            <i class="ti ti-file"></i> {{ __('View Document') }}
                                         </a>
                                     </div>
                                 @else
@@ -128,11 +128,11 @@
                         @can('document_generate')
                         <div class="col-md-12 mt-4">
                             <div class="info-group">
-                                <h6>{{ __('Генерация документов') }}</h6>
+                                <h6>{{ __('Document Generation') }}</h6>
                                 <div class="mt-2">
                                     <a href="#" class="btn btn-sm btn-success"
                                         onclick="event.preventDefault(); $('#generate-document-modal').modal('show');">
-                                        <i class="ti ti-file-text"></i> {{ __('Сгенерировать документ') }}
+                                        <i class="ti ti-file-text"></i> {{ __('Generate Document') }}
                                     </a>
                                 </div>
                             </div>
@@ -143,24 +143,24 @@
             </div>
         </div>
 
-        {{-- Проживание Section --}}
+        {{-- Accommodation Section --}}
         <div class="col-xl-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>{{ __('Проживание') }}</h5>
+                    <h5>{{ __('Accommodation') }}</h5>
                     @if ($worker->currentAssignment)
                         <form action="{{ route('worker.unassign.room', $worker->id) }}" method="POST"
                             style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-danger">
-                                <i class="ti ti-door-exit"></i> {{ __('Выселить') }}
+                                <i class="ti ti-door-exit"></i> {{ __('Check Out') }}
                             </button>
                         </form>
                     @else
                         @can('manage worker')
                             <a href="#" class="btn btn-sm btn-primary"
                                 onclick="event.preventDefault(); $('#assign-room-modal').modal('show');">
-                                <i class="ti ti-home-plus"></i> {{ __('Заселить') }}
+                                <i class="ti ti-home-plus"></i> {{ __('Check In') }}
                             </a>
                         @endcan
                     @endif
@@ -174,7 +174,7 @@
                                         <i class="ti ti-building"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Отель') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Hotel') }}</p>
                                         <h5 class="mb-0 mt-1">{{ $worker->currentAssignment->hotel->name }}</h5>
                                     </div>
                                 </div>
@@ -185,7 +185,7 @@
                                         <i class="ti ti-bed"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Номер комнаты') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Room Number') }}</p>
                                         <h5 class="mb-0 mt-1">{{ $worker->currentAssignment->room->room_number }}</h5>
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@
                                         <i class="ti ti-calendar"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Дата заселения') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Check-in Date') }}</p>
                                         <h5 class="mb-0 mt-1">
                                             {{ \Auth::user()->dateFormat($worker->currentAssignment->check_in_date) }}</h5>
                                     </div>
@@ -206,33 +206,33 @@
                     @else
                         <div class="text-center py-4">
                             <i class="ti ti-home-off" style="font-size: 48px; opacity: 0.3;"></i>
-                            <h5 class="mt-3">{{ __('Работник не заселён') }}</h5>
-                            <p class="text-muted">{{ __('Нажмите "Заселить" чтобы назначить комнату') }}</p>
+                            <h5 class="mt-3">{{ __('Worker is not housed') }}</h5>
+                            <p class="text-muted">{{ __('Click "Check In" to assign a room') }}</p>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- Трудоустройство Section --}}
+        {{-- Employment Section --}}
         <div class="col-xl-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>{{ __('Трудоустройство') }}</h5>
+                    <h5>{{ __('Employment') }}</h5>
                     @if ($worker->currentWorkAssignment)
                         <form action="{{ route('worker.dismiss', $worker->id) }}" method="POST"
                             style="display: inline;">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('{{ __('Вы уверены, что хотите уволить этого работника?') }}')">
-                                <i class="ti ti-briefcase-off"></i> {{ __('Уволить') }}
+                                onclick="return confirm('{{ __('Are you sure you want to dismiss this worker?') }}')">
+                                <i class="ti ti-briefcase-off"></i> {{ __('Dismiss') }}
                             </button>
                         </form>
                     @else
                         @can('manage worker')
                             <a href="#" class="btn btn-sm btn-primary"
                                 onclick="event.preventDefault(); $('#assign-work-modal').modal('show');">
-                                <i class="ti ti-briefcase-off"></i> {{ __('Устроить') }}
+                                <i class="ti ti-briefcase-off"></i> {{ __('Assign') }}
                             </a>
                         @endcan
                     @endif
@@ -242,15 +242,13 @@
                         @php
                             $startDate = \Carbon\Carbon::parse($worker->currentWorkAssignment->started_at);
                             $today = \Carbon\Carbon::now();
-                            $daysWorked = max(1, (int) floor($startDate->diffInDays($today)) + 1); // Минимум 1 день
+                            $daysWorked = max(1, (int) floor($startDate->diffInDays($today)) + 1);
 
-                            // Формат для отображения
+                            // Format for display
                             if ($daysWorked == 1) {
-                                $workDuration = '1 ' . __('день');
-                            } elseif ($daysWorked >= 2 && $daysWorked <= 4) {
-                                $workDuration = $daysWorked . ' ' . __('дня');
+                                $workDuration = '1 ' . __('day');
                             } else {
-                                $workDuration = $daysWorked . ' ' . __('дней');
+                                $workDuration = $daysWorked . ' ' . __('days');
                             }
 
                             $createdBy = \App\Models\User::find($worker->currentWorkAssignment->created_by);
@@ -262,7 +260,7 @@
                                         <i class="ti ti-building"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Рабочее место') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Work Place') }}</p>
                                         <h5 class="mb-0 mt-1">{{ $worker->currentWorkAssignment->workPlace->name }}</h5>
                                     </div>
                                 </div>
@@ -273,9 +271,9 @@
                                         <i class="ti ti-briefcase"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Должность') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Position') }}</p>
                                         <h5 class="mb-0 mt-1">
-                                            {{ $worker->currentWorkAssignment->position->name ?? __('Не указана') }}
+                                            {{ $worker->currentWorkAssignment->position->name ?? __('Not specified') }}
                                         </h5>
                                     </div>
                                 </div>
@@ -286,7 +284,7 @@
                                         <i class="ti ti-calendar"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Дата устройства') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Employment Date') }}</p>
                                         <h5 class="mb-0 mt-1">
                                             {{ \Auth::user()->dateFormat($worker->currentWorkAssignment->started_at) }}
                                         </h5>
@@ -299,7 +297,7 @@
                                         <i class="ti ti-clock"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Время работы') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Work Duration') }}</p>
                                         <h5 class="mb-0 mt-1">{{ $workDuration }}</h5>
                                     </div>
                                 </div>
@@ -310,7 +308,7 @@
                                         <i class="ti ti-user-check"></i>
                                     </div>
                                     <div class="ms-2">
-                                        <p class="text-muted text-sm mb-0">{{ __('Устроен кем') }}</p>
+                                        <p class="text-muted text-sm mb-0">{{ __('Assigned By') }}</p>
                                         <h5 class="mb-0 mt-1">{{ $createdBy ? $createdBy->name : '-' }}</h5>
                                     </div>
                                 </div>
@@ -319,8 +317,8 @@
                     @else
                         <div class="text-center py-4">
                             <i class="ti ti-briefcase-off" style="font-size: 48px; opacity: 0.3;"></i>
-                            <h5 class="mt-3">{{ __('Работник не трудоустроен') }}</h5>
-                            <p class="text-muted">{{ __('Нажмите "Устроить" чтобы назначить рабочее место') }}</p>
+                            <h5 class="mt-3">{{ __('Worker is not employed') }}</h5>
+                            <p class="text-muted">{{ __('Click "Assign" to assign a workplace') }}</p>
                         </div>
                     @endif
                 </div>
@@ -333,15 +331,15 @@
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="ti ti-timeline me-2"></i>{{ __('Активность работника') }}
+                            <i class="ti ti-timeline me-2"></i>{{ __('Worker Activity') }}
                         </h5>
                         <div class="d-flex align-items-center gap-2">
                             @if ($recentEvents->count() > 0)
-                                <span class="badge bg-primary">{{ $recentEvents->count() }} {{ __('событий') }}</span>
+                                <span class="badge bg-primary">{{ $recentEvents->count() }} {{ __('events') }}</span>
                             @endif
                             <a href="{{ route('audit.index', ['worker_id' => $worker->id]) }}"
                                 class="btn btn-sm btn-outline-primary">
-                                <i class="ti ti-list me-1"></i>{{ __('Просмотреть все события') }}
+                                <i class="ti ti-list me-1"></i>{{ __('View All Events') }}
                             </a>
                         </div>
                     </div>
@@ -372,13 +370,13 @@
                                                 <button class="btn btn-sm btn-link p-0 mt-2 text-decoration-none"
                                                     type="button" data-bs-toggle="collapse"
                                                     data-bs-target="#event-details-{{ $event->id }}">
-                                                    <i class="ti ti-chevron-down me-1"></i>{{ __('Показать детали') }}
+                                                    <i class="ti ti-chevron-down me-1"></i>{{ __('Show Details') }}
                                                 </button>
                                                 <div class="collapse mt-2" id="event-details-{{ $event->id }}">
                                                     <div class="card card-body bg-light p-2 small">
                                                         @if (!empty($event->old_values))
                                                             <div class="mb-2">
-                                                                <strong>{{ __('Старые значения') }}:</strong>
+                                                                <strong>{{ __('Old Values') }}:</strong>
                                                                 <div class="ms-2">
                                                                     @foreach ($event->old_values as $key => $value)
                                                                         <div>{{ ucfirst($key) }}:
@@ -389,7 +387,7 @@
                                                         @endif
                                                         @if (!empty($event->new_values))
                                                             <div>
-                                                                <strong>{{ __('Новые значения') }}:</strong>
+                                                                <strong>{{ __('New Values') }}:</strong>
                                                                 <div class="ms-2">
                                                                     @foreach ($event->new_values as $key => $value)
                                                                         <div>{{ ucfirst($key) }}:
@@ -409,8 +407,8 @@
                     @else
                         <div class="text-center py-4">
                             <i class="ti ti-timeline-event-x" style="font-size: 48px; opacity: 0.3;"></i>
-                            <h5 class="mt-3">{{ __('Нет активности') }}</h5>
-                            <p class="text-muted">{{ __('История действий работника пока пуста') }}</p>
+                            <h5 class="mt-3">{{ __('No Activity') }}</h5>
+                            <p class="text-muted">{{ __('Worker activity history is empty') }}</p>
                         </div>
                     @endif
                 </div>
@@ -424,7 +422,7 @@
             <div class="modal-dialog modal-md" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="assign-room-modal-label">{{ __('Заселить работника') }}</h5>
+                        <h5 class="modal-title" id="assign-room-modal-label">{{ __('Check In Worker') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form action="{{ route('worker.assign.room', $worker->id) }}" method="POST">
@@ -434,9 +432,9 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label for="hotel_id"
-                                            class="form-label">{{ __('Отель') }}</label><x-required></x-required>
+                                            class="form-label">{{ __('Hotel') }}</label><x-required></x-required>
                                         <select name="hotel_id" id="hotel_id" class="form-control" required>
-                                            <option value="" selected>{{ __('Выберите отель') }}</option>
+                                            <option value="" selected>{{ __('Select Hotel') }}</option>
                                             @foreach ($hotels as $id => $name)
                                                 <option value="{{ $id }}">{{ $name }}</option>
                                             @endforeach
@@ -446,9 +444,9 @@
                                 <div class="col-12 mt-3">
                                     <div class="form-group">
                                         <label for="room_id"
-                                            class="form-label">{{ __('Комната') }}</label><x-required></x-required>
+                                            class="form-label">{{ __('Room') }}</label><x-required></x-required>
                                         <select name="room_id" id="room_id" class="form-control" required disabled>
-                                            <option value="">{{ __('Сначала выберите отель') }}</option>
+                                            <option value="">{{ __('First select a hotel') }}</option>
                                         </select>
                                         <small class="form-text text-muted" id="room-capacity-info"></small>
                                     </div>
@@ -457,8 +455,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                            <button type="submit" class="btn btn-primary">{{ __('Заселить') }}</button>
+                                data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Check In') }}</button>
                         </div>
                     </form>
                 </div>
@@ -471,7 +469,7 @@
             <div class="modal-dialog modal-md" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="assign-work-modal-label">{{ __('Устроить работника') }}</h5>
+                        <h5 class="modal-title" id="assign-work-modal-label">{{ __('Assign Worker') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form action="{{ route('worker.assign.work', $worker->id) }}" method="POST">
@@ -481,9 +479,9 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label for="work_place_id"
-                                            class="form-label">{{ __('Рабочее место') }}</label><x-required></x-required>
+                                            class="form-label">{{ __('Work Place') }}</label><x-required></x-required>
                                         <select name="work_place_id" id="work_place_id" class="form-control" required>
-                                            <option value="" selected>{{ __('Выберите рабочее место') }}</option>
+                                            <option value="" selected>{{ __('Select Work Place') }}</option>
                                             @foreach ($workPlaces as $id => $name)
                                                 <option value="{{ $id }}">{{ $name }}</option>
                                             @endforeach
@@ -493,9 +491,9 @@
                                 <div class="col-12 mt-3">
                                     <div class="form-group">
                                         <label for="position_id"
-                                            class="form-label">{{ __('Должность') }}</label><x-required></x-required>
+                                            class="form-label">{{ __('Position') }}</label><x-required></x-required>
                                         <select name="position_id" id="position_id" class="form-control" required disabled>
-                                            <option value="">{{ __('Сначала выберите рабочее место') }}</option>
+                                            <option value="">{{ __('First select a work place') }}</option>
                                         </select>
                                         <small class="form-text text-muted" id="position-auto-info"></small>
                                     </div>
@@ -504,8 +502,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary"
-                                data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                            <button type="submit" class="btn btn-primary">{{ __('Устроить') }}</button>
+                                data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Assign') }}</button>
                         </div>
                     </form>
                 </div>
@@ -536,23 +534,23 @@
 
                                 if (rooms.length === 0) {
                                     roomSelect.append(
-                                        '<option value="">{{ __('Нет доступных комнат') }}</option>'
+                                        '<option value="">{{ __('No available rooms') }}</option>'
                                     );
                                     roomSelect.prop('disabled', true);
                                     return;
                                 }
 
                                 roomSelect.append(
-                                    '<option value="">{{ __('Выберите комнату') }}</option>');
+                                    '<option value="">{{ __('Select Room') }}</option>');
 
                                 rooms.forEach(function(room) {
-                                    var optionText = '{{ __('Комната') }} ' + room
+                                    var optionText = '{{ __('Room') }} ' + room
                                         .room_number +
                                         ' (' + room.occupancy_status +
-                                        ' {{ __('занято') }})';
+                                        ' {{ __('occupied') }})';
 
                                     if (room.is_full) {
-                                        optionText += ' - {{ __('Заполнено') }}';
+                                        optionText += ' - {{ __('Full') }}';
                                         roomSelect.append('<option value="' + room.id +
                                             '" disabled>' + optionText + '</option>');
                                     } else {
@@ -564,14 +562,14 @@
                             error: function() {
                                 roomSelect.empty();
                                 roomSelect.append(
-                                    '<option value="">{{ __('Ошибка загрузки комнат') }}</option>'
+                                    '<option value="">{{ __('Error loading rooms') }}</option>'
                                 );
                                 roomSelect.prop('disabled', true);
                             }
                         });
                     } else {
                         roomSelect.empty();
-                        roomSelect.append('<option value="">{{ __('Сначала выберите отель') }}</option>');
+                        roomSelect.append('<option value="">{{ __('First select a hotel') }}</option>');
                         roomSelect.prop('disabled', true);
                         capacityInfo.text('');
                     }
@@ -582,7 +580,7 @@
                     var capacityInfo = $('#room-capacity-info');
 
                     if ($(this).val() && !selectedOption.is(':disabled')) {
-                        capacityInfo.text('{{ __('Комната доступна для заселения') }}');
+                        capacityInfo.text('{{ __('Room is available for check-in') }}');
                         capacityInfo.removeClass('text-danger').addClass('text-success');
                     } else {
                         capacityInfo.text('');
@@ -598,7 +596,7 @@
                     if (workPlaceId) {
                         positionSelect.prop('disabled', true);
                         positionSelect.empty();
-                        positionSelect.append('<option value="">{{ __('Загрузка...') }}</option>');
+                        positionSelect.append('<option value="">{{ __('Loading...') }}</option>');
                         positionInfo.text('');
 
                         $.ajax({
@@ -608,17 +606,17 @@
                                 positionSelect.empty();
                                 
                                 if (positions.length === 0) {
-                                    positionSelect.append('<option value="">{{ __('Нет должностей') }}</option>');
-                                    positionInfo.text('{{ __('Сначала создайте должности для этого рабочего места') }}');
+                                    positionSelect.append('<option value="">{{ __('No positions') }}</option>');
+                                    positionInfo.text('{{ __('First create positions for this work place') }}');
                                     positionInfo.removeClass('text-success').addClass('text-warning');
                                 } else if (positions.length === 1) {
                                     // Auto-select if only one position
                                     positionSelect.append('<option value="' + positions[0].id + '" selected>' + positions[0].name + '</option>');
-                                    positionInfo.text('{{ __('Должность выбрана автоматически') }}');
+                                    positionInfo.text('{{ __('Position selected automatically') }}');
                                     positionInfo.removeClass('text-warning').addClass('text-success');
                                     positionSelect.prop('disabled', false);
                                 } else {
-                                    positionSelect.append('<option value="">{{ __('Выберите должность') }}</option>');
+                                    positionSelect.append('<option value="">{{ __('Select Position') }}</option>');
                                     $.each(positions, function(i, position) {
                                         positionSelect.append('<option value="' + position.id + '">' + position.name + '</option>');
                                     });
@@ -628,13 +626,13 @@
                             },
                             error: function() {
                                 positionSelect.empty();
-                                positionSelect.append('<option value="">{{ __('Ошибка загрузки') }}</option>');
+                                positionSelect.append('<option value="">{{ __('Loading error') }}</option>');
                                 positionInfo.text('');
                             }
                         });
                     } else {
                         positionSelect.empty();
-                        positionSelect.append('<option value="">{{ __('Сначала выберите рабочее место') }}</option>');
+                        positionSelect.append('<option value="">{{ __('First select a work place') }}</option>');
                         positionSelect.prop('disabled', true);
                         positionInfo.text('');
                     }

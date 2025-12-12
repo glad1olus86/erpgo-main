@@ -3,7 +3,7 @@
     <div class="row mb-3">
         <div class="col-12">
             <div class="form-group mb-0">
-                <input type="text" id="export-search" class="form-control" placeholder="{{ __('Поиск по названию...') }}">
+                <input type="text" id="export-search" class="form-control" placeholder="{{ __('Search by name...') }}">
             </div>
         </div>
     </div>
@@ -13,7 +13,7 @@
         <div class="col-12">
             <div class="form-check">
                 <input type="checkbox" class="form-check-input" id="export-select-all">
-                <label class="form-check-label fw-bold" for="export-select-all">{{ __('Выбрать все') }}</label>
+                <label class="form-check-label fw-bold" for="export-select-all">{{ __('Select All') }}</label>
             </div>
         </div>
     </div>
@@ -24,9 +24,9 @@
             <thead class="sticky-top bg-white">
                 <tr>
                     <th style="width: 40px;"></th>
-                    <th>{{ __('Название') }}</th>
-                    <th>{{ __('Адрес') }}</th>
-                    <th>{{ __('Комнат') }}</th>
+                    <th>{{ __('Name') }}</th>
+                    <th>{{ __('Address') }}</th>
+                    <th>{{ __('Rooms') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,25 +51,25 @@
     {{-- Selected Count --}}
     <div class="row mt-3">
         <div class="col-12">
-            <span class="fw-bold">{{ __('Выбрано:') }} <span id="export-selected-count">0</span></span>
+            <span class="fw-bold">{{ __('Selected:') }} <span id="export-selected-count">0</span></span>
         </div>
     </div>
 </div>
 
 <div class="modal-footer">
-    <input type="button" value="{{ __('Отменить') }}" class="btn btn-light" data-bs-dismiss="modal">
+    <input type="button" value="{{ __('Cancel') }}" class="btn btn-light" data-bs-dismiss="modal">
     
     <form id="export-pdf-form" method="POST" action="{{ route('hotel.export.pdf') }}" class="d-inline">
         @csrf
         <button type="submit" class="btn btn-danger" id="export-pdf-btn" disabled>
-            <i class="ti ti-file-type-pdf me-1"></i>{{ __('Экспорт в PDF') }}
+            <i class="ti ti-file-type-pdf me-1"></i>{{ __('Export to PDF') }}
         </button>
     </form>
     
     <form id="export-excel-form" method="POST" action="{{ route('hotel.export.excel') }}" class="d-inline">
         @csrf
         <button type="submit" class="btn btn-success" id="export-excel-btn" disabled>
-            <i class="ti ti-file-spreadsheet me-1"></i>{{ __('Экспорт в Excel') }}
+            <i class="ti ti-file-spreadsheet me-1"></i>{{ __('Export to Excel') }}
         </button>
     </form>
 </div>

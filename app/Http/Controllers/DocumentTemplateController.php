@@ -6,6 +6,7 @@ use App\Models\DocumentTemplate;
 use App\Services\DocumentTemplateService;
 use App\Services\DocumentGeneratorService;
 use App\Services\DocumentAuditService;
+use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,7 +32,7 @@ class DocumentTemplateController extends Controller
     public function index()
     {
         if (!Auth::user()->can('document_template_read')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         $templates = $this->templateService->getAll();
@@ -45,7 +46,14 @@ class DocumentTemplateController extends Controller
     public function create()
     {
         if (!Auth::user()->can('document_template_create')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
+        }
+        
+        // Check plan limit
+        if (!PlanLimitService::canCreateDocumentTemplate()) {
+            $limitInfo = PlanLimitService::getLimitInfo();
+            $limit = $limitInfo['document_templates']['limit'];
+            return redirect()->back()->with('error', __('You have reached the maximum number of document templates (:limit) allowed by your plan. Please upgrade your plan.', ['limit' => $limit]));
         }
 
         $variables = $this->generatorService->getAvailableVariables();
@@ -59,7 +67,14 @@ class DocumentTemplateController extends Controller
     public function store(Request $request)
     {
         if (!Auth::user()->can('document_template_create')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
+        }
+        
+        // Check plan limit
+        if (!PlanLimitService::canCreateDocumentTemplate()) {
+            $limitInfo = PlanLimitService::getLimitInfo();
+            $limit = $limitInfo['document_templates']['limit'];
+            return redirect()->back()->with('error', __('You have reached the maximum number of document templates (:limit) allowed by your plan. Please upgrade your plan.', ['limit' => $limit]));
         }
 
         $request->validate([
@@ -73,7 +88,7 @@ class DocumentTemplateController extends Controller
         $this->auditService->logTemplateCreated($template);
 
         return redirect()->route('documents.index')
-            ->with('success', __('Шаблон успешно создан'));
+            ->with('success', __('Template successfully created'));
     }
 
     /**
@@ -82,12 +97,12 @@ class DocumentTemplateController extends Controller
     public function edit(DocumentTemplate $template)
     {
         if (!Auth::user()->can('document_template_edit')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($template->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Шаблон не найден'));
+            return redirect()->back()->with('error', __('Template not found'));
         }
 
         $variables = $this->generatorService->getAvailableVariables();
@@ -101,12 +116,12 @@ class DocumentTemplateController extends Controller
     public function update(Request $request, DocumentTemplate $template)
     {
         if (!Auth::user()->can('document_template_edit')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($template->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Шаблон не найден'));
+            return redirect()->back()->with('error', __('Template not found'));
         }
 
         $request->validate([
@@ -121,7 +136,7 @@ class DocumentTemplateController extends Controller
         $this->auditService->logTemplateUpdated($template, $oldValues);
 
         return redirect()->route('documents.index')
-            ->with('success', __('Шаблон успешно обновлен'));
+            ->with('success', __('Template successfully updated'));
     }
 
     /**
@@ -130,18 +145,18 @@ class DocumentTemplateController extends Controller
     public function destroy(DocumentTemplate $template)
     {
         if (!Auth::user()->can('document_template_delete')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($template->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Шаблон не найден'));
+            return redirect()->back()->with('error', __('Template not found'));
         }
 
         $this->auditService->logTemplateDeleted($template);
         $this->templateService->delete($template);
 
         return redirect()->route('documents.index')
-            ->with('success', __('Шаблон успешно удален'));
+            ->with('success', __('Template successfully deleted'));
     }
 }

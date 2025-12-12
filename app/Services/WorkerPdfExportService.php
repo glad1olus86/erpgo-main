@@ -97,14 +97,14 @@ class WorkerPdfExportService
         $diff = $start->diff(now());
 
         if ($diff->y > 0) {
-            return $diff->y . ' г. ' . $diff->m . ' мес.';
+            return $diff->y . ' ' . __('y.') . ' ' . $diff->m . ' ' . __('mo.');
         }
 
         if ($diff->m > 0) {
-            return $diff->m . ' мес. ' . $diff->d . ' дн.';
+            return $diff->m . ' ' . __('mo.') . ' ' . $diff->d . ' ' . __('d.');
         }
 
-        return $diff->d . ' дн.';
+        return $diff->d . ' ' . __('d.');
     }
 
     /**
@@ -113,8 +113,8 @@ class WorkerPdfExportService
     protected function formatGender(?string $gender): string
     {
         return match ($gender) {
-            'male' => 'Мужчина',
-            'female' => 'Женщина',
+            'male' => __('Male'),
+            'female' => __('Female'),
             default => '-',
         };
     }

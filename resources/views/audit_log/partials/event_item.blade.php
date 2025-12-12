@@ -15,14 +15,14 @@
         @if (!empty($log->old_values) || !empty($log->new_values))
             <button class="btn btn-xs btn-link p-0" type="button" data-bs-toggle="collapse"
                 data-bs-target="#collapse-{{ $log->id }}" aria-expanded="false">
-                {{ __('Показать детали') }} <i class="ti ti-chevron-down"></i>
+                {{ __('Show details') }} <i class="ti ti-chevron-down"></i>
             </button>
             <div class="collapse mt-2" id="collapse-{{ $log->id }}">
                 <div class="card card-body bg-light mb-0 p-2">
                     <div class="row">
                         @if (!empty($log->old_values))
                             <div class="col-md-6">
-                                <strong class="text-danger d-block mb-1">{{ __('Было:') }}</strong>
+                                <strong class="text-danger d-block mb-1">{{ __('Was:') }}</strong>
                                 <ul class="list-unstyled mb-0 small">
                                     @foreach ($log->old_values as $key => $val)
                                         <li><span class="text-muted">{{ $key }}:</span>
@@ -33,7 +33,7 @@
                         @endif
                         @if (!empty($log->new_values))
                             <div class="col-md-6">
-                                <strong class="text-success d-block mb-1">{{ __('Стало:') }}</strong>
+                                <strong class="text-success d-block mb-1">{{ __('Became:') }}</strong>
                                 <ul class="list-unstyled mb-0 small">
                                     @foreach ($log->new_values as $key => $val)
                                         <li><span class="text-muted">{{ $key }}:</span>

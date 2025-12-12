@@ -19,48 +19,48 @@ class DocumentGeneratorService
      * Worker variables mapping
      */
     const WORKER_VARIABLES = [
-        '{worker_name}' => 'Имя работника',
-        '{worker_surname}' => 'Фамилия работника',
-        '{worker_full_name}' => 'Полное имя',
-        '{worker_phone}' => 'Телефон',
+        '{worker_name}' => 'Worker first name',
+        '{worker_surname}' => 'Worker last name',
+        '{worker_full_name}' => 'Full name',
+        '{worker_phone}' => 'Phone',
         '{worker_email}' => 'Email',
-        '{worker_birth_date}' => 'Дата рождения',
-        '{worker_nationality}' => 'Национальность',
-        '{worker_gender}' => 'Пол',
+        '{worker_birth_date}' => 'Date of birth',
+        '{worker_nationality}' => 'Nationality',
+        '{worker_gender}' => 'Gender',
     ];
 
     /**
      * Company variables mapping
      */
     const COMPANY_VARIABLES = [
-        '{company_name}' => 'Название компании',
-        '{company_address}' => 'Адрес компании',
-        '{company_ico}' => 'IČO компании',
-        '{company_phone}' => 'Телефон компании',
-        '{company_bank_account}' => 'Банковский счёт компании',
-        '{current_date}' => 'Текущая дата',
-        '{current_date_full}' => 'Дата прописью',
+        '{company_name}' => 'Company name',
+        '{company_address}' => 'Company address',
+        '{company_ico}' => 'Company IČO',
+        '{company_phone}' => 'Company phone',
+        '{company_bank_account}' => 'Company bank account',
+        '{current_date}' => 'Current date',
+        '{current_date_full}' => 'Date in words',
     ];
 
     /**
      * Assignment variables mapping
      */
     const ASSIGNMENT_VARIABLES = [
-        '{hotel_name}' => 'Название отеля',
-        '{hotel_address}' => 'Адрес отеля',
-        '{room_number}' => 'Номер комнаты',
-        '{work_place_name}' => 'Рабочее место',
-        '{work_place_address}' => 'Адрес рабочего места',
-        '{work_place_position}' => 'Должность',
-        '{check_in_date}' => 'Дата заселения',
-        '{employment_in_date}' => 'Дата устройства на работу',
+        '{hotel_name}' => 'Hotel name',
+        '{hotel_address}' => 'Hotel address',
+        '{room_number}' => 'Room number',
+        '{work_place_name}' => 'Work place',
+        '{work_place_address}' => 'Work place address',
+        '{work_place_position}' => 'Position',
+        '{check_in_date}' => 'Check-in date',
+        '{employment_in_date}' => 'Employment start date',
     ];
     
     /**
      * Dynamic variables (user input required)
      */
     const DYNAMIC_VARIABLES = [
-        '{choose_date}' => 'Выбор даты (пользовательский ввод)',
+        '{choose_date}' => 'Date selection (user input)',
     ];
 
     /**

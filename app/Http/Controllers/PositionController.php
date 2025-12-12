@@ -15,12 +15,12 @@ class PositionController extends Controller
     public function index(WorkPlace $workPlace)
     {
         if (!Auth::user()->can('manage work place')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($workPlace->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Рабочее место не найдено'));
+            return redirect()->back()->with('error', __('Work place not found'));
         }
 
         $positions = $workPlace->positions()
@@ -37,12 +37,12 @@ class PositionController extends Controller
     public function store(Request $request, WorkPlace $workPlace)
     {
         if (!Auth::user()->can('manage work place')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($workPlace->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Рабочее место не найдено'));
+            return redirect()->back()->with('error', __('Work place not found'));
         }
 
         $request->validate([
@@ -55,26 +55,37 @@ class PositionController extends Controller
             'created_by' => Auth::user()->creatorId(),
         ]);
 
-        return redirect()->back()->with('success', __('Должность создана'));
+        // Handle mobile redirect
+        if ($request->has('redirect_to') && str_starts_with($request->redirect_to, 'mobile_workplace_')) {
+            return redirect()->route('mobile.workplaces.show', $workPlace->id)->with('success', __('Position created'));
+        }
+
+        return redirect()->back()->with('success', __('Position created'));
     }
 
     /**
      * Delete a position
      */
-    public function destroy(Position $position)
+    public function destroy(Request $request, Position $position)
     {
         if (!Auth::user()->can('manage work place')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($position->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Должность не найдена'));
+            return redirect()->back()->with('error', __('Position not found'));
         }
 
+        $workPlaceId = $position->work_place_id;
         $position->delete();
 
-        return redirect()->back()->with('success', __('Должность удалена'));
+        // Handle mobile redirect
+        if ($request->has('redirect_to') && str_starts_with($request->redirect_to, 'mobile_workplace_')) {
+            return redirect()->route('mobile.workplaces.show', $workPlaceId)->with('success', __('Position deleted'));
+        }
+
+        return redirect()->back()->with('success', __('Position deleted'));
     }
 
     /**
@@ -84,11 +95,11 @@ class PositionController extends Controller
     {
         // Allow access for users who can manage workers or work places
         if (!Auth::user()->can('manage work place') && !Auth::user()->can('manage worker')) {
-            return response()->json(['error' => __('Недостаточно прав')], 403);
+            return response()->json(['error' => __('Insufficient permissions')], 403);
         }
 
         if ($workPlace->created_by !== Auth::user()->creatorId()) {
-            return response()->json(['error' => __('Рабочее место не найдено')], 404);
+            return response()->json(['error' => __('Work place not found')], 404);
         }
 
         $positions = $workPlace->positions()->orderBy('name')->get(['id', 'name']);
@@ -102,12 +113,12 @@ class PositionController extends Controller
     public function showWorkers(Position $position)
     {
         if (!Auth::user()->can('manage work place')) {
-            return response()->json(['error' => __('Недостаточно прав')], 403);
+            return response()->json(['error' => __('Insufficient permissions')], 403);
         }
 
         // Multi-tenancy check
         if ($position->created_by !== Auth::user()->creatorId()) {
-            return response()->json(['error' => __('Должность не найдена')], 404);
+            return response()->json(['error' => __('Position not found')], 404);
         }
 
         $position->load(['workPlace', 'currentAssignments.worker']);
@@ -121,12 +132,12 @@ class PositionController extends Controller
     public function assignWorkers(Request $request, Position $position)
     {
         if (!Auth::user()->can('manage work place')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($position->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Должность не найдена'));
+            return redirect()->back()->with('error', __('Position not found'));
         }
 
         $request->validate([
@@ -156,7 +167,7 @@ class PositionController extends Controller
             $assigned++;
         }
 
-        return redirect()->back()->with('success', __('Устроено работников: :count', ['count' => $assigned]));
+        return redirect()->back()->with('success', __('Workers assigned: :count', ['count' => $assigned]));
     }
 
     /**
@@ -165,12 +176,12 @@ class PositionController extends Controller
     public function dismissWorkers(Request $request, Position $position)
     {
         if (!Auth::user()->can('manage work place')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check
         if ($position->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Должность не найдена'));
+            return redirect()->back()->with('error', __('Position not found'));
         }
 
         $request->validate([
@@ -193,6 +204,6 @@ class PositionController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', __('Уволено работников: :count', ['count' => $dismissed]));
+        return redirect()->back()->with('success', __('Workers dismissed: :count', ['count' => $dismissed]));
     }
 }

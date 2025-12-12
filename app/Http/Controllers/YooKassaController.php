@@ -114,7 +114,7 @@ class YooKassaController extends Controller
                                 'return_url' => route('plan.yookassa.status', [$plan->id, 'order_id' => $orderID, 'price' => $get_amount, 'coupon' => $request->coupon]),
                             ),
                             'capture' => true,
-                            'description' => 'Заказ №1',
+                            'description' => 'Order #1',
                         ),
                         uniqid('', true)
                     );
@@ -279,7 +279,7 @@ class YooKassaController extends Controller
                                 ]),
                             ),
                             'capture' => true,
-                            'description' => 'Заказ №1',
+                            'description' => 'Order #1',
                         ),
                         uniqid('', true)
                     );

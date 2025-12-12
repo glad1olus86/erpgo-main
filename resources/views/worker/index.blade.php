@@ -1,26 +1,26 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Управление работниками') }}
+    {{ __('Worker Management') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Работники') }}</li>
+    <li class="breadcrumb-item">{{ __('Workers') }}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
         @can('document_generate')
             <a href="#" id="bulk-generate-doc-btn"
-                data-bs-toggle="tooltip" title="{{ __('Генерация документов') }}"
+                data-bs-toggle="tooltip" title="{{ __('Document Generation') }}"
                 class="btn btn-sm btn-info me-1">
                 <i class="ti ti-file-text"></i>
             </a>
         @endcan
         @can('manage worker')
             <a href="#" data-url="{{ route('worker.export.modal') }}" data-ajax-popup="true"
-                data-title="{{ __('Экспорт работников') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
+                data-title="{{ __('Export Workers') }}" data-bs-toggle="tooltip" title="{{ __('Export') }}"
                 data-size="lg"
                 class="btn btn-sm btn-secondary me-1">
                 <i class="ti ti-file-export"></i>
@@ -28,7 +28,7 @@
         @endcan
         @can('create worker')
             <a href="#" data-url="{{ route('worker.create') }}" data-ajax-popup="true"
-                data-title="{{ __('Добавить нового работника') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"
+                data-title="{{ __('Add New Worker') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
                 class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
@@ -56,28 +56,28 @@
                     {{-- Bulk Actions Panel --}}
                     <div id="bulk-actions-panel" class="mb-3 p-3 bg-light rounded" style="display: none;">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="fw-bold"><span id="selected-count">0</span> {{ __('выбрано') }}</span>
+                            <span class="fw-bold"><span id="selected-count">0</span> {{ __('selected') }}</span>
                             <div class="vr mx-2"></div>
                             @can('manage work place')
                                 <button type="button" class="btn btn-sm btn-success" id="bulk-assign-btn">
-                                    <i class="ti ti-briefcase me-1"></i>{{ __('Устроить на работу') }}
+                                    <i class="ti ti-briefcase me-1"></i>{{ __('Assign to Work') }}
                                 </button>
                                 <button type="button" class="btn btn-sm btn-warning" id="bulk-dismiss-btn">
-                                    <i class="ti ti-user-off me-1"></i>{{ __('Уволить') }}
+                                    <i class="ti ti-user-off me-1"></i>{{ __('Dismiss') }}
                                 </button>
                             @endcan
                             @can('manage worker')
                                 <button type="button" class="btn btn-sm btn-danger" id="bulk-checkout-btn">
-                                    <i class="ti ti-door-exit me-1"></i>{{ __('Выселить') }}
+                                    <i class="ti ti-door-exit me-1"></i>{{ __('Check Out') }}
                                 </button>
                             @endcan
                             @can('document_generate')
                                 <button type="button" class="btn btn-sm btn-info bulk-generate-doc-btn">
-                                    <i class="ti ti-file-text me-1"></i>{{ __('Документ') }}
+                                    <i class="ti ti-file-text me-1"></i>{{ __('Document') }}
                                 </button>
                             @endcan
                             <button type="button" class="btn btn-sm btn-secondary" id="bulk-clear-btn">
-                                <i class="ti ti-x me-1"></i>{{ __('Снять выделение') }}
+                                <i class="ti ti-x me-1"></i>{{ __('Clear Selection') }}
                             </button>
                         </div>
                     </div>
@@ -91,13 +91,13 @@
                                             <input type="checkbox" class="form-check-input" id="select-all-checkbox">
                                         </div>
                                     </th>
-                                    <th>{{ __('Имя') }}</th>
-                                    <th>{{ __('Фамилия') }}</th>
-                                    <th>{{ __('Дата рождения') }}</th>
-                                    <th>{{ __('Пол') }}</th>
-                                    <th>{{ __('Национальность') }}</th>
-                                    <th>{{ __('Дата регистрации') }}</th>
-                                    <th>{{ __('Действие') }}</th>
+                                    <th>{{ __('First Name') }}</th>
+                                    <th>{{ __('Last Name') }}</th>
+                                    <th>{{ __('Date of Birth') }}</th>
+                                    <th>{{ __('Gender') }}</th>
+                                    <th>{{ __('Nationality') }}</th>
+                                    <th>{{ __('Registration Date') }}</th>
+                                    <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,7 +125,7 @@
                                             </a>
                                         </td>
                                         <td>{{ \Auth::user()->dateFormat($worker->dob) }}</td>
-                                        <td>{{ $worker->gender == 'male' ? __('Мужчина') : __('Женщина') }}</td>
+                                        <td>{{ $worker->gender == 'male' ? __('Male') : __('Female') }}</td>
                                         <td>{{ $worker->nationality }}</td>
                                         <td>{{ \Auth::user()->dateFormat($worker->registration_date) }}</td>
                                         <td class="Action">
@@ -134,9 +134,9 @@
                                                     <div class="action-btn me-2">
                                                         <a href="#" data-url="{{ route('worker.edit', $worker->id) }}"
                                                             data-ajax-popup="true"
-                                                            data-title="{{ __('Редактировать работника') }}"
+                                                            data-title="{{ __('Edit Worker') }}"
                                                             class="mx-3 btn btn-sm align-items-center bg-info"
-                                                            data-bs-toggle="tooltip" title="{{ __('Редактировать') }}">
+                                                            data-bs-toggle="tooltip" title="{{ __('Edit') }}">
                                                             <i class="ti ti-pencil text-white"></i>
                                                         </a>
                                                     </div>
@@ -150,8 +150,8 @@
                                                         ]) !!}
                                                         <a href="#"
                                                             class="mx-3 btn btn-sm align-items-center bs-pass-para bg-danger"
-                                                            data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
-                                                            data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить. Вы хотите продолжить?') }}"
+                                                            data-bs-toggle="tooltip" title="{{ __('Delete') }}"
+                                                            data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
                                                             data-confirm-yes="document.getElementById('delete-form-{{ $worker->id }}').submit();">
                                                             <i class="ti ti-trash text-white"></i>
                                                         </a>
@@ -161,7 +161,7 @@
                                                 <div class="action-btn ms-2">
                                                     <a href="{{ route('worker.show', $worker->id) }}"
                                                         class="mx-3 btn btn-sm align-items-center bg-warning"
-                                                        data-bs-toggle="tooltip" title="{{ __('Просмотреть') }}">
+                                                        data-bs-toggle="tooltip" title="{{ __('View') }}">
                                                         <i class="ti ti-eye text-white"></i>
                                                     </a>
                                                 </div>
@@ -182,7 +182,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Устроить на работу') }}</h5>
+                    <h5 class="modal-title">{{ __('Assign to Work') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="bulk-assign-form" method="POST" action="{{ route('worker.bulk.assign') }}">
@@ -191,19 +191,19 @@
                         <input type="hidden" name="worker_ids" id="assign-worker-ids">
                         
                         <div id="assign-already-working" class="mb-3" style="display: none;">
-                            <label class="form-label text-warning"><i class="ti ti-alert-triangle me-1"></i>{{ __('Уже работают (будут пропущены):') }}</label>
+                            <label class="form-label text-warning"><i class="ti ti-alert-triangle me-1"></i>{{ __('Already working (will be skipped):') }}</label>
                             <div id="assign-already-working-list" class="text-muted small"></div>
                         </div>
                         
                         <div id="assign-will-be-assigned" class="mb-3">
-                            <label class="form-label text-success"><i class="ti ti-check me-1"></i>{{ __('Будут устроены:') }}</label>
+                            <label class="form-label text-success"><i class="ti ti-check me-1"></i>{{ __('Will be assigned:') }}</label>
                             <div id="assign-workers-list" class="text-muted small"></div>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">{{ __('Рабочее место') }}</label>
+                            <label class="form-label">{{ __('Work Place') }}</label>
                             <select name="work_place_id" class="form-control" required>
-                                <option value="">{{ __('Выберите рабочее место') }}</option>
+                                <option value="">{{ __('Select Work Place') }}</option>
                                 @php
                                     $workPlaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
                                 @endphp
@@ -214,8 +214,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-success" id="assign-submit-btn">{{ __('Устроить') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-success" id="assign-submit-btn">{{ __('Assign') }}</button>
                     </div>
                 </form>
             </div>
@@ -227,7 +227,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Уволить работников') }}</h5>
+                    <h5 class="modal-title">{{ __('Dismiss Workers') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="bulk-dismiss-form" method="POST" action="{{ route('worker.bulk.dismiss') }}">
@@ -236,23 +236,23 @@
                         <input type="hidden" name="worker_ids" id="dismiss-worker-ids">
                         
                         <div id="dismiss-not-working" class="mb-3" style="display: none;">
-                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Не работают (будут пропущены):') }}</label>
+                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Not working (will be skipped):') }}</label>
                             <div id="dismiss-not-working-list" class="text-muted small"></div>
                         </div>
                         
                         <div id="dismiss-will-be-fired" class="mb-3">
-                            <label class="form-label text-warning"><i class="ti ti-user-off me-1"></i>{{ __('Будут уволены:') }}</label>
+                            <label class="form-label text-warning"><i class="ti ti-user-off me-1"></i>{{ __('Will be dismissed:') }}</label>
                             <div id="dismiss-workers-list" class="text-muted small"></div>
                         </div>
                         
                         <div class="alert alert-warning">
                             <i class="ti ti-alert-triangle me-1"></i>
-                            {{ __('Работники будут уволены с текущего места работы.') }}
+                            {{ __('Workers will be dismissed from their current workplace.') }}
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-warning" id="dismiss-submit-btn">{{ __('Уволить') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-warning" id="dismiss-submit-btn">{{ __('Dismiss') }}</button>
                     </div>
                 </form>
             </div>
@@ -264,7 +264,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Выселить работников') }}</h5>
+                    <h5 class="modal-title">{{ __('Check Out Workers') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="bulk-checkout-form" method="POST" action="{{ route('worker.bulk.checkout') }}">
@@ -273,23 +273,23 @@
                         <input type="hidden" name="worker_ids" id="checkout-worker-ids">
                         
                         <div id="checkout-not-housed" class="mb-3" style="display: none;">
-                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Не проживают (будут пропущены):') }}</label>
+                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Not housed (will be skipped):') }}</label>
                             <div id="checkout-not-housed-list" class="text-muted small"></div>
                         </div>
                         
                         <div id="checkout-will-be-evicted" class="mb-3">
-                            <label class="form-label text-danger"><i class="ti ti-door-exit me-1"></i>{{ __('Будут выселены:') }}</label>
+                            <label class="form-label text-danger"><i class="ti ti-door-exit me-1"></i>{{ __('Will be checked out:') }}</label>
                             <div id="checkout-workers-list" class="text-muted small"></div>
                         </div>
                         
                         <div class="alert alert-danger">
                             <i class="ti ti-alert-triangle me-1"></i>
-                            {{ __('Работники будут выселены из текущего места проживания.') }}
+                            {{ __('Workers will be checked out from their current accommodation.') }}
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-danger" id="checkout-submit-btn">{{ __('Выселить') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-danger" id="checkout-submit-btn">{{ __('Check Out') }}</button>
                     </div>
                 </form>
             </div>
@@ -301,7 +301,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Генерация документов') }}</h5>
+                    <h5 class="modal-title">{{ __('Document Generation') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="bulk-document-form" method="POST" action="{{ route('worker.bulk.generate-documents') }}">
@@ -311,9 +311,9 @@
                         
                         {{-- Worker selection (shown when no bulk selection) --}}
                         <div class="form-group mb-3" id="doc-worker-select-group">
-                            <label class="form-label">{{ __('Работник') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Worker') }} <span class="text-danger">*</span></label>
                             <select name="single_worker_id" id="doc-single-worker" class="form-control">
-                                <option value="">{{ __('Выберите работника') }}</option>
+                                <option value="">{{ __('Select Worker') }}</option>
                                 @foreach ($workers as $worker)
                                     <option value="{{ $worker->id }}">{{ $worker->first_name }} {{ $worker->last_name }}</option>
                                 @endforeach
@@ -322,15 +322,15 @@
                         
                         {{-- Selected workers info (shown when bulk selection) --}}
                         <div class="mb-3" id="doc-selected-workers-info" style="display: none;">
-                            <label class="form-label text-info"><i class="ti ti-users me-1"></i>{{ __('Выбранные работники:') }}</label>
+                            <label class="form-label text-info"><i class="ti ti-users me-1"></i>{{ __('Selected Workers:') }}</label>
                             <div id="doc-selected-workers-list" class="text-muted small"></div>
                         </div>
                         
                         {{-- Template selection --}}
                         <div class="form-group mb-3">
-                            <label class="form-label">{{ __('Шаблон документа') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Document Template') }} <span class="text-danger">*</span></label>
                             <select name="template_id" id="doc-template-select" class="form-control" required>
-                                <option value="">{{ __('Выберите шаблон') }}</option>
+                                <option value="">{{ __('Select Template') }}</option>
                                 @php
                                     $templates = \App\Models\DocumentTemplate::where('created_by', Auth::user()->creatorId())
                                         ->where('is_active', true)
@@ -348,7 +348,7 @@
                         
                         {{-- Format selection --}}
                         <div class="form-group">
-                            <label class="form-label">{{ __('Формат') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('Format') }} <span class="text-danger">*</span></label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="format" id="format-pdf" value="pdf" checked>
@@ -372,9 +372,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                         <button type="submit" class="btn btn-info" id="doc-generate-btn">
-                            <i class="ti ti-download me-1"></i>{{ __('Сгенерировать') }}
+                            <i class="ti ti-download me-1"></i>{{ __('Generate') }}
                         </button>
                     </div>
                 </form>
@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('assign-submit-btn').disabled = false;
         } else {
             willBeAssignedDiv.style.display = 'none';
-            document.getElementById('assign-workers-list').innerHTML = '<span class="text-muted">{{ __("Нет работников для устройства") }}</span>';
+            document.getElementById('assign-workers-list').innerHTML = '<span class="text-muted">{{ __("No workers to assign") }}</span>';
             document.getElementById('assign-submit-btn').disabled = true;
         }
         
@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('dismiss-submit-btn').disabled = false;
         } else {
             willBeFiredDiv.style.display = 'none';
-            document.getElementById('dismiss-workers-list').innerHTML = '<span class="text-muted">{{ __("Нет работников для увольнения") }}</span>';
+            document.getElementById('dismiss-workers-list').innerHTML = '<span class="text-muted">{{ __("No workers to dismiss") }}</span>';
             document.getElementById('dismiss-submit-btn').disabled = true;
         }
         
@@ -569,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('checkout-submit-btn').disabled = false;
         } else {
             willBeEvictedDiv.style.display = 'none';
-            document.getElementById('checkout-workers-list').innerHTML = '<span class="text-muted">{{ __("Нет работников для выселения") }}</span>';
+            document.getElementById('checkout-workers-list').innerHTML = '<span class="text-muted">{{ __("No workers to check out") }}</span>';
             document.getElementById('checkout-submit-btn').disabled = true;
         }
         
@@ -661,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(function(response) { return response.json(); })
                 .then(function(data) {
                     if (data.fields && data.fields.length > 0) {
-                        var html = '<div class="mb-3"><label class="form-label">{{ __("Дополнительные поля") }}</label>';
+                        var html = '<div class="mb-3"><label class="form-label">{{ __("Additional Fields") }}</label>';
                         data.fields.forEach(function(field) {
                             html += '<div class="mb-2">';
                             html += '<label class="form-label small">' + field.label + '</label>';

@@ -57,7 +57,16 @@
     var site_currency_symbol = '{{ $setting['site_currency_symbol'] }}';
 
 </script>
-<script src="{{ asset('js/custom.js') }}"></script>
+<script>
+    // DataTables translations
+    var dtLabels = {
+        placeholder: "{{ __('Search...') }}",
+        perPage: "{{ __('entries per page') }}",
+        noRows: "{{ __('No entries found') }}",
+        info: "{{ __('Showing {start} to {end} of {rows} entries') }}"
+    };
+</script>
+<script src="{{ asset('js/custom.js') }}?v={{ time() }}"></script>
 
 @if($message = Session::get('success'))
     <script>
@@ -134,7 +143,7 @@
             });
             notificationList.innerHTML = html;
         } else {
-            notificationList.innerHTML = '<div class="text-center py-3 text-muted"><i class="ti ti-bell-off"></i> {{ __("Нет уведомлений") }}</div>';
+            notificationList.innerHTML = '<div class="text-center py-3 text-muted"><i class="ti ti-bell-off"></i> {{ __("No notifications") }}</div>';
         }
     }
 

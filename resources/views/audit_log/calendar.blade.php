@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Календарь аудита') }}
+    {{ __('Audit Calendar') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('audit.index') }}">{{ __('Аудит') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Календарь') }}</li>
+    <li class="breadcrumb-item"><a href="{{ route('audit.index') }}">{{ __('Audit') }}</a></li>
+    <li class="breadcrumb-item">{{ __('Calendar') }}</li>
 @endsection
 
 @section('content')
@@ -35,7 +35,7 @@
                         <div class="card card-body">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <label class="form-label">{{ __('Год') }}</label>
+                                    <label class="form-label">{{ __('Year') }}</label>
                                     <select class="form-select" id="year-select">
                                         @for ($y = date('Y') - 5; $y <= date('Y') + 2; $y++)
                                             <option value="{{ $y }}">{{ $y }}</option>
@@ -43,20 +43,20 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">{{ __('Месяц') }}</label>
+                                    <label class="form-label">{{ __('Month') }}</label>
                                     <select class="form-select" id="month-select">
-                                        <option value="0">{{ __('Январь') }}</option>
-                                        <option value="1">{{ __('Февраль') }}</option>
-                                        <option value="2">{{ __('Март') }}</option>
-                                        <option value="3">{{ __('Апрель') }}</option>
-                                        <option value="4">{{ __('Май') }}</option>
-                                        <option value="5">{{ __('Июнь') }}</option>
-                                        <option value="6">{{ __('Июль') }}</option>
-                                        <option value="7">{{ __('Август') }}</option>
-                                        <option value="8">{{ __('Сентябрь') }}</option>
-                                        <option value="9">{{ __('Октябрь') }}</option>
-                                        <option value="10">{{ __('Ноябрь') }}</option>
-                                        <option value="11">{{ __('Декабрь') }}</option>
+                                        <option value="0">{{ __('January') }}</option>
+                                        <option value="1">{{ __('February') }}</option>
+                                        <option value="2">{{ __('March') }}</option>
+                                        <option value="3">{{ __('April') }}</option>
+                                        <option value="4">{{ __('May') }}</option>
+                                        <option value="5">{{ __('June') }}</option>
+                                        <option value="6">{{ __('July') }}</option>
+                                        <option value="7">{{ __('August') }}</option>
+                                        <option value="8">{{ __('September') }}</option>
+                                        <option value="9">{{ __('October') }}</option>
+                                        <option value="10">{{ __('November') }}</option>
+                                        <option value="11">{{ __('December') }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -79,7 +79,7 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="day-details-title">{{ __('События за день') }}</h5>
+                    <h5 class="modal-title" id="day-details-title">{{ __('Events for the day') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="day-details-body">
@@ -222,10 +222,10 @@
     <script>
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
-        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
         ];
-        const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize
@@ -426,13 +426,13 @@
 
             // Update title
             document.getElementById('day-details-title').textContent =
-                `События за ${day} ${monthNames[month]} ${year}`;
+                `Events for ${monthNames[month]} ${day}, ${year}`;
 
             // Show loading
             document.getElementById('day-details-body').innerHTML = `
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Загрузка...</span>
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
             `;
@@ -448,7 +448,7 @@
                 .catch(error => {
                     document.getElementById('day-details-body').innerHTML = `
                         <div class="alert alert-danger">
-                            Ошибка загрузки данных: ${error.message}
+                            Error loading data: ${error.message}
                         </div>
                     `;
                 });

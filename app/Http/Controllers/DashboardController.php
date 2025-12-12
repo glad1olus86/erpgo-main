@@ -88,6 +88,9 @@ class DashboardController extends Controller
                 return redirect()->route('client.dashboard.view');
             } elseif (Auth::user()->type == 'client') {
                 return redirect()->route('client.dashboard.view');
+            } elseif (Auth::user()->type == 'company' || Auth::user()->type == 'coordinator') {
+                // Redirect company and coordinator users to JOBSI dashboard
+                return redirect()->route('jobsi.dashboard');
             } else {
                 if (\Auth::user()->can('show account dashboard')) {
                     $data['latestIncome'] = Revenue::with(['customer'])->where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();

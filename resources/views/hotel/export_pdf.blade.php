@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ __('Экспорт отелей') }}</title>
+    <title>{{ __('Export Hotels') }}</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -54,21 +54,21 @@
     </style>
 </head>
 <body>
-    <h1>{{ __('Отели') }}</h1>
-    <div class="generated-at">{{ __('Сформировано:') }} {{ $generatedAt }}</div>
+    <h1>{{ __('Hotels') }}</h1>
+    <div class="generated-at">{{ __('Generated:') }} {{ $generatedAt }}</div>
     
     <table>
         <thead>
             <tr>
-                <th>{{ __('Название') }}</th>
-                <th>{{ __('Адрес') }}</th>
-                <th>{{ __('Занято') }}</th>
-                <th>{{ __('Вместимость') }}</th>
-                <th>{{ __('Комнат') }}</th>
-                <th>{{ __('Полных') }}</th>
-                <th>{{ __('Частичных') }}</th>
-                <th>{{ __('Свободных') }}</th>
-                <th>{{ __('Работники') }}</th>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Address') }}</th>
+                <th>{{ __('Occupied') }}</th>
+                <th>{{ __('Capacity') }}</th>
+                <th>{{ __('Rooms') }}</th>
+                <th>{{ __('Full') }}</th>
+                <th>{{ __('Partial') }}</th>
+                <th>{{ __('Free') }}</th>
+                <th>{{ __('Workers') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -90,22 +90,22 @@
 
     <div class="page-break"></div>
 
-    <h2>{{ __('Комнаты') }}</h2>
+    <h2>{{ __('Rooms') }}</h2>
     
     <table>
         <thead>
             <tr>
-                <th>{{ __('Отель') }}</th>
-                <th>{{ __('Номер') }}</th>
-                <th>{{ __('Занято') }}</th>
-                <th>{{ __('Вмест.') }}</th>
-                <th>{{ __('Полная') }}</th>
-                <th>{{ __('Частичная') }}</th>
-                <th>{{ __('Свободна') }}</th>
-                <th>{{ __('Цена') }}</th>
-                <th>{{ __('Платит') }}</th>
-                <th>{{ __('Сумма') }}</th>
-                <th>{{ __('Работники') }}</th>
+                <th>{{ __('Hotel') }}</th>
+                <th>{{ __('Number') }}</th>
+                <th>{{ __('Occupied') }}</th>
+                <th>{{ __('Cap.') }}</th>
+                <th>{{ __('Full') }}</th>
+                <th>{{ __('Partial') }}</th>
+                <th>{{ __('Free') }}</th>
+                <th>{{ __('Price') }}</th>
+                <th>{{ __('Pays') }}</th>
+                <th>{{ __('Amount') }}</th>
+                <th>{{ __('Workers') }}</th>
             </tr>
         </thead>
         <tbody>

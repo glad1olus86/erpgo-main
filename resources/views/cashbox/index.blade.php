@@ -1,24 +1,24 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Касса') }}
+    {{ __('Cashbox') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Касса') }}</li>
+    <li class="breadcrumb-item">{{ __('Cashbox') }}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
         @can('cashbox_view_audit')
             <a href="{{ route('cashbox.audit') }}" class="btn btn-sm btn-secondary me-2">
-                <i class="ti ti-history"></i> {{ __('Аудит') }}
+                <i class="ti ti-history"></i> {{ __('Audit') }}
             </a>
         @endcan
-        @if($isBoss)
+        @if($canDeposit)
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#depositModal">
-                <i class="ti ti-plus"></i> {{ __('Внести') }}
+                <i class="ti ti-plus"></i> {{ __('Deposit') }}
             </button>
         @endif
     </div>
@@ -35,11 +35,11 @@
                                 <h5 class="mb-0">{{ $period->name }}</h5>
                                 @if($period->is_frozen)
                                     <span class="badge bg-secondary">
-                                        <i class="ti ti-lock me-1"></i>{{ __('Заморожен') }}
+                                        <i class="ti ti-lock me-1"></i>{{ __('Frozen') }}
                                     </span>
                                 @else
                                     <span class="badge bg-success">
-                                        <i class="ti ti-circle-check me-1"></i>{{ __('Активен') }}
+                                        <i class="ti ti-circle-check me-1"></i>{{ __('Active') }}
                                     </span>
                                 @endif
                             </div>
@@ -50,7 +50,7 @@
                                     <i class="ti ti-cash"></i>
                                 </div>
                                 <div class="ms-3">
-                                    <small class="text-muted">{{ __('Внесено') }}</small>
+                                    <small class="text-muted">{{ __('Deposited') }}</small>
                                     <h6 class="mb-0">{{ formatCashboxCurrency($period->total_deposited) }}</h6>
                                 </div>
                             </div>
@@ -66,8 +66,8 @@
                         <div class="mb-3">
                             <i class="ti ti-cash" style="font-size: 48px; color: #ccc;"></i>
                         </div>
-                        <h5 class="text-muted">{{ __('Нет периодов кассы') }}</h5>
-                        <p class="text-muted mb-0">{{ __('Периоды создаются автоматически при внесении денег') }}</p>
+                        <h5 class="text-muted">{{ __('No cashbox periods') }}</h5>
+                        <p class="text-muted mb-0">{{ __('Periods are created automatically when depositing money') }}</p>
                     </div>
                 </div>
             </div>
@@ -75,13 +75,13 @@
     </div>
 
 
-    {{-- Deposit Modal (only for Boss) --}}
-    @if($isBoss)
+    {{-- Deposit Modal --}}
+    @if($canDeposit)
         <div class="modal fade" id="depositModal" tabindex="-1" aria-labelledby="depositModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="depositModalLabel">{{ __('Внести деньги') }}</h5>
+                        <h5 class="modal-title" id="depositModalLabel">{{ __('Deposit Money') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form id="depositForm">
@@ -89,24 +89,24 @@
                         <input type="hidden" name="period_id" value="{{ $currentPeriod->id }}">
                         <div class="modal-body">
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Период') }}</label>
+                                <label class="form-label">{{ __('Period') }}</label>
                                 <input type="text" class="form-control" value="{{ $currentPeriod->name }}" disabled>
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Сумма') }} <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
                                     <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                                 </div>
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Комментарий') }}</label>
-                                <textarea name="comment" class="form-control" rows="3" placeholder="{{ __('Необязательный комментарий...') }}"></textarea>
+                                <label class="form-label">{{ __('Comment') }}</label>
+                                <textarea name="comment" class="form-control" rows="3" placeholder="{{ __('Optional comment...') }}"></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                            <button type="submit" class="btn btn-primary" id="depositSubmitBtn">{{ __('Внести') }}</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary" id="depositSubmitBtn">{{ __('Deposit') }}</button>
                         </div>
                     </form>
                 </div>
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             var submitBtn = document.getElementById('depositSubmitBtn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>{{ __("Загрузка...") }}';
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>{{ __("Loading...") }}';
             
             var formData = new FormData(depositForm);
             
@@ -145,15 +145,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    show_toastr('error', data.error || '{{ __("Произошла ошибка") }}');
+                    show_toastr('error', data.error || '{{ __("An error occurred") }}');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '{{ __("Внести") }}';
+                    submitBtn.innerHTML = '{{ __("Deposit") }}';
                 }
             })
             .catch(error => {
-                show_toastr('error', '{{ __("Произошла ошибка") }}');
+                show_toastr('error', '{{ __("An error occurred") }}');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '{{ __("Внести") }}';
+                submitBtn.innerHTML = '{{ __("Deposit") }}';
             });
         });
     }

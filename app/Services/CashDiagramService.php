@@ -231,9 +231,11 @@ class CashDiagramService
         // and BEFORE the next transaction to the same recipient
         $transactionTime = $transaction->created_at;
         
-        // Find next transaction to the same recipient (to determine time boundary)
+        // Find next TRANSFER transaction to the same recipient (to determine time boundary)
+        // Only transfer transactions can receive carryover, salary is a leaf node
         $nextToSameRecipient = $allTransactions->filter(function ($t) use ($transaction) {
             return $t->type === CashTransaction::TYPE_DISTRIBUTION &&
+                   $t->distribution_type === CashTransaction::DISTRIBUTION_TYPE_TRANSFER &&
                    $t->recipient_id === $transaction->recipient_id &&
                    $t->recipient_type === $transaction->recipient_type &&
                    $t->created_at > $transaction->created_at;
@@ -498,11 +500,11 @@ class CashDiagramService
     protected function getRoleLabel(?string $role): string
     {
         return match ($role) {
-            CashHierarchyService::ROLE_BOSS => 'Директор',
-            CashHierarchyService::ROLE_MANAGER => 'Менеджер',
-            CashHierarchyService::ROLE_CURATOR => 'Куратор',
-            CashHierarchyService::ROLE_WORKER => 'Работник',
-            default => 'Неизвестно',
+            CashHierarchyService::ROLE_BOSS => __('Director'),
+            CashHierarchyService::ROLE_MANAGER => __('Manager'),
+            CashHierarchyService::ROLE_CURATOR => __('Curator'),
+            CashHierarchyService::ROLE_WORKER => __('Worker'),
+            default => __('Unknown'),
         };
     }
 
@@ -532,11 +534,11 @@ class CashDiagramService
     protected function getStatusLabel(string $status): string
     {
         return match ($status) {
-            CashTransaction::STATUS_PENDING => 'Ожидает',
-            CashTransaction::STATUS_IN_PROGRESS => 'В работе',
-            CashTransaction::STATUS_COMPLETED => 'Выполнено',
-            CashTransaction::STATUS_OVERDUE => 'Просрочено',
-            default => 'Неизвестно',
+            CashTransaction::STATUS_PENDING => __('Pending'),
+            CashTransaction::STATUS_IN_PROGRESS => __('In Progress'),
+            CashTransaction::STATUS_COMPLETED => __('Completed'),
+            CashTransaction::STATUS_OVERDUE => __('Overdue'),
+            default => __('Unknown'),
         };
     }
 
@@ -549,8 +551,8 @@ class CashDiagramService
     protected function getDistributionTypeLabel(?string $distributionType): ?string
     {
         return match ($distributionType) {
-            CashTransaction::DISTRIBUTION_TYPE_SALARY => 'ЗП',
-            CashTransaction::DISTRIBUTION_TYPE_TRANSFER => 'Передача',
+            CashTransaction::DISTRIBUTION_TYPE_SALARY => __('Salary'),
+            CashTransaction::DISTRIBUTION_TYPE_TRANSFER => __('Transfer'),
             default => null,
         };
     }
@@ -640,7 +642,7 @@ class CashDiagramService
                 $totalAmount += $node['original_amount'] ?? $node['amount'];
                 $transactionIds[] = $node['id'];
                 $recipients[] = [
-                    'name' => $node['recipient']['name'] ?? 'Неизвестно',
+                    'name' => $node['recipient']['name'] ?? __('Unknown'),
                     'amount' => $node['original_amount'] ?? $node['amount'],
                     'id' => $node['recipient']['id'] ?? null,
                 ];
@@ -654,23 +656,23 @@ class CashDiagramService
                 'id' => 'salary_list_' . $listNumber,
                 'type' => 'salary_list',
                 'distribution_type' => 'salary',
-                'distribution_type_label' => 'Список ЗП',
+                'distribution_type_label' => __('Salary List'),
                 'sender' => null,
                 'recipient' => [
                     'id' => null,
                     'type' => 'list',
-                    'name' => 'Список ЗП №' . $listNumber,
+                    'name' => __('Salary List') . ' №' . $listNumber,
                     'role' => 'worker',
-                    'role_label' => 'Работники',
+                    'role_label' => __('Workers'),
                     'icon' => 'ti ti-users',
                 ],
                 'amount' => (float) $totalAmount,
                 'original_amount' => (float) $totalAmount,
                 'current_balance' => (float) $totalAmount,
-                'task' => count($chunk) . ' ' . $this->pluralize(count($chunk), 'работник', 'работника', 'работников'),
+                'task' => count($chunk) . ' ' . __('workers'),
                 'comment' => null,
                 'status' => 'completed',
-                'status_label' => 'Выполнено',
+                'status_label' => __('Completed'),
                 'created_at' => $chunk[0]['created_at'] ?? now()->toIso8601String(),
                 'children' => [],
                 'refunds' => [],

@@ -5,7 +5,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="generate-document-modal-label">
-                    <i class="ti ti-file-text me-2"></i>{{ __('Сгенерировать документ') }}
+                    <i class="ti ti-file-text me-2"></i>{{ __('Generate Document') }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -13,21 +13,21 @@
                 @csrf
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="template_id" class="form-label">{{ __('Шаблон документа') }}</label>
+                        <label for="template_id" class="form-label">{{ __('Document Template') }}</label>
                         <select name="template_id" id="template_id" class="form-control" required>
-                            <option value="">{{ __('Выберите шаблон') }}</option>
+                            <option value="">{{ __('Select template') }}</option>
                             @php
                                 $templates = \App\Models\DocumentTemplate::forCurrentUser()->active()->orderBy('name')->get();
                             @endphp
                             @forelse($templates as $template)
                                 <option value="{{ $template->id }}">{{ $template->name }}</option>
                             @empty
-                                <option value="" disabled>{{ __('Нет доступных шаблонов') }}</option>
+                                <option value="" disabled>{{ __('No templates available') }}</option>
                             @endforelse
                         </select>
                         @if($templates->isEmpty())
                             <small class="text-muted">
-                                <a href="{{ route('documents.create') }}">{{ __('Создать первый шаблон') }}</a>
+                                <a href="{{ route('documents.create') }}">{{ __('Create First Template') }}</a>
                             </small>
                         @endif
                     </div>
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">{{ __('Формат документа') }}</label>
+                        <label class="form-label">{{ __('Document Format') }}</label>
                         <div class="row g-2">
                             <div class="col-4">
                                 <input type="radio" class="btn-check" name="format" id="format-pdf" value="pdf" checked>
@@ -66,14 +66,14 @@
 
                     <div class="alert alert-info mt-3 mb-0">
                         <i class="ti ti-info-circle me-1"></i>
-                        {{ __('Документ будет сгенерирован с данными работника') }}: 
+                        {{ __('Document will be generated with worker data') }}: 
                         <strong>{{ $worker->first_name }} {{ $worker->last_name }}</strong>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                     <button type="submit" class="btn btn-primary" id="generate-btn" {{ $templates->isEmpty() ? 'disabled' : '' }}>
-                        <i class="ti ti-download me-1"></i>{{ __('Сгенерировать') }}
+                        <i class="ti ti-download me-1"></i>{{ __('Generate') }}
                     </button>
                 </div>
             </form>

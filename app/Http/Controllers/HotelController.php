@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hotel;
+use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,6 +41,11 @@ class HotelController extends Controller
     public function store(Request $request)
     {
         if (Auth::user()->can('create hotel')) {
+            // Check plan limit
+            if (!PlanLimitService::canCreateHotel()) {
+                return redirect()->back()->with('error', __('Hotel limit reached for your plan.'));
+            }
+
             $validator = \Validator::make(
                 $request->all(),
                 [
@@ -61,7 +67,11 @@ class HotelController extends Controller
             $hotel->created_by = Auth::user()->creatorId();
             $hotel->save();
 
-            return redirect()->route('hotel.index')->with('success', __('Отель успешно создан.'));
+            if ($request->input('redirect_to') === 'mobile') {
+                return redirect()->route('mobile.hotels.index')->with('success', __('Hotel successfully created.'));
+            }
+
+            return redirect()->route('hotel.index')->with('success', __('Hotel successfully created.'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -130,7 +140,11 @@ class HotelController extends Controller
                 $hotel->email   = $request->email;
                 $hotel->save();
 
-                return redirect()->route('hotel.index')->with('success', __('Отель успешно изменён.'));
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.hotels.index')->with('success', __('Hotel successfully updated.'));
+                }
+
+                return redirect()->route('hotel.index')->with('success', __('Hotel successfully updated.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -142,13 +156,17 @@ class HotelController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Hotel $hotel)
+    public function destroy(Request $request, Hotel $hotel)
     {
         if (Auth::user()->can('delete hotel')) {
             if ($hotel->created_by == Auth::user()->creatorId()) {
                 $hotel->delete();
 
-                return redirect()->route('hotel.index')->with('success', __('Отель успешно удалён.'));
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.hotels.index')->with('success', __('Hotel successfully deleted.'));
+                }
+
+                return redirect()->route('hotel.index')->with('success', __('Hotel successfully deleted.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

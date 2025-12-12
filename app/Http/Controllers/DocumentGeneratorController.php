@@ -32,12 +32,12 @@ class DocumentGeneratorController extends Controller
     public function generate(Request $request, Worker $worker)
     {
         if (!Auth::user()->can('document_generate')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         // Multi-tenancy check for worker
         if ($worker->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Работник не найден'));
+            return redirect()->back()->with('error', __('Worker not found'));
         }
 
         $request->validate([
@@ -49,7 +49,7 @@ class DocumentGeneratorController extends Controller
 
         // Multi-tenancy check for template
         if ($template->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Шаблон не найден'));
+            return redirect()->back()->with('error', __('Template not found'));
         }
 
         $format = $request->format;
@@ -75,10 +75,10 @@ class DocumentGeneratorController extends Controller
                 case 'xlsx':
                     return $this->generatorService->generateExcel($template, $worker, $dynamicData);
                 default:
-                    return redirect()->back()->with('error', __('Неподдерживаемый формат'));
+                    return redirect()->back()->with('error', __('Unsupported format'));
             }
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', __('Ошибка генерации документа: ') . $e->getMessage());
+            return redirect()->back()->with('error', __('Document generation error: ') . $e->getMessage());
         }
     }
 
@@ -88,7 +88,7 @@ class DocumentGeneratorController extends Controller
     public function getTemplates()
     {
         if (!Auth::user()->can('document_generate')) {
-            return response()->json(['error' => __('Недостаточно прав')], 403);
+            return response()->json(['error' => __('Insufficient permissions')], 403);
         }
 
         $templates = $this->templateService->getActive();
@@ -102,12 +102,12 @@ class DocumentGeneratorController extends Controller
     public function getTemplateFields(DocumentTemplate $template)
     {
         if (!Auth::user()->can('document_generate')) {
-            return response()->json(['error' => __('Недостаточно прав')], 403);
+            return response()->json(['error' => __('Insufficient permissions')], 403);
         }
         
         // Multi-tenancy check
         if ($template->created_by !== Auth::user()->creatorId()) {
-            return response()->json(['error' => __('Шаблон не найден')], 404);
+            return response()->json(['error' => __('Template not found')], 404);
         }
         
         $dynamicFields = $this->generatorService->extractDynamicDateFields($template->content);
@@ -123,7 +123,7 @@ class DocumentGeneratorController extends Controller
     public function bulkGenerate(Request $request)
     {
         if (!Auth::user()->can('document_generate')) {
-            return redirect()->back()->with('error', __('Недостаточно прав'));
+            return redirect()->back()->with('error', __('Insufficient permissions'));
         }
 
         $request->validate([
@@ -135,7 +135,7 @@ class DocumentGeneratorController extends Controller
 
         // Multi-tenancy check for template
         if ($template->created_by !== Auth::user()->creatorId()) {
-            return redirect()->back()->with('error', __('Шаблон не найден'));
+            return redirect()->back()->with('error', __('Template not found'));
         }
 
         // Get worker IDs - either from bulk selection or single selection
@@ -147,7 +147,7 @@ class DocumentGeneratorController extends Controller
         }
 
         if (empty($workerIds)) {
-            return redirect()->back()->with('error', __('Выберите хотя бы одного работника'));
+            return redirect()->back()->with('error', __('Select at least one worker'));
         }
 
         // Get workers with multi-tenancy check
@@ -156,7 +156,7 @@ class DocumentGeneratorController extends Controller
             ->get();
 
         if ($workers->isEmpty()) {
-            return redirect()->back()->with('error', __('Работники не найдены'));
+            return redirect()->back()->with('error', __('Workers not found'));
         }
 
         $format = $request->format;
@@ -184,7 +184,7 @@ class DocumentGeneratorController extends Controller
                         return $this->generatorService->generateExcel($template, $worker, $dynamicData);
                 }
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', __('Ошибка генерации документа: ') . $e->getMessage());
+                return redirect()->back()->with('error', __('Document generation error: ') . $e->getMessage());
             }
         }
 
@@ -192,7 +192,7 @@ class DocumentGeneratorController extends Controller
         try {
             return $this->generatorService->generateBulkZip($template, $workers, $format, $dynamicData);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', __('Ошибка генерации документов: ') . $e->getMessage());
+            return redirect()->back()->with('error', __('Documents generation error: ') . $e->getMessage());
         }
     }
 }

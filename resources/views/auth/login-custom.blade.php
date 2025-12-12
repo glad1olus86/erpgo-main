@@ -2,9 +2,9 @@
 
 @php
     $languages = App\Models\Utility::languages();
-    // $lang передаётся из контроллера
+    // $lang is passed from controller
     $currentLang = $lang ?? \App::getLocale();
-    // Проверяем русский/украинский язык
+    // Check for Russian/Ukrainian language
     $isRussian = in_array(strtolower($currentLang), ['ru', 'russian', 'uk', 'ua', 'ukrainian']);
 @endphp
 
@@ -30,8 +30,8 @@
                     <button type="button" class="action-btn login-btn" data-bs-toggle="modal" data-bs-target="#loginModal">
                         <img src="{{ asset('assets/images/login/login_icon.svg') }}" alt="" class="btn-icon">
                         <div class="btn-text">
-                            <span class="btn-title">{{ $isRussian ? 'УВІЙТИ В СИСТЕМУ' : 'SIGN IN' }}</span>
-                            <span class="btn-subtitle">{{ $isRussian ? 'особистий кабінет' : 'personal account' }}</span>
+                            <span class="btn-title">{{ __('SIGN IN') }}</span>
+                            <span class="btn-subtitle">{{ __('personal account') }}</span>
                         </div>
                     </button>
 
@@ -39,8 +39,8 @@
                     <button type="button" class="action-btn register-btn" data-bs-toggle="modal" data-bs-target="#registerModal">
                         <img src="{{ asset('assets/images/login/new_account_icon.svg') }}" alt="" class="btn-icon">
                         <div class="btn-text">
-                            <span class="btn-title">{{ $isRussian ? 'НОВИЙ АККАУНТ' : 'NEW ACCOUNT' }}</span>
-                            <span class="btn-subtitle">{{ $isRussian ? 'Безкоштовно' : 'Free' }}</span>
+                            <span class="btn-title">{{ __('NEW ACCOUNT') }}</span>
+                            <span class="btn-subtitle">{{ __('Free') }}</span>
                         </div>
                     </button>
 
@@ -71,8 +71,8 @@
                         <div class="play-button"></div>
                     </div>
                     <div class="express-guide">
-                        <span>{{ $isRussian ? 'ЕКСПРЕС' : 'EXPRESS' }}</span>
-                        {{ $isRussian ? 'ГАЙД' : 'GUIDE' }}
+                        <span>{{ __('EXPRESS') }}</span>
+                        {{ __('GUIDE') }}
                     </div>
                 </div>
             </div>
@@ -81,15 +81,15 @@
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-links">
-                <a href="/#">{{ $isRussian ? 'торговельна угода' : 'terms of service' }}</a>
+                <a href="/#">{{ __('terms of service') }}</a>
                 <span>|</span>
-                <a href="/#">{{ $isRussian ? 'захист персональних даних (GDPR)' : 'privacy policy (GDPR)' }}</a>
+                <a href="/#">{{ __('privacy policy (GDPR)') }}</a>
                 <span>|</span>
-                <a href="/#">{{ $isRussian ? 'повернутися на головну сторінку' : 'back to homepage' }}</a>
+                <a href="/#">{{ __('back to homepage') }}</a>
                 <span>|</span>
-                <a href="/#">{{ $isRussian ? 'інструкція з використання' : 'user guide' }}</a>
+                <a href="/#">{{ __('user guide') }}</a>
                 <span>|</span>
-                <a href="/#">{{ $isRussian ? 'ціни та тарифи' : 'pricing' }}</a>
+                <a href="/#">{{ __('pricing') }}</a>
             </div>
         </footer>
     </div>
@@ -108,7 +108,7 @@
                 <div class="modal-inner">
                     <div class="modal-header">
                         <h5 class="modal-title" id="loginModalLabel">
-                            {{ $isRussian ? 'Вхід в' : 'Sign In' }} <strong>JOBSI</strong> {{ $isRussian ? 'Dashboard' : 'Dashboard' }}
+                            {{ __('Sign In to') }} <strong>JOBSI</strong> {{ __('Dashboard') }}
                         </h5>
                     </div>
                     <div class="modal-body">
@@ -137,7 +137,7 @@
                                         </svg>
                                     </div>
                                     <input type="email" class="form-control" id="email" name="email"
-                                        value="{{ old('email') }}" placeholder="{{ $isRussian ? 'Електронна пошта' : 'Email' }}" required>
+                                        value="{{ old('email') }}" placeholder="{{ __('Email') }}" required>
                                 </div>
                             </div>
 
@@ -149,21 +149,21 @@
                                         </svg>
                                     </div>
                                     <input type="password" class="form-control" id="password" name="password"
-                                        placeholder="{{ $isRussian ? 'Пароль' : 'Password' }}" required>
+                                        placeholder="{{ __('Password') }}" required>
                                 </div>
                             </div>
 
                             <div class="forgot-wrapper">
                                 @if (Route::has('password.request'))
                                     <a href="{{ route('password.request') }}" class="forgot-link">
-                                        {{ $isRussian ? 'Забули пароль?' : 'Forgot your password?' }}
+                                        {{ __('Forgot your password?') }}
                                     </a>
                                 @endif
                             </div>
 
                             <div class="btn-wrapper">
                                 <button type="submit" class="btn-login">
-                                    {{ $isRussian ? 'Увійти' : 'Enter' }}
+                                    {{ __('Enter') }}
                                 </button>
                             </div>
                         </form>
@@ -187,7 +187,7 @@
                 <div class="modal-inner">
                     <div class="modal-header">
                         <h5 class="modal-title" id="registerModalLabel">
-                            {{ $isRussian ? 'Зареєструйтесь та почніть економити свій час та гроші' : 'Sign up and start to save your time and money' }}
+                            {{ __('Sign up and start to save your time and money') }}
                         </h5>
                     </div>
                     <div class="modal-body">
@@ -203,7 +203,7 @@
                                         </svg>
                                     </div>
                                     <input type="email" class="form-control" id="reg_email" name="email"
-                                        value="{{ old('email') }}" placeholder="{{ $isRussian ? 'Електронна пошта' : 'Email' }}" required>
+                                        value="{{ old('email') }}" placeholder="{{ __('Email') }}" required>
                                 </div>
                             </div>
 
@@ -216,7 +216,7 @@
                                         </svg>
                                     </div>
                                     <input type="password" class="form-control" id="reg_password" name="password"
-                                        placeholder="{{ $isRussian ? 'Пароль' : 'Password' }}" required>
+                                        placeholder="{{ __('Password') }}" required>
                                 </div>
                             </div>
 
@@ -229,7 +229,7 @@
                                         </svg>
                                     </div>
                                     <input type="text" class="form-control" id="reg_name" name="name"
-                                        value="{{ old('name') }}" placeholder="{{ $isRussian ? "Ім'я" : 'Name' }}" required>
+                                        value="{{ old('name') }}" placeholder="{{ __('Name') }}" required>
                                 </div>
                             </div>
 
@@ -242,7 +242,7 @@
                                         </svg>
                                     </div>
                                     <input type="text" class="form-control" id="reg_company" name="company_name"
-                                        value="{{ old('company_name') }}" placeholder="{{ $isRussian ? 'Назва компанії' : 'Company name' }}">
+                                        value="{{ old('company_name') }}" placeholder="{{ __('Company name') }}">
                                 </div>
                             </div>
 
@@ -250,13 +250,13 @@
                             <div class="terms-wrapper">
                                 <input type="checkbox" class="terms-checkbox" id="terms" name="terms" required>
                                 <label for="terms" class="terms-label">
-                                    {{ $isRussian ? "Я прочитав умови використання" : "I've read the terms and conditions" }}
+                                    {{ __("I've read the terms and conditions") }}
                                 </label>
                             </div>
 
                             <div class="btn-wrapper">
                                 <button type="submit" class="btn-login">
-                                    {{ $isRussian ? 'Зареєструватися' : 'Sign up' }}
+                                    {{ __('Sign up') }}
                                 </button>
                             </div>
                         </form>

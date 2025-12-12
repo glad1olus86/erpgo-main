@@ -169,25 +169,25 @@ class NotificationService
             $days = $match['days'];
             $worker->load(['currentAssignment.hotel', 'currentWorkAssignment.workPlace']);
             
-            $hotelName = $worker->currentAssignment?->hotel?->name ?? __('Не указан');
-            $workPlaceName = $worker->currentWorkAssignment?->workPlace?->name ?? __('Не указано');
+            $hotelName = $worker->currentAssignment?->hotel?->name ?? __('Not specified');
+            $workPlaceName = $worker->currentWorkAssignment?->workPlace?->name ?? __('Not specified');
             
             $line = $worker->first_name . ' ' . $worker->last_name;
             
             foreach ($rule->conditions as $condition) {
                 $field = $condition['field'] ?? '';
                 $part = match($field) {
-                    'is_employed' => ' - ' . __('работает в ":place"', ['place' => $workPlaceName]),
-                    'not_employed' => ' - ' . __('не трудоустроен'),
-                    'is_housed' => ' - ' . __('в отеле ":hotel"', ['hotel' => $hotelName]),
-                    'not_housed' => ' - ' . __('не проживает'),
+                    'is_employed' => ' - ' . __('works at ":place"', ['place' => $workPlaceName]),
+                    'not_employed' => ' - ' . __('not employed'),
+                    'is_housed' => ' - ' . __('at hotel ":hotel"', ['hotel' => $hotelName]),
+                    'not_housed' => ' - ' . __('not housed'),
                     default => '',
                 };
                 $line .= $part;
             }
             
             if ($days > 0) {
-                $line .= ' (' . $days . ' ' . __('дн.') . ')';
+                $line .= ' (' . $days . ' ' . __('d.') . ')';
             }
             
             $lines[] = $line;
@@ -264,8 +264,8 @@ class NotificationService
         // Reload relationships to get fresh data
         $worker->load(['currentAssignment.hotel', 'currentWorkAssignment.workPlace']);
         
-        $hotelName = $worker->currentAssignment?->hotel?->name ?? __('Не указан');
-        $workPlaceName = $worker->currentWorkAssignment?->workPlace?->name ?? __('Не указано');
+        $hotelName = $worker->currentAssignment?->hotel?->name ?? __('Not specified');
+        $workPlaceName = $worker->currentWorkAssignment?->workPlace?->name ?? __('Not specified');
 
         $message = $this->buildWorkerMessage($worker, $rule, $days, $hotelName, $workPlaceName);
 
@@ -298,11 +298,11 @@ class NotificationService
             $field = $condition['field'] ?? '';
             
             $part = match($field) {
-                'is_employed' => __('трудоустроен в ":place"', ['place' => $workPlaceName]),
-                'not_employed' => __('не трудоустроен'),
-                'is_housed' => __('проживает в отеле ":hotel"', ['hotel' => $hotelName]),
-                'not_housed' => __('не проживает в отеле'),
-                'no_assignment' => __('без назначения'),
+                'is_employed' => __('employed at ":place"', ['place' => $workPlaceName]),
+                'not_employed' => __('not employed'),
+                'is_housed' => __('staying at hotel ":hotel"', ['hotel' => $hotelName]),
+                'not_housed' => __('not staying at hotel'),
+                'no_assignment' => __('without assignment'),
                 default => null,
             };
 
@@ -312,7 +312,7 @@ class NotificationService
         }
 
         if ($days > 0) {
-            $parts[] = __(':days дней', ['days' => $days]);
+            $parts[] = __(':days days', ['days' => $days]);
         }
 
         return implode(' - ', $parts);
@@ -370,7 +370,7 @@ class NotificationService
             $occupied = $room->currentAssignments->count();
             $occupancyPercent = $room->capacity > 0 ? round(($occupied / $room->capacity) * 100) : 0;
             
-            $line = __('Комната') . ' ' . $room->room_number . ' (' . $room->hotel->name . ') - ' . $occupied . '/' . $room->capacity . ' (' . $occupancyPercent . '%)';
+            $line = __('Room') . ' ' . $room->room_number . ' (' . $room->hotel->name . ') - ' . $occupied . '/' . $room->capacity . ' (' . $occupancyPercent . '%)';
             $lines[] = $line;
         }
 
@@ -430,7 +430,7 @@ class NotificationService
         return SystemNotification::create([
             'type' => 'custom_rule_' . $rule->id,
             'title' => $rule->name,
-            'message' => __('Комната :number в отеле ":hotel" - :occupied/:capacity (:percent%)', [
+            'message' => __('Room :number at hotel ":hotel" - :occupied/:capacity (:percent%)', [
                 'number' => $room->room_number,
                 'hotel' => $room->hotel->name ?? 'N/A',
                 'occupied' => $occupied,
@@ -500,7 +500,7 @@ class NotificationService
             $hotel = $match['hotel'];
             $stats = $match['stats'];
             
-            $line = $hotel->name . ' - ' . $stats['occupied'] . '/' . $stats['capacity'] . ' ' . __('мест') . ' (' . $stats['percent'] . '%)';
+            $line = $hotel->name . ' - ' . $stats['occupied'] . '/' . $stats['capacity'] . ' ' . __('spots') . ' (' . $stats['percent'] . '%)';
             $lines[] = $line;
         }
 
@@ -579,7 +579,7 @@ class NotificationService
         return SystemNotification::create([
             'type' => 'custom_rule_' . $rule->id,
             'title' => $rule->name,
-            'message' => __('Отель ":name" - :occupied/:capacity мест (:percent%)', [
+            'message' => __('Hotel ":name" - :occupied/:capacity spots (:percent%)', [
                 'name' => $hotel->name,
                 'occupied' => $stats['occupied'],
                 'capacity' => $stats['capacity'],
@@ -650,7 +650,7 @@ class NotificationService
             $workPlace = $match['workPlace'];
             $count = $match['count'];
             
-            $line = $workPlace->name . ' - ' . $count . ' ' . __('сотрудников');
+            $line = $workPlace->name . ' - ' . $count . ' ' . __('employees');
             $lines[] = $line;
         }
 
@@ -701,7 +701,7 @@ class NotificationService
         return SystemNotification::create([
             'type' => 'custom_rule_' . $rule->id,
             'title' => $rule->name,
-            'message' => __('Рабочее место ":name" - :count сотрудников', [
+            'message' => __('Work place ":name" - :count employees', [
                 'name' => $workPlace->name,
                 'count' => $workerCount,
             ]),

@@ -60,7 +60,7 @@ class CashTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Деньги успешно внесены.'),
+                'message' => __('Money successfully deposited.'),
                 'transaction' => $transaction,
             ]);
         } catch (\InvalidArgumentException $e) {
@@ -105,7 +105,7 @@ class CashTransactionController extends Controller
             : User::find($request->recipient_id);
 
         if (!$recipient) {
-            return response()->json(['error' => __('Получатель не найден.')], 404);
+            return response()->json(['error' => __('Recipient not found.')], 404);
         }
 
         // Check recipient belongs to same company
@@ -126,7 +126,7 @@ class CashTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Деньги успешно выданы.'),
+                'message' => __('Money successfully distributed.'),
                 'transaction' => $transaction,
             ]);
         } catch (\InvalidArgumentException $e) {
@@ -174,7 +174,7 @@ class CashTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Деньги успешно возвращены.'),
+                'message' => __('Money successfully refunded.'),
                 'transaction' => $transaction,
             ]);
         } catch (\InvalidArgumentException $e) {
@@ -219,7 +219,7 @@ class CashTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Зарплата успешно выдана.'),
+                'message' => __('Salary successfully paid.'),
                 'transaction' => $transaction,
             ]);
         } catch (\InvalidArgumentException $e) {
@@ -248,7 +248,7 @@ class CashTransactionController extends Controller
             && $transaction->recipient_type === User::class;
         
         if ($userRole !== CashHierarchyService::ROLE_BOSS && !$isRecipient) {
-            return response()->json(['error' => __('Только получатель может изменить статус.')], 403);
+            return response()->json(['error' => __('Only recipient can change status.')], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -264,11 +264,55 @@ class CashTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => __('Статус успешно обновлён.'),
+                'message' => __('Status successfully updated.'),
                 'transaction' => $transaction,
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    /**
+     * Get transaction details
+     */
+    public function show(CashTransaction $transaction)
+    {
+        if (!Auth::user()->can('cashbox_access')) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        // Check company ownership
+        if ($transaction->created_by != Auth::user()->creatorId()) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        $transaction->load(['sender', 'recipient']);
+
+        $senderName = $transaction->sender ? $transaction->sender->name : __('Unknown');
+        $recipientName = null;
+        if ($transaction->recipient) {
+            if ($transaction->recipient_type === Worker::class) {
+                $recipientName = $transaction->recipient->first_name . ' ' . $transaction->recipient->last_name;
+            } else {
+                $recipientName = $transaction->recipient->name;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'transaction' => [
+                'id' => $transaction->id,
+                'type' => $transaction->type,
+                'distribution_type' => $transaction->distribution_type,
+                'amount' => $transaction->amount,
+                'formatted_amount' => formatCashboxCurrency($transaction->amount),
+                'status' => $transaction->status,
+                'task' => $transaction->task,
+                'comment' => $transaction->comment,
+                'sender_name' => $senderName,
+                'recipient_name' => $recipientName,
+                'created_at' => $transaction->created_at->format('d.m.Y H:i'),
+            ],
+        ]);
     }
 }

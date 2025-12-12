@@ -212,7 +212,20 @@ class CashHierarchyService
             return self::ROLE_BOSS;
         }
 
-        // Check for specific cashbox roles using Spatie permissions
+        // Check for specific cashbox view permissions (highest priority)
+        if ($user->can('cashbox_view_boss')) {
+            return self::ROLE_BOSS;
+        }
+
+        if ($user->can('cashbox_view_manager')) {
+            return self::ROLE_MANAGER;
+        }
+
+        if ($user->can('cashbox_view_curator')) {
+            return self::ROLE_CURATOR;
+        }
+
+        // Fallback: Check for specific cashbox roles using Spatie roles
         if ($user->hasRole('boss')) {
             return self::ROLE_BOSS;
         }

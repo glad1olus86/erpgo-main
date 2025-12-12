@@ -8,13 +8,13 @@
 <div class="mb-3 px-2 d-flex justify-content-between align-items-center">
     <div>
         <span class="text-muted">
-            {{ __('Должность') }}: <strong>{{ $position->name }}</strong> | 
-            {{ __('Рабочее место') }}: <strong>{{ $position->workPlace->name }}</strong> |
-            {{ __('Сотрудников') }}: <strong>{{ $currentEmployees->count() }}</strong>
+            {{ __('Position') }}: <strong>{{ $position->name }}</strong> | 
+            {{ __('Work Place') }}: <strong>{{ $position->workPlace->name }}</strong> |
+            {{ __('Employees') }}: <strong>{{ $currentEmployees->count() }}</strong>
         </span>
     </div>
     <button type="button" class="btn btn-sm btn-primary" id="show-assign-form-btn">
-        <i class="ti ti-plus"></i> {{ __('Устроить') }}
+        <i class="ti ti-plus"></i> {{ __('Assign') }}
     </button>
 </div>
 
@@ -24,12 +24,12 @@
     <input type="hidden" name="worker_ids" id="assign-worker-ids">
     
     <div class="mb-2 d-flex justify-content-between align-items-center">
-        <strong>{{ __('Выберите работников для устройства') }}</strong>
-        <span class="badge bg-primary" id="assign-selected-count">{{ __('Выбрано') }}: 0</span>
+        <strong>{{ __('Select workers to assign') }}</strong>
+        <span class="badge bg-primary" id="assign-selected-count">{{ __('Selected') }}: 0</span>
     </div>
     
     <div class="mb-2">
-        <input type="text" class="form-control form-control-sm" id="assign-worker-search" placeholder="{{ __('Поиск по имени...') }}">
+        <input type="text" class="form-control form-control-sm" id="assign-worker-search" placeholder="{{ __('Search by name...') }}">
     </div>
     
     <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
@@ -43,9 +43,9 @@
                         <td>{{ $worker->first_name }} {{ $worker->last_name }}</td>
                         <td>
                             @if($worker->gender == 'male')
-                                <span class="badge bg-primary">{{ __('М') }}</span>
+                                <span class="badge bg-primary">{{ __('M') }}</span>
                             @else
-                                <span class="badge bg-danger">{{ __('Ж') }}</span>
+                                <span class="badge bg-danger">{{ __('F') }}</span>
                             @endif
                         </td>
                         <td>{{ $worker->nationality }}</td>
@@ -53,7 +53,7 @@
                 @empty
                     <tr>
                         <td colspan="4" class="text-center text-muted py-2">
-                            {{ __('Нет свободных работников') }}
+                            {{ __('No available workers') }}
                         </td>
                     </tr>
                 @endforelse
@@ -62,9 +62,9 @@
     </div>
     
     <div class="mt-2 d-flex gap-2">
-        <button type="button" class="btn btn-sm btn-secondary" id="cancel-assign-btn">{{ __('Отмена') }}</button>
+        <button type="button" class="btn btn-sm btn-secondary" id="cancel-assign-btn">{{ __('Cancel') }}</button>
         <button type="submit" class="btn btn-sm btn-success" id="assign-submit-btn" disabled>
-            <i class="ti ti-briefcase me-1"></i>{{ __('Устроить на работу') }}
+            <i class="ti ti-briefcase me-1"></i>{{ __('Assign to Work') }}
         </button>
     </div>
     {{ Form::close() }}
@@ -74,9 +74,9 @@
     {{-- Bulk Actions Panel --}}
     <div id="position-bulk-actions" class="mb-3 p-2 bg-light rounded" style="display: none;">
         <div class="d-flex align-items-center gap-2">
-            <span class="small"><strong id="position-selected-count">0</strong> {{ __('выбрано') }}</span>
+            <span class="small"><strong id="position-selected-count">0</strong> {{ __('selected') }}</span>
             <button type="button" class="btn btn-sm btn-warning" id="position-bulk-dismiss-btn">
-                <i class="ti ti-user-off me-1"></i>{{ __('Уволить выбранных') }}
+                <i class="ti ti-user-off me-1"></i>{{ __('Dismiss Selected') }}
             </button>
         </div>
     </div>
@@ -97,10 +97,10 @@
                         </div>
                     </th>
                 @endif
-                <th>{{ __('Имя Фамилия') }}</th>
-                <th>{{ __('Пол') }}</th>
-                <th>{{ __('Дата устройства') }}</th>
-                <th>{{ __('Действие') }}</th>
+                <th>{{ __('Full Name') }}</th>
+                <th>{{ __('Gender') }}</th>
+                <th>{{ __('Employment Date') }}</th>
+                <th>{{ __('Action') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -120,25 +120,25 @@
                     </td>
                     <td>
                         @if($assignment->worker->gender == 'male')
-                            <span class="badge bg-primary">{{ __('Мужчина') }}</span>
+                            <span class="badge bg-primary">{{ __('Male') }}</span>
                         @else
-                            <span class="badge bg-danger">{{ __('Женщина') }}</span>
+                            <span class="badge bg-danger">{{ __('Female') }}</span>
                         @endif
                     </td>
                     <td>{{ \Auth::user()->dateFormat($assignment->started_at) }}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <a href="{{ route('worker.show', $assignment->worker->id) }}" target="_blank"
-                                class="btn btn-sm btn-info d-flex align-items-center" data-bs-toggle="tooltip" title="{{ __('Профиль') }}">
+                                class="btn btn-sm btn-info d-flex align-items-center" data-bs-toggle="tooltip" title="{{ __('Profile') }}">
                                 <i class="ti ti-user text-white"></i>
                             </a>
                             {{ Form::open(['route' => ['positions.dismiss.workers', $position->id], 'method' => 'POST', 'class' => 'd-inline']) }}
                             <input type="hidden" name="worker_ids" value="{{ $assignment->worker->id }}">
                             <button type="submit" class="btn btn-sm btn-warning d-flex align-items-center gap-1"
-                                onclick="return confirm('{{ __('Уволить этого работника?') }}')"
-                                data-bs-toggle="tooltip" title="{{ __('Уволить') }}">
+                                onclick="return confirm('{{ __('Dismiss this worker?') }}')"
+                                data-bs-toggle="tooltip" title="{{ __('Dismiss') }}">
                                 <i class="ti ti-user-off text-white"></i>
-                                <span class="text-white">{{ __('Уволить') }}</span>
+                                <span class="text-white">{{ __('Dismiss') }}</span>
                             </button>
                             {{ Form::close() }}
                         </div>
@@ -148,7 +148,7 @@
                 <tr>
                     <td colspan="5" class="text-center text-muted py-4">
                         <i class="ti ti-briefcase-off" style="font-size: 24px;"></i><br>
-                        {{ __('На этой должности никто не работает') }}
+                        {{ __('No one works in this position') }}
                     </td>
                 </tr>
             @endforelse
@@ -188,7 +188,7 @@
             if (cb.checked) selected.push(cb.value);
         });
         assignWorkerIds.value = selected.join(',');
-        assignSelectedCount.textContent = '{{ __("Выбрано") }}: ' + selected.length;
+        assignSelectedCount.textContent = '{{ __("Selected") }}: ' + selected.length;
         assignSubmitBtn.disabled = selected.length === 0;
     }
     
@@ -252,7 +252,7 @@
             var selected = getSelectedWorkers();
             if (selected.length === 0) return;
             
-            if (confirm('{{ __("Вы уверены что хотите уволить") }} ' + selected.length + ' {{ __("работников?") }}')) {
+            if (confirm('{{ __("Are you sure you want to dismiss") }} ' + selected.length + ' {{ __("workers?") }}')) {
                 bulkForm.submit();
             }
         });

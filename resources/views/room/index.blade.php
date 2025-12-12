@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Управление номерами') }}
+    {{ __('Room Management') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Номера') }}</li>
+    <li class="breadcrumb-item">{{ __('Rooms') }}</li>
 @endsection
 
 @section('action-btn')
@@ -19,7 +19,7 @@
             <div class="my-3 d-flex justify-content-end">
                 @can('create hotel')
                     <a href="#" data-url="{{ route('room.create') }}" data-ajax-popup="true"
-                        data-title="{{ __('Создать новый номер') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"
+                        data-title="{{ __('Create New Room') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
                         class="btn btn-sm btn-primary">
                         <i class="ti ti-plus"></i>
                     </a>
@@ -33,20 +33,20 @@
                                 <table class="table datatable">
                                     <thead>
                                         <tr>
-                                            <th>{{ __('Номер комнаты') }}</th>
-                                            <th>{{ __('Отель') }}</th>
-                                            <th>{{ __('Вместимость') }}</th>
-                                            <th>{{ __('Цена/месяц') }}</th>
-                                            <th>{{ __('Кто платит') }}</th>
-                                            <th width="200px">{{ __('Действие') }}</th>
+                                            <th>{{ __('Room Number') }}</th>
+                                            <th>{{ __('Hotel') }}</th>
+                                            <th>{{ __('Capacity') }}</th>
+                                            <th>{{ __('Price/month') }}</th>
+                                            <th>{{ __('Who Pays') }}</th>
+                                            <th width="200px">{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-style">
                                         @php
                                             $paymentLabels = [
-                                                'worker' => __('Платит сам'),
-                                                'agency' => __('Платит агенство'),
-                                                'partial' => __('Платит частично'),
+                                                'worker' => __('Worker pays'),
+                                                'agency' => __('Agency pays'),
+                                                'partial' => __('Partial payment'),
                                             ];
                                         @endphp
                                         @foreach ($rooms as $room)
@@ -69,9 +69,9 @@
                                                                 <a href="#"
                                                                     data-url="{{ URL::to('room/' . $room->id . '/edit') }}"
                                                                     data-ajax-popup="true"
-                                                                    data-title="{{ __('Редактировать номер') }}"
+                                                                    data-title="{{ __('Edit Room') }}"
                                                                     class="mx-3 btn btn-sm align-items-center bg-info"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Редактировать') }}"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Edit') }}"
                                                                     data-original-title="{{ __('Edit') }}">
                                                                     <i class="ti ti-pencil text-white"></i></a>
                                                             </div>
@@ -85,9 +85,9 @@
                                                                 ]) !!}
                                                                 <a href="#"
                                                                     class="mx-3 btn btn-sm  align-items-center bs-pass-para bg-danger"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Delete') }}"
                                                                     data-original-title="{{ __('Delete') }}"
-                                                                    data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить. Вы хотите продолжить?') }}"
+                                                                    data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
                                                                     data-confirm-yes="document.getElementById('delete-form-{{ $room->id }}').submit();"><i
                                                                         class="ti ti-trash text-white"></i></a>
                                                                 {!! Form::close() !!}

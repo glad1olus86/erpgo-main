@@ -52,7 +52,7 @@ class RoomController extends Controller
                 'payment_type' => 'required|in:worker,agency,partial',
             ];
             
-            // Если выбран частичный платёж, требуем сумму
+            // If partial payment is selected, require amount
             if ($request->payment_type === 'partial') {
                 $rules['partial_amount'] = 'required|numeric|min:0';
             }
@@ -73,7 +73,11 @@ class RoomController extends Controller
             $room->created_by    = Auth::user()->creatorId();
             $room->save();
 
-            return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Номер успешно создан.'));
+            if ($request->input('redirect_to') === 'mobile') {
+                return redirect()->route('mobile.hotels.rooms', $request->hotel_id)->with('success', __('Room successfully created.'));
+            }
+
+            return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Room successfully created.'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
@@ -146,7 +150,11 @@ class RoomController extends Controller
                 $room->partial_amount = $request->payment_type === 'partial' ? $request->partial_amount : null;
                 $room->save();
 
-                return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Номер успешно обновлён.'));
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.rooms.show', $room->id)->with('success', __('Room successfully updated.'));
+                }
+
+                return redirect()->route('hotel.rooms', $request->hotel_id)->with('success', __('Room successfully updated.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
@@ -158,13 +166,18 @@ class RoomController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Room $room)
+    public function destroy(Request $request, Room $room)
     {
         if (Auth::user()->can('delete hotel')) {
             if ($room->created_by == Auth::user()->creatorId()) {
                 $hotelId = $room->hotel_id;
                 $room->delete();
-                return redirect()->route('hotel.rooms', $hotelId)->with('success', __('Номер успешно удалён.'));
+
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.hotels.rooms', $hotelId)->with('success', __('Room successfully deleted.'));
+                }
+
+                return redirect()->route('hotel.rooms', $hotelId)->with('success', __('Room successfully deleted.'));
             } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }

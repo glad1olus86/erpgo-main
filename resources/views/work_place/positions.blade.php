@@ -1,19 +1,19 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Должности') }}: {{ $workPlace->name }}
+    {{ __('Positions') }}: {{ $workPlace->name }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('work-place.index') }}">{{ __('Рабочие места') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('work-place.index') }}">{{ __('Work Places') }}</a></li>
     <li class="breadcrumb-item">{{ $workPlace->name }}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
         <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createPositionModal">
-            <i class="ti ti-plus"></i> {{ __('Создать должность') }}
+            <i class="ti ti-plus"></i> {{ __('Create Position') }}
         </a>
     </div>
 @endsection
@@ -23,23 +23,23 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5>{{ __('Должности в') }} {{ $workPlace->name }}</h5>
+                    <h5>{{ __('Positions in') }} {{ $workPlace->name }}</h5>
                     <small class="text-muted">{{ $workPlace->address }}</small>
                 </div>
                 <div class="card-body">
                     @if($positions->isEmpty())
                         <div class="text-center py-4">
                             <i class="ti ti-briefcase text-muted" style="font-size: 48px;"></i>
-                            <p class="text-muted mt-2">{{ __('Должности ещё не созданы') }}</p>
+                            <p class="text-muted mt-2">{{ __('No positions created yet') }}</p>
                         </div>
                     @else
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>{{ __('Название должности') }}</th>
-                                        <th class="text-center">{{ __('Работников') }}</th>
-                                        <th class="text-end">{{ __('Действия') }}</th>
+                                        <th>{{ __('Position Name') }}</th>
+                                        <th class="text-center">{{ __('Workers') }}</th>
+                                        <th class="text-end">{{ __('Actions') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -49,7 +49,7 @@
                                                 <a href="#" 
                                                    data-url="{{ route('positions.workers', $position->id) }}"
                                                    data-ajax-popup="true"
-                                                   data-title="{{ __('Сотрудники') }}: {{ $position->name }}"
+                                                   data-title="{{ __('Employees') }}: {{ $position->name }}"
                                                    data-size="lg"
                                                    class="text-primary fw-bold">
                                                     <i class="ti ti-briefcase me-2"></i>
@@ -63,14 +63,14 @@
                                                 <a href="#" 
                                                    data-url="{{ route('positions.workers', $position->id) }}"
                                                    data-ajax-popup="true"
-                                                   data-title="{{ __('Сотрудники') }}: {{ $position->name }}"
+                                                   data-title="{{ __('Employees') }}: {{ $position->name }}"
                                                    data-size="lg"
                                                    class="btn btn-sm btn-success">
-                                                    <i class="ti ti-user-plus"></i> {{ __('Трудоустроить') }}
+                                                    <i class="ti ti-user-plus"></i> {{ __('Employ') }}
                                                 </a>
                                                 <form action="{{ route('positions.destroy', $position->id) }}" 
                                                       method="POST" class="d-inline"
-                                                      onsubmit="return confirm('{{ __('Удалить должность?') }}')">
+                                                      onsubmit="return confirm('{{ __('Delete position?') }}')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-danger">
@@ -96,19 +96,19 @@
                 <form action="{{ route('positions.store', $workPlace->id) }}" method="POST">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Создать должность') }}</h5>
+                        <h5 class="modal-title">{{ __('Create Position') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label class="form-label">{{ __('Название должности') }}</label>
+                            <label class="form-label">{{ __('Position Name') }}</label>
                             <input type="text" name="name" class="form-control" required 
-                                   placeholder="{{ __('Например: Менеджер') }}">
+                                   placeholder="{{ __('For example: Manager') }}">
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                        <button type="submit" class="btn btn-primary">{{ __('Создать') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ __('Create') }}</button>
                     </div>
                 </form>
             </div>

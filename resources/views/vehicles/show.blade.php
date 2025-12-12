@@ -6,7 +6,7 @@
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('vehicles.index') }}">{{ __('Транспорт') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('vehicles.index') }}">{{ __('Vehicles') }}</a></li>
     <li class="breadcrumb-item">{{ $vehicle->license_plate }}</li>
 @endsection
 
@@ -14,7 +14,7 @@
     <div class="float-end">
         @can('vehicle_edit')
             <a href="{{ route('vehicles.edit', $vehicle) }}" class="btn btn-sm btn-info" data-bs-toggle="tooltip"
-                title="{{ __('Редактировать') }}">
+                title="{{ __('Edit') }}">
                 <i class="ti ti-pencil"></i>
             </a>
         @endcan
@@ -45,39 +45,81 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h5>{{ __('Информация') }}</h5>
+                    <h5>{{ __('Information') }}</h5>
                 </div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
-                            <span class="text-muted">{{ __('Цвет') }}</span>
+                            <span class="text-muted">{{ __('Color') }}</span>
                             <span>{{ $vehicle->color ?? '-' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span class="text-muted">{{ __('VIN-код') }}</span>
-                            <span>{{ $vehicle->vin_code ?? '-' }}</span>
+                            <span class="text-muted">{{ __('VIN Code') }}</span>
+                            <span style="font-size: 0.85em;">{{ $vehicle->vin_code ?? '-' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span class="text-muted">{{ __('Расход топлива') }}</span>
-                            <span>{{ $vehicle->fuel_consumption ? $vehicle->fuel_consumption . ' л/100км' : '-' }}</span>
+                            <span class="text-muted">{{ __('Registration Date') }}</span>
+                            <span>{{ $vehicle->registration_date ? $vehicle->registration_date->format('d.m.Y') : '-' }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
-                            <span class="text-muted">{{ __('Ответственный') }}</span>
+                            <span class="text-muted">{{ __('Engine Volume') }}</span>
+                            <span>{{ $vehicle->engine_volume ? $vehicle->engine_volume . ' cm³' : '-' }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">{{ __('Passport Fuel Consumption') }}</span>
+                            <span>{{ $vehicle->passport_fuel_consumption ? $vehicle->passport_fuel_consumption . ' l/100km' : '-' }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">{{ __('Actual Fuel Consumption') }}</span>
+                            <span>{{ $vehicle->fuel_consumption ? $vehicle->fuel_consumption . ' l/100km' : '-' }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">{{ __('Responsible') }}</span>
                             <span>{{ $vehicle->assigned_name ?? '-' }}</span>
                         </li>
                     </ul>
                 </div>
             </div>
+
+            @if ($vehicle->tech_passport_front || $vehicle->tech_passport_back)
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ __('Tech Passport Photos') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @if ($vehicle->tech_passport_front)
+                        <div class="col-6">
+                            <p class="text-muted small mb-1">{{ __('Front Side') }}</p>
+                            <a href="{{ asset('uploads/vehicle_documents/' . $vehicle->tech_passport_front) }}" target="_blank">
+                                <img src="{{ asset('uploads/vehicle_documents/' . $vehicle->tech_passport_front) }}" 
+                                    alt="{{ __('Front Side') }}" class="img-fluid rounded" style="max-height: 150px;">
+                            </a>
+                        </div>
+                        @endif
+                        @if ($vehicle->tech_passport_back)
+                        <div class="col-6">
+                            <p class="text-muted small mb-1">{{ __('Back Side') }}</p>
+                            <a href="{{ asset('uploads/vehicle_documents/' . $vehicle->tech_passport_back) }}" target="_blank">
+                                <img src="{{ asset('uploads/vehicle_documents/' . $vehicle->tech_passport_back) }}" 
+                                    alt="{{ __('Back Side') }}" class="img-fluid rounded" style="max-height: 150px;">
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
 
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">{{ __('История техосмотров') }}</h5>
+                    <h5 class="mb-0">{{ __('Inspection History') }}</h5>
                     @can('technical_inspection_manage')
                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
                             data-bs-target="#addInspectionModal">
-                            <i class="ti ti-plus me-1"></i>{{ __('Добавить ТО') }}
+                            <i class="ti ti-plus me-1"></i>{{ __('Add Inspection') }}
                         </button>
                     @endcan
                 </div>
@@ -87,12 +129,12 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>{{ __('Дата ТО') }}</th>
-                                        <th>{{ __('След. ТО') }}</th>
-                                        <th>{{ __('Пробег') }}</th>
-                                        <th>{{ __('Стоимость') }}</th>
-                                        <th>{{ __('СТО') }}</th>
-                                        <th>{{ __('Действие') }}</th>
+                                        <th>{{ __('Inspection Date') }}</th>
+                                        <th>{{ __('Next Inspection') }}</th>
+                                        <th>{{ __('Mileage') }}</th>
+                                        <th>{{ __('Cost') }}</th>
+                                        <th>{{ __('Service Station') }}</th>
+                                        <th>{{ __('Action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -100,7 +142,7 @@
                                         <tr>
                                             <td>{{ $inspection->formatted_inspection_date }}</td>
                                             <td>{{ $inspection->formatted_next_inspection_date }}</td>
-                                            <td>{{ $inspection->mileage ? number_format($inspection->mileage, 0, '', ' ') . ' км' : '-' }}</td>
+                                            <td>{{ $inspection->mileage ? number_format($inspection->mileage, 0, '', ' ') . ' km' : '-' }}</td>
                                             <td>{{ $inspection->formatted_cost ?? '-' }}</td>
                                             <td>{{ $inspection->service_station ?? '-' }}</td>
                                             <td>
@@ -112,8 +154,8 @@
                                                             'id' => 'delete-inspection-' . $inspection->id,
                                                         ]) !!}
                                                         <a href="#" class="btn btn-sm bg-danger bs-pass-para"
-                                                            data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
-                                                            data-confirm="{{ __('Удалить запись?') . '|' . __('Это действие нельзя отменить.') }}"
+                                                            data-bs-toggle="tooltip" title="{{ __('Delete') }}"
+                                                            data-confirm="{{ __('Delete record?') . '|' . __('This action cannot be undone.') }}"
                                                             data-confirm-yes="document.getElementById('delete-inspection-{{ $inspection->id }}').submit();">
                                                             <i class="ti ti-trash text-white"></i>
                                                         </a>
@@ -129,7 +171,7 @@
                     @else
                         <div class="text-center text-muted py-4">
                             <i class="ti ti-clipboard-check" style="font-size: 48px;"></i>
-                            <p class="mt-2">{{ __('Записи техосмотров отсутствуют') }}</p>
+                            <p class="mt-2">{{ __('No inspection records') }}</p>
                         </div>
                     @endif
                 </div>

@@ -30,22 +30,22 @@ class DocumentScannerService
         $mimeType = finfo_file($finfo, $imagePath);
         finfo_close($finfo);
 
-        $prompt = 'Проанализируй это фото документа (паспорт или ID карта) и извлеки данные о человеке.
+        $prompt = 'Analyze this document photo (passport or ID card) and extract person data.
 
-Верни ТОЛЬКО JSON без markdown, без ```json, просто чистый JSON в таком формате:
+Return ONLY JSON without markdown, without ```json, just clean JSON in this format:
 {
-    "first_name": "Имя на латинице, ",
-    "last_name": "Фамилия на латинице", 
+    "first_name": "First name in Latin script",
+    "last_name": "Last name in Latin script", 
     "dob": "YYYY-MM-DD",
-    "gender": "male или female",
-    "nationality": "Страна на английском"
+    "gender": "male or female",
+    "nationality": "Country in English"
 }
 
-Важно:
-- Имя и фамилию пиши на латинице с большой буквы, но не всё имя и фамилию большими буквами
-- Дату рождения в формате YYYY-MM-DD
-- Пол: male для мужчин, female для женщин
-- Если поле не найдено, поставь null';
+Important:
+- Write first and last name in Latin script with capital first letter, not all caps
+- Date of birth in YYYY-MM-DD format
+- Gender: male for men, female for women
+- If field not found, put null';
 
         try {
             $response = Http::timeout(30)->post(

@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Редактировать шаблон') }}: {{ $template->name }}
+    {{ __('Edit Template') }}: {{ $template->name }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('documents.index') }}">{{ __('Шаблоны документов') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Редактировать') }}</li>
+    <li class="breadcrumb-item"><a href="{{ route('documents.index') }}">{{ __('Document Templates') }}</a></li>
+    <li class="breadcrumb-item">{{ __('Edit') }}</li>
 @endsection
 
 @push('css-page')
@@ -96,7 +96,7 @@
         <div class="col-lg-9">
             <div class="card">
                 <div class="card-header">
-                    <h5>{{ __('Редактор шаблона') }}</h5>
+                    <h5>{{ __('Template Editor') }}</h5>
                 </div>
                 <div class="card-body">
                     {{ Form::model($template, ['route' => ['documents.update', $template->id], 'method' => 'PUT']) }}
@@ -104,31 +104,31 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="form-group">
-                                {{ Form::label('name', __('Название шаблона'), ['class' => 'form-label']) }}
-                                {{ Form::text('name', null, ['class' => 'form-control', 'required' => true, 'placeholder' => __('Например: Трудовой договор')]) }}
+                                {{ Form::label('name', __('Template Name'), ['class' => 'form-label']) }}
+                                {{ Form::text('name', null, ['class' => 'form-control', 'required' => true, 'placeholder' => __('For example: Employment Contract')]) }}
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                {{ Form::label('is_active', __('Статус'), ['class' => 'form-label']) }}
-                                {{ Form::select('is_active', [1 => __('Активен'), 0 => __('Неактивен')], null, ['class' => 'form-control']) }}
+                                {{ Form::label('is_active', __('Status'), ['class' => 'form-label']) }}
+                                {{ Form::select('is_active', [1 => __('Active'), 0 => __('Inactive')], null, ['class' => 'form-control']) }}
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('description', __('Описание'), ['class' => 'form-label']) }}
-                        {{ Form::textarea('description', null, ['class' => 'form-control', 'rows' => 2, 'placeholder' => __('Краткое описание шаблона')]) }}
+                        {{ Form::label('description', __('Description'), ['class' => 'form-label']) }}
+                        {{ Form::textarea('description', null, ['class' => 'form-control', 'rows' => 2, 'placeholder' => __('Brief template description')]) }}
                     </div>
 
                     <div class="form-group">
-                        {{ Form::label('content', __('Содержимое шаблона'), ['class' => 'form-label']) }}
+                        {{ Form::label('content', __('Template Content'), ['class' => 'form-label']) }}
                         <textarea name="content" id="template-content" class="form-control">{{ $template->content }}</textarea>
                     </div>
 
                     <div class="text-end mt-4">
-                        <a href="{{ route('documents.index') }}" class="btn btn-secondary">{{ __('Отмена') }}</a>
-                        <button type="submit" class="btn btn-primary">{{ __('Сохранить') }}</button>
+                        <a href="{{ route('documents.index') }}" class="btn btn-secondary">{{ __('Cancel') }}</a>
+                        <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
                     </div>
 
                     {{ Form::close() }}
@@ -139,11 +139,11 @@
         <div class="col-lg-3">
             <div class="card">
                 <div class="card-header">
-                    <h5>{{ __('Переменные') }}</h5>
-                    <small class="text-muted">{{ __('Нажмите для вставки') }}</small>
+                    <h5>{{ __('Variables') }}</h5>
+                    <small class="text-muted">{{ __('Click to insert') }}</small>
                 </div>
                 <div class="card-body variables-panel">
-                    <h6 class="text-primary mb-2"><i class="ti ti-user me-1"></i>{{ __('Работник') }}</h6>
+                    <h6 class="text-primary mb-2"><i class="ti ti-user me-1"></i>{{ __('Worker') }}</h6>
                     @foreach ($variables as $var => $desc)
                         @if (str_starts_with($var, '{worker_'))
                             <div class="variable-item" data-variable="{{ $var }}">
@@ -153,7 +153,7 @@
                         @endif
                     @endforeach
 
-                    <h6 class="text-success mb-2 mt-3"><i class="ti ti-building me-1"></i>{{ __('Компания') }}</h6>
+                    <h6 class="text-success mb-2 mt-3"><i class="ti ti-building me-1"></i>{{ __('Company') }}</h6>
                     @foreach ($variables as $var => $desc)
                         @if (str_starts_with($var, '{company_') || str_starts_with($var, '{current_'))
                             <div class="variable-item" data-variable="{{ $var }}">
@@ -163,7 +163,7 @@
                         @endif
                     @endforeach
 
-                    <h6 class="text-warning mb-2 mt-3"><i class="ti ti-home me-1"></i>{{ __('Назначение') }}</h6>
+                    <h6 class="text-warning mb-2 mt-3"><i class="ti ti-home me-1"></i>{{ __('Assignment') }}</h6>
                     @foreach ($variables as $var => $desc)
                         @if (str_starts_with($var, '{hotel_') ||
                                 str_starts_with($var, '{room_') ||
@@ -177,10 +177,10 @@
                         @endif
                     @endforeach
                     
-                    <h6 class="text-info mb-2 mt-3"><i class="ti ti-calendar me-1"></i>{{ __('Динамические') }}</h6>
-                    <div class="variable-item" data-variable='{choose_date}:"Название поля"'>
+                    <h6 class="text-info mb-2 mt-3"><i class="ti ti-calendar me-1"></i>{{ __('Dynamic') }}</h6>
+                    <div class="variable-item" data-variable='{choose_date}:"Field Name"'>
                         <code>{choose_date}:"..."</code>
-                        <small>{{ __('Выбор даты (пользовательский ввод)') }}</small>
+                        <small>{{ __('Date selection (user input)') }}</small>
                     </div>
                 </div>
             </div>
@@ -188,7 +188,7 @@
             @if ($template->variables && count($template->variables) > 0)
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h5>{{ __('Используемые переменные') }}</h5>
+                        <h5>{{ __('Used Variables') }}</h5>
                     </div>
                     <div class="card-body">
                         @foreach ($template->variables as $var)
@@ -205,20 +205,20 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Предварительный просмотр') }}</h5>
+                    <h5 class="modal-title">{{ __('Preview') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
                     <div class="a4-preview-header">
                         <i class="ti ti-info-circle me-1"></i>
-                        {{ __('Это приблизительный просмотр. Фактическое разбиение на страницы может отличаться в PDF.') }}
+                        {{ __('This is an approximate preview. Actual page breaks may differ in PDF.') }}
                     </div>
                     <div class="a4-preview-container" id="a4PreviewContent">
                         <!-- Pages will be inserted here -->
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Закрыть') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>
@@ -267,7 +267,7 @@
                 language: 'ru',
                 menubar: 'file edit view insert format tools table help',
                 menu: {
-                    file: { title: 'Файл', items: 'newdocument restoredraft | a4preview | print' }
+                    file: { title: 'File', items: 'newdocument restoredraft | a4preview | print' }
                 },
                 branding: false,
                 promotion: false,
@@ -276,7 +276,7 @@
                 setup: function(editor) {
                     // Custom A4 Preview menu item
                     editor.ui.registry.addMenuItem('a4preview', {
-                        text: 'Предварительный просмотр',
+                        text: '{{ __("Preview") }}',
                         icon: 'preview',
                         onAction: function() {
                             showA4Preview(editor.getContent());
@@ -286,7 +286,7 @@
                     // Custom A4 Preview button
                     editor.ui.registry.addButton('a4preview', {
                         icon: 'preview',
-                        tooltip: 'Предпросмотр A4',
+                        tooltip: '{{ __("A4 Preview") }}',
                         onAction: function() {
                             showA4Preview(editor.getContent());
                         }

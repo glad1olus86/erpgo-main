@@ -106,6 +106,25 @@ class PlanController extends Controller
                 {
                     $post['trial'] = 1;
                 }
+                
+                // JOBSI Modules
+                $post['module_workers'] = isset($request->module_workers) ? 1 : 0;
+                $post['module_workplaces'] = isset($request->module_workplaces) ? 1 : 0;
+                $post['module_hotels'] = isset($request->module_hotels) ? 1 : 0;
+                $post['module_vehicles'] = isset($request->module_vehicles) ? 1 : 0;
+                $post['module_documents'] = isset($request->module_documents) ? 1 : 0;
+                $post['module_cashbox'] = isset($request->module_cashbox) ? 1 : 0;
+                $post['module_calendar'] = isset($request->module_calendar) ? 1 : 0;
+                $post['module_notifications'] = isset($request->module_notifications) ? 1 : 0;
+                
+                // JOBSI Limits
+                $post['max_workers'] = $request->max_workers ?? -1;
+                $post['max_roles'] = $request->max_roles ?? -1;
+                $post['max_vehicles'] = $request->max_vehicles ?? -1;
+                $post['max_hotels'] = $request->max_hotels ?? -1;
+                $post['max_workplaces'] = $request->max_workplaces ?? -1;
+                $post['max_document_templates'] = $request->max_document_templates ?? -1;
+                
                 if($request->hasFile('image'))
                 {
                     $filenameWithExt = $request->file('image')->getClientOriginalName();
@@ -160,29 +179,9 @@ class PlanController extends Controller
 
     public function update(Request $request, $plan_id)
     {
-
-
         if(\Auth::user()->can('edit plan'))
         {
-
-            $admin_payment_setting = Utility::getAdminPaymentSetting();
-
-            if(!empty($admin_payment_setting) && ($admin_payment_setting['is_manually_payment_enabled'] == 'on'
-                    || $admin_payment_setting['is_bank_transfer_enabled'] == 'on' || $admin_payment_setting['is_stripe_enabled'] == 'on'
-                    || $admin_payment_setting['is_paypal_enabled'] == 'on' || $admin_payment_setting['is_paystack_enabled'] == 'on'
-                    || $admin_payment_setting['is_flutterwave_enabled'] == 'on' || $admin_payment_setting['is_razorpay_enabled'] == 'on'
-                    || $admin_payment_setting['is_mercado_enabled'] == 'on' || $admin_payment_setting['is_paytm_enabled'] == 'on'
-                    || $admin_payment_setting['is_mollie_enabled'] == 'on' || $admin_payment_setting['is_skrill_enabled'] == 'on'
-                    || $admin_payment_setting['is_coingate_enabled'] == 'on'|| $admin_payment_setting['is_paymentwall_enabled'] == 'on'
-                    || $admin_payment_setting['is_toyyibpay_enabled'] == 'on' || $admin_payment_setting['is_payfast_enabled'] == 'on'
-                    || $admin_payment_setting['is_iyzipay_enabled'] == 'on' || $admin_payment_setting['is_sspay_enabled'] == 'on'
-                    || $admin_payment_setting['is_paytab_enabled'] == 'on'  || $admin_payment_setting['is_benefit_enabled'] == 'on'
-                    || $admin_payment_setting['is_cashfree_enabled'] == 'on'  || $admin_payment_setting['is_aamarpay_enabled'] == 'on'
-                    || $admin_payment_setting['is_paytr_enabled'] == 'on' || $admin_payment_setting['is_yookassa_enabled'] ='on'
-                    || $admin_payment_setting['is_midtrans_enabled'] == 'on' || $admin_payment_setting['is_xendit_enabled'] == 'on'
-                    || $admin_payment_setting['is_nepalste_enabled'] == 'on'))
-            {
-                $plan = Plan::find($plan_id);
+            $plan = Plan::find($plan_id);
                 if(!empty($plan))
                 {
                     $validator = \Validator::make(
@@ -268,6 +267,25 @@ class PlanController extends Controller
                         $post['trial'] = 0;
                         $post['trial_days'] = null;
                     }
+                    
+                    // JOBSI Modules
+                    $post['module_workers'] = array_key_exists('module_workers', $post) ? 1 : 0;
+                    $post['module_workplaces'] = array_key_exists('module_workplaces', $post) ? 1 : 0;
+                    $post['module_hotels'] = array_key_exists('module_hotels', $post) ? 1 : 0;
+                    $post['module_vehicles'] = array_key_exists('module_vehicles', $post) ? 1 : 0;
+                    $post['module_documents'] = array_key_exists('module_documents', $post) ? 1 : 0;
+                    $post['module_cashbox'] = array_key_exists('module_cashbox', $post) ? 1 : 0;
+                    $post['module_calendar'] = array_key_exists('module_calendar', $post) ? 1 : 0;
+                    $post['module_notifications'] = array_key_exists('module_notifications', $post) ? 1 : 0;
+                    
+                    // JOBSI Limits
+                    $post['max_workers'] = $request->max_workers ?? -1;
+                    $post['max_roles'] = $request->max_roles ?? -1;
+                    $post['max_vehicles'] = $request->max_vehicles ?? -1;
+                    $post['max_hotels'] = $request->max_hotels ?? -1;
+                    $post['max_workplaces'] = $request->max_workplaces ?? -1;
+                    $post['max_document_templates'] = $request->max_document_templates ?? -1;
+                    
                     if($request->hasFile('image'))
                     {
                         $filenameWithExt = $request->file('image')->getClientOriginalName();
@@ -305,19 +323,11 @@ class PlanController extends Controller
                 {
                     return redirect()->back()->with('error', __('Plan not found.'));
                 }
-
-
-            }
-            else
-            {
-                return redirect()->back()->with('error', __('Please set stripe api key & secret key for add new plan.'));
-            }
         }
         else
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
-
     }
 
     public function destroy(Request $request, $id)

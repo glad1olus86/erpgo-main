@@ -120,6 +120,98 @@
             </div>
         </div>
 
+        {{-- JOBSI Modules Section --}}
+        <div class="col-12 mt-4">
+            <h6 class="text-primary">{{ __('JOBSI Modules') }}</h6>
+            <hr class="mt-1">
+        </div>
+        
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_workers" id="module_workers" {{ ($plan['module_workers'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_workers">{{__('Workers')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_workplaces" id="module_workplaces" {{ ($plan['module_workplaces'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_workplaces">{{__('Workplaces')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_hotels" id="module_hotels" {{ ($plan['module_hotels'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_hotels">{{__('Hotels & Rooms')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_vehicles" id="module_vehicles" {{ ($plan['module_vehicles'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_vehicles">{{__('Vehicles')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_documents" id="module_documents" {{ ($plan['module_documents'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_documents">{{__('Documents')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_cashbox" id="module_cashbox" {{ ($plan['module_cashbox'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_cashbox">{{__('Cashbox')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_calendar" id="module_calendar" {{ ($plan['module_calendar'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_calendar">{{__('Calendar')}}</label>
+            </div>
+        </div>
+        <div class="form-group col-md-3 mt-2">
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input" name="module_notifications" id="module_notifications" {{ ($plan['module_notifications'] ?? 1) == 1 ? 'checked="checked"' : '' }}>
+                <label class="custom-control-label form-label" for="module_notifications">{{__('Notifications')}}</label>
+            </div>
+        </div>
+
+        {{-- JOBSI Limits Section --}}
+        <div class="col-12 mt-4">
+            <h6 class="text-primary">{{ __('JOBSI Limits') }}</h6>
+            <hr class="mt-1">
+        </div>
+        
+        <div class="form-group col-md-6">
+            {{Form::label('max_workers',__('Maximum Workers'),['class'=>'form-label'])}}
+            {{Form::number('max_workers', $plan['max_workers'] ?? -1, array('class'=>'form-control', 'placeholder' => __('Enter Maximum Workers')))}}
+            <span class="small">{{__('Note: "-1" for Unlimited')}}</span>
+        </div>
+        <div class="form-group col-md-6">
+            {{Form::label('max_roles',__('Maximum Roles'),['class'=>'form-label'])}}
+            {{Form::number('max_roles', $plan['max_roles'] ?? -1, array('class'=>'form-control', 'placeholder' => __('Enter Maximum Roles')))}}
+            <span class="small">{{__('Note: "-1" for Unlimited')}}</span>
+        </div>
+        <div class="form-group col-md-6">
+            {{Form::label('max_vehicles',__('Maximum Vehicles'),['class'=>'form-label'])}}
+            {{Form::number('max_vehicles', $plan['max_vehicles'] ?? -1, array('class'=>'form-control', 'placeholder' => __('Enter Maximum Vehicles')))}}
+            <span class="small">{{__('Note: "-1" for Unlimited')}}</span>
+        </div>
+        <div class="form-group col-md-6">
+            {{Form::label('max_hotels',__('Maximum Hotels'),['class'=>'form-label'])}}
+            {{Form::number('max_hotels', $plan['max_hotels'] ?? -1, array('class'=>'form-control', 'placeholder' => __('Enter Maximum Hotels')))}}
+            <span class="small">{{__('Note: "-1" for Unlimited')}}</span>
+        </div>
+        <div class="form-group col-md-6">
+            {{Form::label('max_workplaces',__('Maximum Workplaces'),['class'=>'form-label'])}}
+            {{Form::number('max_workplaces', $plan['max_workplaces'] ?? -1, array('class'=>'form-control', 'placeholder' => __('Enter Maximum Workplaces')))}}
+            <span class="small">{{__('Note: "-1" for Unlimited')}}</span>
+        </div>
+        <div class="form-group col-md-6">
+            {{Form::label('max_document_templates',__('Maximum Document Templates'),['class'=>'form-label'])}}
+            {{Form::number('max_document_templates', $plan['max_document_templates'] ?? -1, array('class'=>'form-control', 'placeholder' => __('Enter Maximum Document Templates')))}}
+            <span class="small">{{__('Note: "-1" for Unlimited')}}</span>
+        </div>
+
     </div>
     </div>
 

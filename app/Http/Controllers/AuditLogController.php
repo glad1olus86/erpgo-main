@@ -19,23 +19,23 @@ class AuditLogController extends Controller
         if (Auth::user()->can('view audit log')) {
             $query = AuditLog::forCurrentUser()->with('user');
 
-            // Фильтр по дате
+            // Filter by date
             if ($request->filled('start_date') && $request->filled('end_date')) {
                 $query->byDateRange($request->start_date, $request->end_date);
             }
 
-            // Фильтр по пользователю (кто совершил действие)
+            // Filter by user (who performed the action)
             if ($request->filled('user_id')) {
                 $query->byUser($request->user_id);
             }
 
-            // Фильтр по работнику (над кем совершено действие)
+            // Filter by worker (who was affected)
             if ($request->filled('worker_id')) {
                 $query->where('subject_type', 'App\Models\Worker')
                     ->where('subject_id', $request->worker_id);
             }
 
-            // Фильтр по типу события
+            // Filter by event type
             if ($request->filled('event_type')) {
                 $query->byEventType($request->event_type);
             }
@@ -43,31 +43,31 @@ class AuditLogController extends Controller
             $auditLogs = $query->latest()->paginate(20);
             $users = User::where('created_by', '=', Auth::user()->creatorId())->get()->pluck('name', 'id');
 
-            // Список работников для фильтра
+            // Workers list for filter
             $workers = \App\Models\Worker::where('created_by', Auth::user()->creatorId())
                 ->get()
                 ->mapWithKeys(function ($worker) {
                     return [$worker->id => $worker->first_name . ' ' . $worker->last_name];
                 });
 
-            // Список всех возможных типов событий для фильтра
+            // List of all possible event types for filter
             $eventTypes = [
-                'worker.created' => __('Создание работника'),
-                'worker.updated' => __('Обновление работника'),
-                'worker.deleted' => __('Удаление работника'),
-                'worker.checked_in' => __('Заселение'),
-                'worker.checked_out' => __('Выселение'),
-                'worker.hired' => __('Трудоустройство'),
-                'worker.dismissed' => __('Увольнение'),
-                'room.created' => __('Создание комнаты'),
-                'room.updated' => __('Обновление комнаты'),
-                'room.deleted' => __('Удаление комнаты'),
-                'work_place.created' => __('Создание рабочего места'),
-                'work_place.updated' => __('Обновление рабочего места'),
-                'work_place.deleted' => __('Удаление рабочего места'),
-                'hotel.created' => __('Создание отеля'),
-                'hotel.updated' => __('Обновление отеля'),
-                'hotel.deleted' => __('Удаление отеля'),
+                'worker.created' => __('Worker created'),
+                'worker.updated' => __('Worker updated'),
+                'worker.deleted' => __('Worker deleted'),
+                'worker.checked_in' => __('Check-in'),
+                'worker.checked_out' => __('Check-out'),
+                'worker.hired' => __('Employment'),
+                'worker.dismissed' => __('Dismissal'),
+                'room.created' => __('Room created'),
+                'room.updated' => __('Room updated'),
+                'room.deleted' => __('Room deleted'),
+                'work_place.created' => __('Work place created'),
+                'work_place.updated' => __('Work place updated'),
+                'work_place.deleted' => __('Work place deleted'),
+                'hotel.created' => __('Hotel created'),
+                'hotel.updated' => __('Hotel updated'),
+                'hotel.deleted' => __('Hotel deleted'),
             ];
 
             return view('audit_log.index', compact('auditLogs', 'users', 'workers', 'eventTypes'));

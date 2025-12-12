@@ -36,6 +36,6 @@
 @else
     <div class="text-center py-5">
         <i class="ti ti-calendar-off" style="font-size: 48px; opacity: 0.3;"></i>
-        <p class="mt-3 text-muted">{{ __('Событий в этот день не найдено') }}</p>
+        <p class="mt-3 text-muted">{{ __('No events found for this day') }}</p>
     </div>
 @endif

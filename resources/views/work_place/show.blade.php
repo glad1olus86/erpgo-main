@@ -1,13 +1,13 @@
 <div class="mb-3 px-2 d-flex justify-content-between align-items-center">
     <div>
         <span class="text-muted">
-            {{ __('Рабочее место') }}: <strong>{{ $workPlace->name }}</strong> | 
-            {{ __('Сотрудников') }}: <strong>{{ $workPlace->currentAssignments->count() }}</strong>
+            {{ __('Work Place') }}: <strong>{{ $workPlace->name }}</strong> | 
+            {{ __('Employees') }}: <strong>{{ $workPlace->currentAssignments->count() }}</strong>
         </span>
     </div>
     <a href="#" data-url="{{ route('work-place.assign.form', $workPlace->id) }}" data-ajax-popup="true"
-        data-title="{{ __('Устроить на работу') }}" data-size="lg" class="btn btn-sm btn-primary">
-        <i class="ti ti-plus"></i> {{ __('Устроить') }}
+        data-title="{{ __('Assign to Work') }}" data-size="lg" class="btn btn-sm btn-primary">
+        <i class="ti ti-plus"></i> {{ __('Assign') }}
     </a>
 </div>
 
@@ -15,9 +15,9 @@
     {{-- Bulk Actions Panel --}}
     <div id="work-bulk-actions" class="mb-3 p-2 bg-light rounded" style="display: none;">
         <div class="d-flex align-items-center gap-2">
-            <span class="small"><strong id="work-selected-count">0</strong> {{ __('выбрано') }}</span>
+            <span class="small"><strong id="work-selected-count">0</strong> {{ __('selected') }}</span>
             <button type="button" class="btn btn-sm btn-warning" id="work-bulk-dismiss-btn">
-                <i class="ti ti-user-off me-1"></i>{{ __('Уволить выбранных') }}
+                <i class="ti ti-user-off me-1"></i>{{ __('Dismiss Selected') }}
             </button>
         </div>
     </div>
@@ -38,10 +38,10 @@
                         </div>
                     </th>
                 @endif
-                <th>{{ __('Имя Фамилия') }}</th>
-                <th>{{ __('Пол') }}</th>
-                <th>{{ __('Дата устройства') }}</th>
-                <th>{{ __('Действие') }}</th>
+                <th>{{ __('Full Name') }}</th>
+                <th>{{ __('Gender') }}</th>
+                <th>{{ __('Employment Date') }}</th>
+                <th>{{ __('Action') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -61,16 +61,16 @@
                     </td>
                     <td>
                         @if($assignment->worker->gender == 'male')
-                            <span class="badge bg-primary">{{ __('Мужчина') }}</span>
+                            <span class="badge bg-primary">{{ __('Male') }}</span>
                         @else
-                            <span class="badge bg-danger">{{ __('Женщина') }}</span>
+                            <span class="badge bg-danger">{{ __('Female') }}</span>
                         @endif
                     </td>
                     <td>{{ \Auth::user()->dateFormat($assignment->started_at) }}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <a href="{{ route('worker.show', $assignment->worker->id) }}" target="_blank"
-                                class="btn btn-sm btn-info d-flex align-items-center" data-bs-toggle="tooltip" title="{{ __('Профиль') }}">
+                                class="btn btn-sm btn-info d-flex align-items-center" data-bs-toggle="tooltip" title="{{ __('Profile') }}">
                                 <i class="ti ti-user text-white"></i>
                             </a>
                             {!! Form::open([
@@ -80,11 +80,11 @@
                                 'class' => 'd-inline'
                             ]) !!}
                             <a href="#" class="btn btn-sm btn-warning d-flex align-items-center gap-1 bs-pass-para"
-                                data-bs-toggle="tooltip" title="{{ __('Уволить') }}"
-                                data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие уволит работника.') }}"
+                                data-bs-toggle="tooltip" title="{{ __('Dismiss') }}"
+                                data-confirm="{{ __('Are you sure?') . '|' . __('This action will dismiss the worker.') }}"
                                 data-confirm-yes="document.getElementById('dismiss-form-{{ $assignment->worker->id }}').submit();">
                                 <i class="ti ti-user-off text-white"></i>
-                                <span class="text-white">{{ __('Уволить') }}</span>
+                                <span class="text-white">{{ __('Dismiss') }}</span>
                             </a>
                             {!! Form::close() !!}
                         </div>
@@ -94,7 +94,7 @@
                 <tr>
                     <td colspan="5" class="text-center text-muted py-4">
                         <i class="ti ti-briefcase-off" style="font-size: 24px;"></i><br>
-                        {{ __('На этом месте никто не работает') }}
+                        {{ __('No one works at this place') }}
                     </td>
                 </tr>
             @endforelse
@@ -154,7 +154,7 @@
             var selected = getSelectedWorkers();
             if (selected.length === 0) return;
             
-            if (confirm('{{ __("Вы уверены что хотите уволить") }} ' + selected.length + ' {{ __("работников?") }}')) {
+            if (confirm('{{ __("Are you sure you want to dismiss") }} ' + selected.length + ' {{ __("workers?") }}')) {
                 bulkForm.submit();
             }
         });

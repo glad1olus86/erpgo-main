@@ -102,9 +102,9 @@ class HotelPdfExportService
                 ->implode(', ');
 
             $paymentType = match ($room->payment_type) {
-                'agency' => 'Агенство',
-                'worker' => 'Работник',
-                'partial' => 'Частично',
+                'agency' => __('Agency'),
+                'worker' => __('Worker'),
+                'partial' => __('Partial'),
                 default => '-',
             };
 
@@ -113,9 +113,9 @@ class HotelPdfExportService
                 'room_number' => $room->room_number,
                 'current_occupancy' => $currentOccupancy,
                 'capacity' => $capacity,
-                'is_full' => $isFull ? 'Да' : 'Нет',
-                'is_partial' => $isPartial ? 'Да' : 'Нет',
-                'is_empty' => $isEmpty ? 'Да' : 'Нет',
+                'is_full' => $isFull ? __('Yes') : __('No'),
+                'is_partial' => $isPartial ? __('Yes') : __('No'),
+                'is_empty' => $isEmpty ? __('Yes') : __('No'),
                 'monthly_price' => $room->monthly_price ?? '-',
                 'payment_type' => $paymentType,
                 'partial_amount' => $room->payment_type === 'partial' ? ($room->partial_amount ?? '-') : '-',

@@ -8,11 +8,9 @@
 
     $color = !empty($setting['color']) ? $setting['color'] : 'theme-3';
 
-    if(isset($setting['color_flag']) && $setting['color_flag'] == 'true')
-    {
+    if (isset($setting['color_flag']) && $setting['color_flag'] == 'true') {
         $themeColor = 'custom-color';
-    }
-    else {
+    } else {
         $themeColor = $color;
     }
 
@@ -65,7 +63,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="url" content="{{ url('') . '/' . config('chatify.path') }}" data-user="{{ Auth::user()->id }}">
     <link rel="icon"
-        href="{{ $logo . '/' . (isset($company_favicon) && !empty($company_favicon) ? $company_favicon : 'favicon.png')  . '?' . time() }}"
+        href="{{ $logo . '/' . (isset($company_favicon) && !empty($company_favicon) ? $company_favicon : 'favicon.png') . '?' . time() }}"
         type="image" sizes="16x16">
 
     <!-- Favicon icon -->
@@ -109,11 +107,17 @@
 
     <style>
         :root {
-            --color-customColor: <?= $color ?>;
+            --color-customColor: <?=$color ?>;
         }
     </style>
 
     <link rel="stylesheet" href="{{ asset('css/custom-color.css') }}">
+
+    {{-- JOBSI Theme CSS --}}
+    @if (Auth::check() && Auth::user()->type != 'super admin')
+        <link rel="stylesheet" href="{{ asset('css/jobsi-theme.css') }}">
+    @endif
+
     @stack('css-page')
 
 
@@ -130,7 +134,15 @@
         </div>
     </div>
 
-    @include('partials.admin.menu')
+    @if (Auth::user()->type == 'super admin')
+        @include('partials.admin.menu')
+    @else
+        @include('partials.admin.jobsi-sidebar')
+        <!-- Mobile sidebar close button - fixed to screen edge -->
+        <button type="button" class="jobsi-sidebar-close-fixed" id="jobsiSidebarCloseFixed">
+            <i class="ti ti-x"></i>
+        </button>
+    @endif
     <!-- [ navigation menu ] end -->
     <!-- [ Header ] start -->
     @include('partials.admin.header')
@@ -148,7 +160,8 @@
                     <hr />
                     <div class="form-check form-switch">
                         <input type="checkbox" class="form-check-input" id="pcsetting1" checked />
-                        <label class="form-check-label f-w-600 pl-1" for="pcsetting1">Allow desktop notification</label>
+                        <label class="form-check-label f-w-600 pl-1" for="pcsetting1">Allow desktop
+                            notification</label>
                     </div>
                     <p class="text-muted ms-5">
                         you get lettest content at a time when data will updated
@@ -259,6 +272,35 @@
     </div>
     @include('partials.admin.footer')
     @include('Chatify::layouts.footerLinks')
+
+    {{-- Jobsi sidebar close button handler --}}
+    @if (Auth::user()->type == 'company' || Auth::user()->type == 'coordinator')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Function to close sidebar
+                function closeSidebar() {
+                    var sidebar = document.querySelector('.dash-sidebar.jobsi-sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('mob-sidebar-active');
+                        var overlay = sidebar.querySelector('.dash-menu-overlay');
+                        if (overlay) overlay.remove();
+                    }
+                }
+
+                // Old button inside sidebar
+                var closeBtn = document.getElementById('jobsiSidebarClose');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeSidebar);
+                }
+
+                // New fixed button in right corner
+                var closeBtnFixed = document.getElementById('jobsiSidebarCloseFixed');
+                if (closeBtnFixed) {
+                    closeBtnFixed.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    @endif
 
 </body>
 

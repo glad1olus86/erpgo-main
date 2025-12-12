@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Permission;
@@ -61,6 +62,11 @@ class RoleController extends Controller
     {
         if(\Auth::user()->can('create role'))
         {
+            // Check plan limit
+            if (!PlanLimitService::canCreateRole()) {
+                return redirect()->back()->with('error', __('Role limit reached for your plan.'));
+            }
+
             $validator = \Validator::make(
                 $request->all(), [
                                    'name' => 'required|max:100|unique:roles,name,NULL,id,created_by,' . \Auth::user()->creatorId(),

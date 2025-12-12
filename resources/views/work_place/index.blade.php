@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{ __('Управление рабочими местами') }}
+    {{ __('Work Places Management') }}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item">{{ __('Рабочие места') }}</li>
+    <li class="breadcrumb-item">{{ __('Work Places') }}</li>
 @endsection
 
 @section('action-btn')
@@ -18,7 +18,7 @@
             <div class="my-3 d-flex justify-content-end">
                 @can('manage work place')
                     <a href="#" data-url="{{ route('work-place.export.modal') }}" data-ajax-popup="true"
-                        data-title="{{ __('Экспорт рабочих мест') }}" data-bs-toggle="tooltip" title="{{ __('Экспорт') }}"
+                        data-title="{{ __('Export Work Places') }}" data-bs-toggle="tooltip" title="{{ __('Export') }}"
                         data-size="lg"
                         class="btn btn-sm btn-secondary me-1">
                         <i class="ti ti-file-export"></i>
@@ -26,7 +26,7 @@
                 @endcan
                 @can('create work place')
                     <a href="#" data-url="{{ route('work-place.create') }}" data-ajax-popup="true"
-                        data-title="{{ __('Создать рабочее место') }}" data-bs-toggle="tooltip" title="{{ __('Создать') }}"
+                        data-title="{{ __('Create Work Place') }}" data-bs-toggle="tooltip" title="{{ __('Create') }}"
                         class="btn btn-sm btn-primary">
                         <i class="ti ti-plus"></i>
                     </a>
@@ -40,11 +40,11 @@
                                 <table class="table datatable">
                                     <thead>
                                         <tr>
-                                            <th>{{ __('Название') }}</th>
-                                            <th>{{ __('Сотрудники') }}</th>
-                                            <th>{{ __('Адрес') }}</th>
-                                            <th>{{ __('Контакты') }}</th>
-                                            <th width="200px">{{ __('Действие') }}</th>
+                                            <th>{{ __('Name') }}</th>
+                                            <th>{{ __('Employees') }}</th>
+                                            <th>{{ __('Address') }}</th>
+                                            <th>{{ __('Contacts') }}</th>
+                                            <th width="200px">{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-style">
@@ -52,22 +52,22 @@
                                             <tr>
                                                 <td>
                                                     @if($workPlace->positions_count == 1)
-                                                        {{-- Одна должность - открываем модалку с работниками --}}
+                                                        {{-- Single position - open workers modal --}}
                                                         <a href="#"
                                                             data-url="{{ route('positions.workers', $workPlace->positions->first()->id) }}"
                                                             data-ajax-popup="true"
-                                                            data-title="{{ __('Сотрудники') }}: {{ $workPlace->name }}"
+                                                            data-title="{{ __('Employees') }}: {{ $workPlace->name }}"
                                                             data-size="lg"
                                                             class="text-primary fw-bold">
                                                             {{ $workPlace->name }}
                                                         </a>
                                                     @elseif($workPlace->positions_count > 1)
-                                                        {{-- Несколько должностей - переходим к списку должностей --}}
+                                                        {{-- Multiple positions - go to positions list --}}
                                                         <a href="{{ route('work-place.positions', $workPlace->id) }}" class="text-primary fw-bold">
                                                             {{ $workPlace->name }}
                                                         </a>
                                                     @else
-                                                        {{-- Нет должностей - переходим к созданию --}}
+                                                        {{-- No positions - go to create --}}
                                                         <a href="{{ route('work-place.positions', $workPlace->id) }}" class="text-muted fw-bold">
                                                             {{ $workPlace->name }}
                                                         </a>
@@ -89,7 +89,7 @@
                                                         <div><i class="ti ti-mail"></i> {{ $workPlace->email }}</div>
                                                     @endif
                                                     @if (!$workPlace->phone && !$workPlace->email)
-                                                        <span class="text-muted">{{ __('Нет данных') }}</span>
+                                                        <span class="text-muted">{{ __('No data') }}</span>
                                                     @endif
                                                 </td>
 
@@ -100,9 +100,9 @@
                                                                 <a href="#"
                                                                     data-url="{{ URL::to('work-place/' . $workPlace->id . '/edit') }}"
                                                                     data-ajax-popup="true"
-                                                                    data-title="{{ __('Редактировать рабочее место') }}"
+                                                                    data-title="{{ __('Edit Work Place') }}"
                                                                     class="mx-3 btn btn-sm align-items-center bg-info"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Редактировать') }}"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Edit') }}"
                                                                     data-original-title="{{ __('Edit') }}">
                                                                     <i class="ti ti-pencil text-white"></i></a>
                                                             </div>
@@ -117,9 +117,9 @@
 
                                                                 <a href="#"
                                                                     class="mx-3 btn btn-sm  align-items-center bs-pass-para bg-danger"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Удалить') }}"
+                                                                    data-bs-toggle="tooltip" title="{{ __('Delete') }}"
                                                                     data-original-title="{{ __('Delete') }}"
-                                                                    data-confirm="{{ __('Вы уверены?') . '|' . __('Это действие нельзя отменить. Вы хотите продолжить?') }}"
+                                                                    data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
                                                                     data-confirm-yes="document.getElementById('delete-form-{{ $workPlace->id }}').submit();"><i
                                                                         class="ti ti-trash text-white"></i></a>
                                                                 {!! Form::close() !!}
@@ -129,17 +129,17 @@
                                                             <div class="action-btn ms-2">
                                                                 <a href="{{ route('work-place.positions', $workPlace->id) }}"
                                                                     class="mx-3 btn btn-sm align-items-center bg-success"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Должности') }}">
+                                                                    data-bs-toggle="tooltip" title="{{ __('Positions') }}">
                                                                     <i class="ti ti-briefcase text-white"></i>
                                                                 </a>
                                                             </div>
                                                             <div class="action-btn ms-2">
                                                                 <a href="#"
                                                                     data-url="{{ route('work-place.workers', $workPlace->id) }}"
-                                                                    data-ajax-popup="true" data-title="{{ __('Сотрудники') }}"
+                                                                    data-ajax-popup="true" data-title="{{ __('Employees') }}"
                                                                     data-size="lg"
                                                                     class="mx-3 btn btn-sm align-items-center bg-warning"
-                                                                    data-bs-toggle="tooltip" title="{{ __('Просмотреть сотрудников') }}">
+                                                                    data-bs-toggle="tooltip" title="{{ __('View Employees') }}">
                                                                     <i class="ti ti-users text-white"></i>
                                                                 </a>
                                                             </div>
