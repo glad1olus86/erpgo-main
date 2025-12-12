@@ -81,7 +81,7 @@
                 @php
                     $languages = [
                         'en' => ['name' => 'English', 'flag' => '🇬🇧'],
-                        'ru' => ['name' => 'Русский', 'flag' => '🇷🇺'],
+                        'ru' => ['name' => 'Русский', 'flag' => ''],
                         'uk' => ['name' => 'Українська', 'flag' => '🇺🇦'],
                         'cs' => ['name' => 'Čeština', 'flag' => '🇨🇿'],
                     ];
