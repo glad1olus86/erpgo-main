@@ -42,6 +42,10 @@ class Plan extends Model
         'max_hotels',
         'max_workplaces',
         'max_document_templates',
+        // User Pricing
+        'base_users_limit',
+        'manager_price',
+        'curator_price',
     ];
 
     private static $getplans = NULL;
@@ -130,5 +134,52 @@ class Plan extends Model
             'calendar' => __('Calendar'),
             'notifications' => __('Notifications'),
         ];
+    }
+
+    /**
+     * Get manager price per month (from admin settings)
+     */
+    public function getManagerPrice(): float
+    {
+        $billingSettings = Utility::getAdminBillingSettings();
+        return (float) $billingSettings['manager_price'];
+    }
+
+    /**
+     * Get curator price per month (from admin settings)
+     */
+    public function getCuratorPrice(): float
+    {
+        $billingSettings = Utility::getAdminBillingSettings();
+        return (float) $billingSettings['curator_price'];
+    }
+
+    /**
+     * Get role price converted to company currency
+     */
+    public function getRolePriceForCompany(string $role, int $companyId): array
+    {
+        $priceInfo = Utility::getBillingPriceForCompany($role, $companyId);
+        return $priceInfo;
+    }
+
+    /**
+     * Get base users limit for billable roles
+     */
+    public function getBaseUsersLimit(): int
+    {
+        return (int) ($this->base_users_limit ?? $this->max_users ?? 3);
+    }
+
+    /**
+     * Get price for a specific role
+     */
+    public function getRolePrice(string $role): float
+    {
+        return match($role) {
+            'manager' => $this->getManagerPrice(),
+            'curator' => $this->getCuratorPrice(),
+            default => 0.00
+        };
     }
 }

@@ -13,6 +13,72 @@
 @section('action-btn')
 @endsection
 
+@push('css-page')
+<style>
+    .search-filter-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .search-box {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+    }
+    .search-box .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+        pointer-events: none;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 12px 40px 12px 42px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .search-box input:focus {
+        outline: none;
+        border-color: #FF0049;
+        box-shadow: 0 0 0 3px rgba(255, 0, 73, 0.1);
+    }
+    .search-box input.searching {
+        border-color: #FF0049;
+        background: #FFF8FA;
+    }
+    .search-box .search-clear {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        cursor: pointer;
+        display: none;
+    }
+    .search-box .search-clear:hover {
+        color: #FF0049;
+    }
+    .results-count {
+        font-size: 13px;
+        color: #888;
+        padding: 8px 0;
+        margin-bottom: 20px;
+    }
+    .results-count strong {
+        color: #FF0049;
+    }
+    tr.search-hidden {
+        display: none !important;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="row">
 
@@ -38,8 +104,22 @@
                 <div class="col-sm-12">
                     <div class="card">
                         <div class="card-body table-border-style">
+                            {{-- Search --}}
+                            <div class="search-filter-wrapper">
+                                <div class="search-box">
+                                    <i class="ti ti-search search-icon"></i>
+                                    <input type="text" id="liveSearchInput" placeholder="{{ __('Search by name, address...') }}" autocomplete="off">
+                                    <span class="search-clear" id="clearSearch"><i class="ti ti-x"></i></span>
+                                </div>
+                            </div>
+                            
+                            {{-- Results Count --}}
+                            <div class="results-count">
+                                {{ __('Found') }}: <strong id="resultsCount">{{ count($hotels) }}</strong> {{ __('hotels') }}
+                            </div>
+                            
                             <div class="table-responsive">
-                                <table class="table datatable">
+                                <table class="table" id="hotels-table">
                                     <thead>
                                         <tr>
                                             <th>{{ __('Name') }}</th>
@@ -65,7 +145,7 @@
                                                             ? 'bg-warning'
                                                             : 'bg-success');
                                             @endphp
-                                            <tr>
+                                            <tr data-name="{{ strtolower($hotel->name) }}" data-address="{{ strtolower($hotel->address ?? '') }}">
                                                 <td>
                                                     <a href="{{ route('hotel.rooms', $hotel->id) }}" class="text-primary fw-medium">
                                                         {{ $hotel->name }}
@@ -152,3 +232,40 @@
         </div>
     </div>
 @endsection
+
+@push('script-page')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var searchInput = document.getElementById('liveSearchInput');
+    var clearBtn = document.getElementById('clearSearch');
+    var rows = document.querySelectorAll('#hotels-table tbody tr');
+
+    searchInput.addEventListener('input', function() {
+        var query = this.value.toLowerCase().trim();
+        var visibleCount = 0;
+
+        clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+        this.classList.toggle('searching', query.length > 0);
+
+        rows.forEach(function(row) {
+            var name = row.dataset.name || '';
+            var address = row.dataset.address || '';
+
+            if (query.length < 2 || name.includes(query) || address.includes(query)) {
+                row.classList.remove('search-hidden');
+                visibleCount++;
+            } else {
+                row.classList.add('search-hidden');
+            }
+        });
+
+        document.getElementById('resultsCount').textContent = visibleCount;
+    });
+
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+    });
+});
+</script>
+@endpush

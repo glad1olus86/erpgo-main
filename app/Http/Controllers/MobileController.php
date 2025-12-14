@@ -34,7 +34,7 @@ class MobileController extends Controller
     public function workers(Request $request)
     {
         $query = Worker::where('created_by', $this->getCreatorId())
-            ->with(['currentWorkAssignment', 'currentAssignment']);
+            ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel', 'currentAssignment.room']);
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -48,9 +48,46 @@ class MobileController extends Controller
             });
         }
 
+        // Filter by hotel
+        if ($request->filled('hotel_id')) {
+            $hotelId = $request->hotel_id;
+            $query->whereHas('currentAssignment', function ($q) use ($hotelId) {
+                $q->where('hotel_id', $hotelId);
+            });
+        }
+
+        // Filter by workplace
+        if ($request->filled('workplace_id')) {
+            $workplaceId = $request->workplace_id;
+            $query->whereHas('currentWorkAssignment', function ($q) use ($workplaceId) {
+                $q->where('work_place_id', $workplaceId);
+            });
+        }
+
+        // Filter by nationality
+        if ($request->filled('nationality')) {
+            $query->where('nationality', $request->nationality);
+        }
+
+        // Filter by gender
+        if ($request->filled('gender')) {
+            $genders = is_array($request->gender) ? $request->gender : [$request->gender];
+            $query->whereIn('gender', $genders);
+        }
+
         $workers = $query->orderBy('first_name')->paginate(20);
 
-        return view('mobile.workers.index', compact('workers'));
+        // Get filter options
+        $hotels = Hotel::where('created_by', $this->getCreatorId())->orderBy('name')->get();
+        $workplaces = WorkPlace::where('created_by', $this->getCreatorId())->orderBy('name')->get();
+        $nationalities = Worker::where('created_by', $this->getCreatorId())
+            ->whereNotNull('nationality')
+            ->where('nationality', '!=', '')
+            ->distinct()
+            ->pluck('nationality')
+            ->sort();
+
+        return view('mobile.workers.index', compact('workers', 'hotels', 'workplaces', 'nationalities'));
     }
 
     /**

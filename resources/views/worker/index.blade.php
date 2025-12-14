@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@php use App\Services\NationalityFlagService; @endphp
+
 @section('page-title')
     {{ __('Worker Management') }}
 @endsection
@@ -45,6 +47,272 @@
     #workers-table th:first-child::before {
         display: none !important;
     }
+    
+    /* Search & Filter Styles */
+    .search-filter-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+        margin-bottom: 20px;
+    }
+    .search-box {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+    }
+    .search-box .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+        pointer-events: none;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 12px 40px 12px 42px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .search-box input:focus {
+        outline: none;
+        border-color: #FF0049;
+        box-shadow: 0 0 0 3px rgba(255, 0, 73, 0.1);
+    }
+    .search-box input.searching {
+        border-color: #FF0049;
+        background: #FFF8FA;
+    }
+    .search-box .search-clear {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        cursor: pointer;
+        display: none;
+    }
+    .search-box .search-clear:hover {
+        color: #FF0049;
+    }
+    
+    /* Filter Toggle */
+    .filter-toggle-btn {
+        padding: 12px 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        background: #fff;
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .filter-toggle-btn:hover,
+    .filter-toggle-btn.has-filters {
+        border-color: #FF0049;
+        color: #FF0049;
+        background: #FFF5F7;
+    }
+    .filter-toggle-btn .filter-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        background: #FF0049;
+        color: #fff;
+        border-radius: 50%;
+        font-size: 11px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Filter Panel */
+    .filter-panel {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        display: none;
+        animation: slideDown 0.2s ease;
+    }
+    .filter-panel.show {
+        display: block;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .filter-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .filter-panel-title {
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .filter-panel-title i {
+        color: #FF0049;
+    }
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    .filter-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+    }
+    .filter-group select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .filter-group select:focus {
+        outline: none;
+        border-color: #FF0049;
+    }
+    .gender-toggles {
+        display: flex;
+        gap: 10px;
+    }
+    .gender-toggle {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .gender-toggle input { display: none; }
+    .gender-toggle:hover {
+        border-color: #FF0049;
+        background: #FFF8FA;
+    }
+    .gender-toggle.active {
+        border-color: #FF0049;
+        background: #FFF0F4;
+        color: #FF0049;
+    }
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f0;
+    }
+    .filter-btn-reset {
+        padding: 10px 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        color: #666;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    .filter-btn-reset:hover {
+        background: #f5f5f5;
+    }
+    .filter-btn-apply {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #FF0049 0%, #FF3366 100%);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(255, 0, 73, 0.3);
+    }
+    .filter-btn-apply:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(255, 0, 73, 0.4);
+    }
+    
+    /* Active Filters */
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .active-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: #FFF0F4;
+        border: 1px solid #FFD6E0;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #FF0049;
+        cursor: pointer;
+    }
+    .active-filter-chip:hover {
+        background: #FFE0E8;
+    }
+    .active-filter-chip .chip-remove {
+        font-size: 14px;
+        opacity: 0.7;
+    }
+    .active-filter-chip:hover .chip-remove {
+        opacity: 1;
+    }
+    
+    /* Results Count */
+    .results-count {
+        font-size: 13px;
+        color: #888;
+        padding: 8px 0;
+        margin-bottom: 20px;
+    }
+    .results-count strong {
+        color: #FF0049;
+    }
+    
+    /* Highlight */
+    .highlight {
+        background: #FFE0E8;
+        color: #FF0049;
+        padding: 0 2px;
+        border-radius: 2px;
+    }
+    
+    /* Hidden row */
+    tr.hidden-row,
+    tr.search-hidden {
+        display: none !important;
+    }
 </style>
 @endpush
 
@@ -53,6 +321,89 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body table-border-style">
+                    {{-- Search & Filter --}}
+                    <div class="search-filter-wrapper">
+                        <div class="search-box">
+                            <i class="ti ti-search search-icon"></i>
+                            <input type="text" id="liveSearchInput" placeholder="{{ __('Search by name, nationality...') }}" autocomplete="off">
+                            <span class="search-clear" id="clearSearch"><i class="ti ti-x"></i></span>
+                        </div>
+                        <button type="button" class="filter-toggle-btn" id="filterToggle">
+                            <i class="ti ti-adjustments-horizontal"></i>
+                            <span>{{ __('Filters') }}</span>
+                        </button>
+                    </div>
+                    
+                    {{-- Filter Panel --}}
+                    <div class="filter-panel" id="filterPanel">
+                        <div class="filter-panel-header">
+                            <span class="filter-panel-title">
+                                <i class="ti ti-filter"></i>{{ __('Filter Workers') }}
+                            </span>
+                            <button type="button" class="btn-close" onclick="toggleFilters()"></button>
+                        </div>
+                        <div class="filter-grid">
+                            <div class="filter-group">
+                                <label><i class="ti ti-home-2 me-1"></i>{{ __('Accommodation') }}</label>
+                                <select id="filterHotel">
+                                    <option value="">{{ __('All accommodations') }}</option>
+                                    @foreach($hotels ?? [] as $hotel)
+                                        <option value="{{ $hotel->id }}">{{ $hotel->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-building-factory-2 me-1"></i>{{ __('Work Place') }}</label>
+                                <select id="filterWorkplace">
+                                    <option value="">{{ __('All workplaces') }}</option>
+                                    @foreach($workplaces ?? [] as $workplace)
+                                        <option value="{{ $workplace->id }}">{{ $workplace->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-flag me-1"></i>{{ __('Nationality') }}</label>
+                                <select id="filterNationality">
+                                    <option value="">{{ __('All nationalities') }}</option>
+                                    @foreach($nationalities ?? [] as $nat)
+                                        <option value="{{ $nat }}">{{ $nat }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-gender-bigender me-1"></i>{{ __('Gender') }}</label>
+                                <div class="gender-toggles">
+                                    <label class="gender-toggle" id="genderMale">
+                                        <input type="checkbox" value="male">
+                                        <i class="ti ti-man"></i>
+                                        <span>{{ __('Male') }}</span>
+                                    </label>
+                                    <label class="gender-toggle" id="genderFemale">
+                                        <input type="checkbox" value="female">
+                                        <i class="ti ti-woman"></i>
+                                        <span>{{ __('Female') }}</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button type="button" class="filter-btn-reset" onclick="resetFilters()">
+                                <i class="ti ti-refresh me-1"></i>{{ __('Reset') }}
+                            </button>
+                            <button type="button" class="filter-btn-apply" onclick="applyFilters()">
+                                <i class="ti ti-check me-1"></i>{{ __('Apply Filters') }}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {{-- Active Filters --}}
+                    <div class="active-filters" id="activeFilters"></div>
+                    
+                    {{-- Results Count --}}
+                    <div class="results-count">
+                        {{ __('Found') }}: <strong id="resultsCount">{{ count($workers) }}</strong> {{ __('workers') }}
+                    </div>
+                    
                     {{-- Bulk Actions Panel --}}
                     <div id="bulk-actions-panel" class="mb-3 p-3 bg-light rounded" style="display: none;">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -102,7 +453,12 @@
                             </thead>
                             <tbody>
                                 @foreach ($workers as $worker)
-                                    <tr data-worker-id="{{ $worker->id }}">
+                                    <tr data-worker-id="{{ $worker->id }}"
+                                        data-name="{{ strtolower($worker->first_name . ' ' . $worker->last_name) }}"
+                                        data-nationality="{{ strtolower($worker->nationality ?? '') }}"
+                                        data-gender="{{ $worker->gender }}"
+                                        data-hotel-id="{{ $worker->currentAssignment?->hotel_id }}"
+                                        data-workplace-id="{{ $worker->currentWorkAssignment?->work_place_id }}">
                                         <td>
                                             <div class="form-check">
                                                 <input type="checkbox" class="form-check-input worker-checkbox" 
@@ -115,18 +471,18 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium">
+                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium worker-first-name">
                                                 {{ $worker->first_name }}
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium">
+                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium worker-last-name">
                                                 {{ $worker->last_name }}
                                             </a>
                                         </td>
                                         <td>{{ \Auth::user()->dateFormat($worker->dob) }}</td>
                                         <td>{{ $worker->gender == 'male' ? __('Male') : __('Female') }}</td>
-                                        <td>{{ $worker->nationality }}</td>
+                                        <td class="worker-nationality">{!! NationalityFlagService::getFlagHtml($worker->nationality, 18) !!}{{ $worker->nationality }}</td>
                                         <td>{{ \Auth::user()->dateFormat($worker->registration_date) }}</td>
                                         <td class="Action">
                                             <span>
@@ -385,15 +741,216 @@
 
 @push('script-page')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize DataTable with first column not sortable
-    var workersTable = new simpleDatatables.DataTable("#workers-table", {
-        columns: [
-            { select: 0, sortable: false } // Disable sorting on checkbox column
-        ],
-        perPage: 10,
-        perPageSelect: [10, 25, 50, 100]
+// Filter toggle function
+function toggleFilters() {
+    var panel = document.getElementById('filterPanel');
+    panel.classList.toggle('show');
+}
+
+// Reset filters
+function resetFilters() {
+    document.getElementById('filterHotel').value = '';
+    document.getElementById('filterWorkplace').value = '';
+    document.getElementById('filterNationality').value = '';
+    document.getElementById('genderMale').classList.remove('active');
+    document.getElementById('genderFemale').classList.remove('active');
+    document.querySelector('#genderMale input').checked = false;
+    document.querySelector('#genderFemale input').checked = false;
+    applyFilters();
+}
+
+// Apply filters
+function applyFilters() {
+    var hotelId = document.getElementById('filterHotel').value;
+    var workplaceId = document.getElementById('filterWorkplace').value;
+    var nationality = document.getElementById('filterNationality').value.toLowerCase();
+    var maleChecked = document.querySelector('#genderMale input').checked;
+    var femaleChecked = document.querySelector('#genderFemale input').checked;
+    
+    var rows = document.querySelectorAll('#workers-table tbody tr[data-worker-id]');
+    var visibleCount = 0;
+    var activeFiltersHtml = '';
+    var filterCount = 0;
+    
+    rows.forEach(function(row) {
+        var show = true;
+        
+        // Hotel filter
+        if (hotelId && row.dataset.hotelId != hotelId) {
+            show = false;
+        }
+        
+        // Workplace filter
+        if (workplaceId && row.dataset.workplaceId != workplaceId) {
+            show = false;
+        }
+        
+        // Nationality filter
+        if (nationality && row.dataset.nationality !== nationality) {
+            show = false;
+        }
+        
+        // Gender filter
+        if (maleChecked || femaleChecked) {
+            var gender = row.dataset.gender;
+            if (maleChecked && !femaleChecked && gender !== 'male') show = false;
+            if (femaleChecked && !maleChecked && gender !== 'female') show = false;
+        }
+        
+        if (show) {
+            row.classList.remove('hidden-row');
+            visibleCount++;
+        } else {
+            row.classList.add('hidden-row');
+        }
     });
+    
+    // Update results count
+    document.getElementById('resultsCount').textContent = visibleCount;
+    
+    // Build active filters chips
+    var activeFiltersEl = document.getElementById('activeFilters');
+    var filterToggle = document.getElementById('filterToggle');
+    
+    if (hotelId) {
+        var hotelName = document.querySelector('#filterHotel option[value="' + hotelId + '"]').textContent;
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'hotel\')"><i class="ti ti-home-2"></i>' + hotelName + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (workplaceId) {
+        var wpName = document.querySelector('#filterWorkplace option[value="' + workplaceId + '"]').textContent;
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'workplace\')"><i class="ti ti-building-factory-2"></i>' + wpName + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (nationality) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'nationality\')"><i class="ti ti-flag"></i>' + nationality + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (maleChecked) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'male\')"><i class="ti ti-man"></i>{{ __("Male") }}<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (femaleChecked) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'female\')"><i class="ti ti-woman"></i>{{ __("Female") }}<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    
+    activeFiltersEl.innerHTML = activeFiltersHtml;
+    
+    // Update filter toggle button
+    if (filterCount > 0) {
+        filterToggle.classList.add('has-filters');
+        var countBadge = filterToggle.querySelector('.filter-count');
+        if (!countBadge) {
+            countBadge = document.createElement('span');
+            countBadge.className = 'filter-count';
+            filterToggle.appendChild(countBadge);
+        }
+        countBadge.textContent = filterCount;
+    } else {
+        filterToggle.classList.remove('has-filters');
+        var countBadge = filterToggle.querySelector('.filter-count');
+        if (countBadge) countBadge.remove();
+    }
+}
+
+// Clear specific filter
+function clearFilter(type) {
+    if (type === 'hotel') document.getElementById('filterHotel').value = '';
+    if (type === 'workplace') document.getElementById('filterWorkplace').value = '';
+    if (type === 'nationality') document.getElementById('filterNationality').value = '';
+    if (type === 'male') {
+        document.getElementById('genderMale').classList.remove('active');
+        document.querySelector('#genderMale input').checked = false;
+    }
+    if (type === 'female') {
+        document.getElementById('genderFemale').classList.remove('active');
+        document.querySelector('#genderFemale input').checked = false;
+    }
+    applyFilters();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter toggle button
+    document.getElementById('filterToggle').addEventListener('click', toggleFilters);
+    
+    // Gender toggles
+    document.querySelectorAll('.gender-toggle input').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            this.closest('.gender-toggle').classList.toggle('active', this.checked);
+        });
+    });
+    
+    // Live search
+    var searchInput = document.getElementById('liveSearchInput');
+    var clearBtn = document.getElementById('clearSearch');
+    var originalNames = {};
+    var rows = document.querySelectorAll('#workers-table tbody tr[data-worker-id]');
+    
+    // Store original names
+    rows.forEach(function(row, index) {
+        var firstName = row.querySelector('.worker-first-name');
+        var lastName = row.querySelector('.worker-last-name');
+        if (firstName && lastName) {
+            originalNames[index] = {
+                first: firstName.innerHTML,
+                last: lastName.innerHTML
+            };
+        }
+    });
+    
+    searchInput.addEventListener('input', function() {
+        var query = this.value.toLowerCase().trim();
+        var visibleCount = 0;
+        
+        clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+        this.classList.toggle('searching', query.length > 0);
+        
+        rows.forEach(function(row, index) {
+            var name = row.dataset.name || '';
+            var nationality = row.dataset.nationality || '';
+            var firstName = row.querySelector('.worker-first-name');
+            var lastName = row.querySelector('.worker-last-name');
+            
+            if (query.length < 2) {
+                row.classList.remove('search-hidden');
+                if (firstName && originalNames[index]) firstName.innerHTML = originalNames[index].first;
+                if (lastName && originalNames[index]) lastName.innerHTML = originalNames[index].last;
+                visibleCount++;
+            } else if (name.includes(query) || nationality.includes(query)) {
+                row.classList.remove('search-hidden');
+                visibleCount++;
+                
+                // Highlight matching text
+                if (firstName && originalNames[index]) {
+                    var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                    firstName.innerHTML = originalNames[index].first.replace(regex, '<span class="highlight">$1</span>');
+                }
+                if (lastName && originalNames[index]) {
+                    var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                    lastName.innerHTML = originalNames[index].last.replace(regex, '<span class="highlight">$1</span>');
+                }
+            } else {
+                row.classList.add('search-hidden');
+            }
+        });
+        
+        document.getElementById('resultsCount').textContent = visibleCount;
+    });
+    
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+    });
+    
+    // Initialize DataTable with first column not sortable - DISABLED for custom filtering
+    // var workersTable = new simpleDatatables.DataTable("#workers-table", {
+    //     columns: [
+    //         { select: 0, sortable: false }
+    //     ],
+    //     perPage: 10,
+    //     perPageSelect: [10, 25, 50, 100]
+    // });
 
     var selectAllCheckbox = document.getElementById('select-all-checkbox');
     var bulkActionsPanel = document.getElementById('bulk-actions-panel');

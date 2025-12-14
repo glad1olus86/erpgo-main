@@ -15,9 +15,19 @@ class WorkerController extends Controller
     {
         if (Auth::user()->can('manage worker')) {
             $workers = Worker::where('created_by', '=', Auth::user()->creatorId())
-                ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel'])
+                ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel', 'currentAssignment.room'])
                 ->get();
-            return view('worker.index', compact('workers'));
+            
+            // Get filter data
+            $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())->get();
+            $workplaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
+            $nationalities = Worker::where('created_by', Auth::user()->creatorId())
+                ->whereNotNull('nationality')
+                ->distinct()
+                ->pluck('nationality')
+                ->sort();
+            
+            return view('worker.index', compact('workers', 'hotels', 'workplaces', 'nationalities'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }

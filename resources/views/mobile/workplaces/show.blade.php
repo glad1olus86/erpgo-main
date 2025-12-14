@@ -22,7 +22,8 @@
         <div class="mobile-card mb-3">
             <div class="d-flex align-items-start">
                 <div class="mobile-workplace-icon me-3">
-                    <i class="ti ti-building"></i>
+                    <img src="{{ asset('fromfigma/workplaces.svg') }}" alt="" width="28" height="28" style="filter: brightness(0) invert(1);"
+                         onerror="this.outerHTML='<i class=\'ti ti-briefcase\'></i>'">
                 </div>
                 <div class="flex-grow-1">
                     <h5 class="mb-1">{{ $workplace->name }}</h5>
@@ -60,11 +61,20 @@
         </div>
 
         {{-- Positions Section --}}
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0"><i class="ti ti-briefcase me-2"></i>{{ __('Positions') }}</h6>
+        <div class="mobile-section-title">
+            <div class="mobile-section-title-left">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <span>{{ __('Positions') }}</span>
+            </div>
             @can('manage work place')
-                <button type="button" class="btn btn-sm mobile-btn-primary" data-bs-toggle="modal" data-bs-target="#createPositionModal">
-                    <i class="ti ti-plus"></i>
+                <button type="button" class="mobile-add-btn" data-bs-toggle="modal" data-bs-target="#createPositionModal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                 </button>
             @endcan
         </div>
@@ -76,7 +86,10 @@
             <div class="mobile-card mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h6 class="mb-0">
-                        <i class="ti ti-briefcase me-2 text-primary"></i>{{ $position->name }}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2" class="me-2" style="vertical-align: -2px;">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>{{ $position->name }}
                     </h6>
                     <span class="mobile-badge {{ $positionWorkers->count() > 0 ? 'mobile-badge-success' : 'mobile-badge-secondary' }}">
                         {{ $positionWorkers->count() }} {{ __('employees') }}
@@ -189,6 +202,44 @@
     </div>
 
     <style>
+        .mobile-section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #FFE0E6;
+        }
+        .mobile-section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mobile-section-title-left span {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FF0049;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .mobile-add-btn {
+            width: 40px;
+            height: 40px;
+            background: #FFE0E6;
+            border-radius: 10px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mobile-add-btn:hover {
+            background: #FF0049;
+        }
+        .mobile-add-btn:hover svg {
+            stroke: #fff;
+        }
         .mobile-btn-primary {
             background: #FF0049 !important;
             border-color: #FF0049 !important;

@@ -71,6 +71,9 @@ class PlanController extends Controller
                 $validation['max_customers'] = 'required|numeric';
                 $validation['max_venders']   = 'required|numeric';
                 $validation['storage_limit']   = 'required|numeric';
+                $validation['base_users_limit'] = 'required|numeric|min:0';
+                $validation['manager_price'] = 'required|numeric|min:0';
+                $validation['curator_price'] = 'required|numeric|min:0';
 
                 if($request->image)
                 {
@@ -124,6 +127,11 @@ class PlanController extends Controller
                 $post['max_hotels'] = $request->max_hotels ?? -1;
                 $post['max_workplaces'] = $request->max_workplaces ?? -1;
                 $post['max_document_templates'] = $request->max_document_templates ?? -1;
+                
+                // User Pricing
+                $post['base_users_limit'] = $request->base_users_limit ?? 3;
+                $post['manager_price'] = $request->manager_price ?? 50.00;
+                $post['curator_price'] = $request->curator_price ?? 30.00;
                 
                 if($request->hasFile('image'))
                 {
@@ -197,6 +205,9 @@ class PlanController extends Controller
                             'max_customers' => 'required|numeric',
                             'max_venders'   => 'required|numeric',
                             'storage_limit' => 'required|numeric',
+                            'base_users_limit' => 'required|numeric|min:0',
+                            'manager_price' => 'required|numeric|min:0',
+                            'curator_price' => 'required|numeric|min:0',
                         ]
                     );
 
@@ -285,6 +296,11 @@ class PlanController extends Controller
                     $post['max_hotels'] = $request->max_hotels ?? -1;
                     $post['max_workplaces'] = $request->max_workplaces ?? -1;
                     $post['max_document_templates'] = $request->max_document_templates ?? -1;
+                    
+                    // User Pricing
+                    $post['base_users_limit'] = $request->base_users_limit ?? 3;
+                    $post['manager_price'] = $request->manager_price ?? 50.00;
+                    $post['curator_price'] = $request->curator_price ?? 30.00;
                     
                     if($request->hasFile('image'))
                     {

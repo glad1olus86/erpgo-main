@@ -26,12 +26,8 @@
         {{-- Page Title --}}
         <div class="mobile-section-title">
             <div class="mobile-section-title-left">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14,2 14,8 20,8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
+                <img src="{{ asset('fromfigma/document.svg') }}" alt="" width="22" height="22"
+                     onerror="this.outerHTML='<svg width=22 height=22 viewBox=\'0 0 24 24\' fill=none stroke=#FF0049 stroke-width=2><path d=\'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\'></path><polyline points=\'14,2 14,8 20,8\'></polyline></svg>'">
                 <span>{{ __('Document Templates') }}</span>
             </div>
         </div>

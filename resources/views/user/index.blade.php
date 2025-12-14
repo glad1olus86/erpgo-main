@@ -224,6 +224,10 @@
 </div>
 @endsection
 
+@if(\Auth::user()->type == 'company')
+    @include('components.billing-confirmation-modal')
+@endif
+
 @push('script-page')
     <script>
         $(document).on('change', '#password_switch', function() {
@@ -246,5 +250,57 @@
                 }));
             }, 2000);
         });
+        
+        // Billing confirmation for user creation
+        @if(\Auth::user()->type == 'company')
+        $(document).on('submit', '.commonModal form[action*="users"]', function(e) {
+            var form = $(this);
+            var roleSelect = form.find('select[name="role"]');
+            
+            if (!roleSelect.length) return true;
+            
+            var roleName = roleSelect.find('option:selected').text().toLowerCase();
+            
+            // Check if it's a billable role (manager or curator)
+            if (roleName !== 'manager' && roleName !== 'curator') {
+                return true;
+            }
+            
+            // Check if already confirmed
+            if (form.find('input[name="billing_confirmed"]').length) {
+                return true;
+            }
+            
+            e.preventDefault();
+            
+            // Check billing limit via AJAX
+            $.ajax({
+                url: '{{ route("billing.check-limit") }}',
+                method: 'POST',
+                data: {
+                    role: roleName,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success && response.limit_info.would_exceed_limit) {
+                        // Show billing confirmation modal
+                        response.limit_info.role = roleName;
+                        window.BillingConfirmationModal.show(response.limit_info, function() {
+                            // Add confirmation flag and submit using native form submit
+                            form.append('<input type="hidden" name="billing_confirmed" value="1">');
+                            form[0].submit();
+                        });
+                    } else {
+                        // No confirmation needed, submit directly using native submit
+                        form[0].submit();
+                    }
+                },
+                error: function() {
+                    // On error, just submit the form
+                    form[0].submit();
+                }
+            });
+        });
+        @endif
     </script>
 @endpush

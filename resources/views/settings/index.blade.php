@@ -405,6 +405,10 @@
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div>
                             </a>
                             @endcan
+                            <a href="#billing-pricing-settings"
+                                class="list-group-item list-group-item-action border-0">{{ __('Billing Pricing') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div>
+                            </a>
 
                         </div>
                     </div>
@@ -4289,6 +4293,103 @@
                         {{ Form::close() }}
                     </div>
                     @endcan
+
+                    <!--Billing Pricing Settings-->
+                    @php
+                        $billingSettings = \App\Models\Utility::getAdminBillingSettings();
+                    @endphp
+                    <div id="billing-pricing-settings" class="card">
+                        <div class="card-header p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="ti ti-currency-dollar me-2"></i>
+                                        {{ __('Billing Pricing') }}
+                                    </h5>
+                                    <small class="text-muted">{{ __('Set pricing for additional users (Manager/Curator) when companies exceed their plan limits') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {{ Form::open(['route' => 'admin.billing.settings.save', 'method' => 'post', 'class' => 'mb-0']) }}
+                        <div class="card-body p-3">
+                            <div class="alert alert-info mb-4">
+                                <div class="d-flex">
+                                    <i class="ti ti-info-circle fs-4 me-2"></i>
+                                    <div>
+                                        <strong>{{ __('How it works') }}</strong>
+                                        <p class="mb-0 small">{{ __('When a company exceeds their plan user limit, they will be charged per additional Manager or Curator. Prices are set in USD and automatically converted to company currency.') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="bg-primary rounded-3 p-2 me-3">
+                                                    <i class="ti ti-briefcase text-white fs-5"></i>
+                                                </div>
+                                                <h6 class="mb-0">{{ __('Manager Price') }}</h6>
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" step="0.01" min="0" class="form-control" 
+                                                        name="billing_manager_price" 
+                                                        value="{{ $billingSettings['manager_price'] ?? 50 }}"
+                                                        placeholder="50.00">
+                                                    <span class="input-group-text">/{{ __('month') }}</span>
+                                                </div>
+                                                <small class="text-muted">{{ __('Price per additional Manager user') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="bg-success rounded-3 p-2 me-3">
+                                                    <i class="ti ti-eye text-white fs-5"></i>
+                                                </div>
+                                                <h6 class="mb-0">{{ __('Curator Price') }}</h6>
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" step="0.01" min="0" class="form-control" 
+                                                        name="billing_curator_price" 
+                                                        value="{{ $billingSettings['curator_price'] ?? 30 }}"
+                                                        placeholder="30.00">
+                                                    <span class="input-group-text">/{{ __('month') }}</span>
+                                                </div>
+                                                <small class="text-muted">{{ __('Price per additional Curator user') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Base Currency') }}</label>
+                                        <select class="form-control" name="billing_base_currency">
+                                            <option value="USD" {{ ($billingSettings['base_currency'] ?? 'USD') == 'USD' ? 'selected' : '' }}>USD ($)</option>
+                                            <option value="EUR" {{ ($billingSettings['base_currency'] ?? 'USD') == 'EUR' ? 'selected' : '' }}>EUR (€)</option>
+                                        </select>
+                                        <small class="text-muted">{{ __('Currency in which prices are defined. Will be converted to company currency.') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-3 text-end">
+                            <input class="btn btn-print-invoice btn-primary" type="submit" value="{{ __('Save Changes') }}">
+                        </div>
+                        {{ Form::close() }}
+                    </div>
+
                     {{--  End for all settings tab --}}
 
                 </div>

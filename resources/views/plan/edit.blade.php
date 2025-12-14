@@ -175,6 +175,34 @@
             </div>
         </div>
 
+        {{-- User Pricing Section --}}
+        <div class="col-12 mt-4">
+            <h6 class="text-primary">{{ __('User Pricing') }}</h6>
+            <hr class="mt-1">
+        </div>
+        
+        <div class="form-group col-md-4">
+            {{Form::label('base_users_limit',__('Base Users Limit'),['class'=>'form-label'])}}<x-required></x-required>
+            {{Form::number('base_users_limit', $plan['base_users_limit'] ?? 3, array('class'=>'form-control', 'required'=>'required', 'placeholder' => __('Users included in base price')))}}
+            <span class="small">{{__('Number of manager/curator users included in base price')}}</span>
+        </div>
+        <div class="form-group col-md-4">
+            {{Form::label('manager_price',__('Manager Price'),['class'=>'form-label'])}}<x-required></x-required>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{Form::number('manager_price', $plan['manager_price'] ?? 50.00, array('class'=>'form-control', 'required'=>'required', 'step'=>'0.01', 'placeholder' => __('Price per manager')))}}
+            </div>
+            <span class="small">{{__('Additional cost per manager over limit')}}</span>
+        </div>
+        <div class="form-group col-md-4">
+            {{Form::label('curator_price',__('Curator Price'),['class'=>'form-label'])}}<x-required></x-required>
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                {{Form::number('curator_price', $plan['curator_price'] ?? 30.00, array('class'=>'form-control', 'required'=>'required', 'step'=>'0.01', 'placeholder' => __('Price per curator')))}}
+            </div>
+            <span class="small">{{__('Additional cost per curator over limit')}}</span>
+        </div>
+
         {{-- JOBSI Limits Section --}}
         <div class="col-12 mt-4">
             <h6 class="text-primary">{{ __('JOBSI Limits') }}</h6>

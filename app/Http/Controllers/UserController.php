@@ -23,6 +23,7 @@ use Lab404\Impersonate\Impersonate;
 use Spatie\Permission\Models\Role;
 use App\Models\ReferralTransaction;
 use App\Models\ReferralSetting;
+use App\Services\UserBillingService;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -53,8 +54,37 @@ class UserController extends Controller
         $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
         $user = \Auth::user();
         $roles = Role::where('created_by', '=', $user->creatorId())->where('name', '!=', 'client')->get()->pluck('name', 'id');
+        
+        // Get billing info for company users
+        $billingInfo = null;
+        if ($user->type == 'company') {
+            $billingService = new \App\Services\UserBillingService();
+            $plan = \App\Models\Plan::find($user->plan);
+            $period = $billingService->getCurrentPeriod($user->id);
+            
+            $totalCurrent = $period->current_managers + $period->current_curators;
+            $baseLimit = $plan->getBaseUsersLimit();
+            
+            // Get prices in company currency
+            $managerPriceInfo = \App\Models\Utility::getBillingPriceForCompany('manager', $user->id);
+            $curatorPriceInfo = \App\Models\Utility::getBillingPriceForCompany('curator', $user->id);
+            
+            $billingInfo = [
+                'current_managers' => $period->current_managers,
+                'current_curators' => $period->current_curators,
+                'total_current' => $totalCurrent,
+                'base_limit' => $baseLimit,
+                'spots_remaining' => max(0, $baseLimit - $totalCurrent),
+                'manager_price' => $managerPriceInfo['price'],
+                'curator_price' => $curatorPriceInfo['price'],
+                'currency_symbol' => $managerPriceInfo['symbol'],
+                'currency' => $managerPriceInfo['currency'],
+                'plan_name' => $plan->name,
+            ];
+        }
+        
         if (\Auth::user()->can('create user')) {
-            return view('user.create', compact('roles', 'customFields'));
+            return view('user.create', compact('roles', 'customFields', 'billingInfo'));
         } else {
             return redirect()->back();
         }
@@ -167,27 +197,31 @@ class UserController extends Controller
 
                 $objUser = User::find($objUser);
                 $user = User::find(\Auth::user()->created_by);
-                $total_user = $objUser->countUsers();
                 $plan = Plan::find($objUser->plan);
                 $userpassword = $request->input('password');
-                if ($total_user < $plan->max_users || $plan->max_users == -1) {
-                    $role_r = Role::findById($request->role);
-                    $psw = $request->password;
-                    $request['password'] = !empty($userpassword)?\Hash::make($userpassword) : null;
-                    $request['type'] = $role_r->name;
-                    $request['lang'] = !empty($default_language) ? $default_language->value : 'en';
-                    $request['created_by'] = \Auth::user()->creatorId();
-                    $request['email_verified_at'] = date('Y-m-d H:i:s');
-                    $request['is_enable_login'] = $enableLogin;
+                $role_r = Role::findById($request->role);
+                
+                // Billing check is handled by JavaScript confirmation modal
+                // No blocking here - users can create over limit with confirmation
+                $billingService = new UserBillingService();
+                
+                $psw = $request->password;
+                $request['password'] = !empty($userpassword)?\Hash::make($userpassword) : null;
+                $request['type'] = $role_r->name;
+                $request['lang'] = !empty($default_language) ? $default_language->value : 'en';
+                $request['created_by'] = \Auth::user()->creatorId();
+                $request['email_verified_at'] = date('Y-m-d H:i:s');
+                $request['is_enable_login'] = $enableLogin;
 
-                    $user = User::create($request->all());
-                    $user->assignRole($role_r);
-                    if ($request['type'] != 'client') {
-                        \App\Models\Utility::employeeDetails($user->id, \Auth::user()->creatorId());
-                    }
-
-                } else {
-                    return redirect()->back()->with('error', __('Your user limit is over, Please upgrade plan.'));
+                $user = User::create($request->all());
+                $user->assignRole($role_r);
+                if ($request['type'] != 'client') {
+                    \App\Models\Utility::employeeDetails($user->id, \Auth::user()->creatorId());
+                }
+                
+                // Record user in billing system
+                if ($billingService->isBillableRole($role_r->name)) {
+                    $billingService->recordUserAdded($objUser->id, $user->id, $role_r->name);
                 }
             }
             // Send Email
@@ -288,15 +322,47 @@ class UserController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
 
-                $role = Role::findById($request->role);
+                $newRole = Role::findById($request->role);
+                $oldRole = $user->roles->first();
+                $oldRoleName = $oldRole ? $oldRole->name : null;
+                $newRoleName = $newRole->name;
+                
+                // Handle billing for role changes
+                $billingService = new UserBillingService();
+                $roleChanged = $oldRoleName !== $newRoleName;
+                
+                if ($roleChanged) {
+                    // Check if new role would exceed limit
+                    if ($billingService->isBillableRole($newRoleName)) {
+                        $limitCheck = $billingService->checkRoleLimit(\Auth::user()->creatorId(), $newRoleName);
+                        
+                        if ($limitCheck['would_exceed_limit'] && !$request->has('billing_confirmed')) {
+                            if ($request->ajax() || $request->wantsJson()) {
+                                return response()->json([
+                                    'requires_confirmation' => true,
+                                    'limit_info' => $limitCheck,
+                                    'role_change' => true,
+                                    'old_role' => $oldRoleName,
+                                    'new_role' => $newRoleName,
+                                ]);
+                            }
+                        }
+                    }
+                }
+                
                 $input = $request->all();
-                $input['type'] = $role->name;
+                $input['type'] = $newRole->name;
                 $user->fill($input)->save();
                 Utility::employeeDetailsUpdate($user->id, \Auth::user()->creatorId());
                 CustomField::saveData($user, $request->customField);
 
                 $roles[] = $request->role;
                 $user->roles()->sync($roles);
+                
+                // Record role change in billing if applicable
+                if ($roleChanged && ($billingService->isBillableRole($oldRoleName) || $billingService->isBillableRole($newRoleName))) {
+                    $billingService->recordRoleChanged(\Auth::user()->creatorId(), $user->id, $oldRoleName ?? '', $newRoleName);
+                }
 
                 return redirect()->route('users.index')->with(
                     'success', 'User successfully updated.'
@@ -333,6 +399,13 @@ class UserController extends Controller
 
                     $delete_user = User::where(['id' => $user->id])->first();
                     if ($delete_user) {
+                        // Record removal in billing system before deletion
+                        $userRole = $delete_user->roles->first()?->name;
+                        $billingService = new UserBillingService();
+                        if ($userRole && $billingService->isBillableRole($userRole)) {
+                            $billingService->recordUserRemoved(\Auth::user()->creatorId(), $delete_user->id, $userRole);
+                        }
+                        
                         $employee = Employee::where(['user_id' => $user->id])->delete();
                         $delete_user->delete();
 

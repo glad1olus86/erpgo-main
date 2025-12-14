@@ -1,5 +1,7 @@
 @extends('layouts.mobile')
 
+@php use App\Services\NationalityFlagService; @endphp
+
 @section('content')
     {{-- Header --}}
     <div class="mobile-header">
@@ -113,7 +115,7 @@
             </div>
             <div class="mobile-info-row">
                 <span class="mobile-info-label">{{ __('Nationality') }}</span>
-                <span class="mobile-info-value">{{ $worker->nationality }}</span>
+                <span class="mobile-info-value">{!! NationalityFlagService::getFlagHtml($worker->nationality, 18) !!}{{ $worker->nationality }}</span>
             </div>
             <div class="mobile-info-row">
                 <span class="mobile-info-label">{{ __('Registration Date') }}</span>

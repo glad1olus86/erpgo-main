@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@php use App\Services\PlanModuleService; @endphp
+
 @section('page-title')
     {{ __('Главная панель') }}
 @endsection
@@ -10,59 +12,220 @@
 
 @push('css-page')
     <link rel="stylesheet" href="{{ asset('css/jobsi-theme.css') }}">
+    <style>
+        /* Recipient Cards Styles */
+        .recipient-search-box {
+            position: relative;
+        }
+        .recipient-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+        .recipient-search-input {
+            padding-left: 36px;
+        }
+        .recipients-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .recipient-group-title {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            font-size: 11px;
+            font-weight: 600;
+            color: #FF0049;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .recipient-card {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .recipient-card:hover {
+            background: #fff5f7;
+        }
+        .recipient-card.selected {
+            background: #ffe0e8;
+        }
+        .recipient-card.selected .recipient-check {
+            opacity: 1;
+        }
+        .recipient-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #FF0049;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .recipient-avatar.curator {
+            background: #17a2b8;
+        }
+        .recipient-avatar.worker {
+            background: #6c757d;
+        }
+        .recipient-info {
+            flex: 1;
+        }
+        .recipient-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .recipient-role {
+            font-size: 12px;
+            color: #888;
+        }
+        .recipient-check {
+            opacity: 0;
+            color: #FF0049;
+            transition: opacity 0.15s;
+        }
+        .recipients-no-results {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+        }
+        .recipients-no-results i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .selected-recipient {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #fff5f7;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .selected-recipient-label {
+            font-size: 12px;
+            color: #888;
+        }
+        .selected-recipient-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #FF0049;
+        }
+        .selected-recipient-clear {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: rgba(255, 0, 73, 0.1);
+            border-radius: 50%;
+            color: #FF0049;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .selected-recipient-clear:hover {
+            background: #FF0049;
+            color: #fff;
+        }
+        .recipient-name .highlight {
+            background: #FFE0E8;
+            color: #FF0049;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+    </style>
 @endpush
 
 @section('content')
     <div class="jobsi-dashboard-wrapper">
         <!-- Quick Actions - TOP -->
-        <div class="jobsi-quick-actions mb-3">
-            <a href="#" data-url="{{ route('worker.create') }}" data-ajax-popup="true" 
-                data-title="{{ __('Добавить нового работника') }}" data-size="lg" class="jobsi-action-btn">
-                <img src="{{ asset('fromfigma/new_worker.svg') }}" alt="">
-                <span>{{ __('НОВЫЙ') }}<br>{{ __('РАБОТНИК') }}</span>
-            </a>
-            <a href="#" data-url="{{ route('room.create') }}" data-ajax-popup="true"
-                data-title="{{ __('Добавить новую комнату') }}" data-size="lg" class="jobsi-action-btn">
-                <img src="{{ asset('fromfigma/new_hotel.svg') }}" alt="">
-                <span>{{ __('НОВОЕ') }}<br>{{ __('ЖИЛЬЕ') }}</span>
-            </a>
-            <a href="{{ route('vehicles.create') }}" class="jobsi-action-btn">
-                <img src="{{ asset('fromfigma/new_car.svg') }}" alt="">
-                <span>{{ __('НОВЫЙ') }}<br>{{ __('ТРАНСПОРТ') }}</span>
-            </a>
-            @if($isBoss && $currentPeriod)
-            <a href="#" class="jobsi-action-btn" data-bs-toggle="modal" data-bs-target="#dashboardDepositModal">
-                <img src="{{ asset('fromfigma/new_in.svg') }}" alt="">
-                <span>{{ __('ВНЕСТИ В') }}<br>{{ __('КАССУ') }}</span>
-            </a>
-        @else
-            <a href="{{ route('cashbox.index') }}" class="jobsi-action-btn">
-                <img src="{{ asset('fromfigma/new_in.svg') }}" alt="">
-                <span>{{ __('ВНЕСТИ В') }}<br>{{ __('КАССУ') }}</span>
-            </a>
-        @endif
-        @if($canDistribute && $currentPeriod)
-            <a href="#" class="jobsi-action-btn" data-bs-toggle="modal" data-bs-target="#dashboardDistributeModal">
-                <img src="{{ asset('fromfigma/new_out.svg') }}" alt="">
-                <span>{{ __('ВЫДАТЬ ИЗ') }}<br>{{ __('КАССЫ') }}</span>
-            </a>
-        @else
-            <a href="{{ route('cashbox.index') }}" class="jobsi-action-btn">
-                <img src="{{ asset('fromfigma/new_out.svg') }}" alt="">
-                <span>{{ __('ВЫДАТЬ ИЗ') }}<br>{{ __('КАССЫ') }}</span>
-            </a>
-        @endif
-        @can('document_generate')
-            <a href="#" class="jobsi-action-btn" data-bs-toggle="modal" data-bs-target="#dashboardDocumentModal">
-                <img src="{{ asset('fromfigma/new_document.svg') }}" alt="">
-                <span>{{ __('СГЕНЕРИРОВАТЬ') }}<br>{{ __('ДОКУМЕНТЫ') }}</span>
-            </a>
-        @else
-            <a href="{{ route('documents.index') }}" class="jobsi-action-btn">
-                <img src="{{ asset('fromfigma/new_document.svg') }}" alt="">
-                <span>{{ __('СГЕНЕРИРОВАТЬ') }}<br>{{ __('ДОКУМЕНТЫ') }}</span>
-            </a>
-        @endcan
+        @php
+            $hasWorkers = PlanModuleService::hasModule('workers');
+            $hasHotels = PlanModuleService::hasModule('hotels');
+            $hasVehicles = PlanModuleService::hasModule('vehicles');
+            $hasCashbox = PlanModuleService::hasModule('cashbox');
+            $hasDocuments = PlanModuleService::hasModule('documents');
+            
+            $totalButtons = ($hasWorkers ? 1 : 0) + ($hasHotels ? 1 : 0) + ($hasVehicles ? 1 : 0) + ($hasCashbox ? 2 : 0) + ($hasDocuments ? 1 : 0);
+        @endphp
+        
+        <div class="jobsi-quick-actions mb-3" data-buttons="{{ $totalButtons }}">
+            @if($hasWorkers)
+                <a href="#" data-url="{{ route('worker.create') }}" data-ajax-popup="true" 
+                    data-title="{{ __('Добавить нового работника') }}" data-size="lg" class="jobsi-action-btn">
+                    <img src="{{ asset('fromfigma/new_worker.svg') }}" alt="">
+                    <span>{{ __('НОВЫЙ') }}<br>{{ __('РАБОТНИК') }}</span>
+                </a>
+            @endif
+            
+            @if($hasHotels)
+                <a href="#" data-url="{{ route('room.create') }}" data-ajax-popup="true"
+                    data-title="{{ __('Добавить новую комнату') }}" data-size="lg" class="jobsi-action-btn">
+                    <img src="{{ asset('fromfigma/new_hotel.svg') }}" alt="">
+                    <span>{{ __('НОВОЕ') }}<br>{{ __('ЖИЛЬЕ') }}</span>
+                </a>
+            @endif
+            
+            @if($hasVehicles)
+                <a href="{{ route('vehicles.create') }}" class="jobsi-action-btn">
+                    <img src="{{ asset('fromfigma/new_car.svg') }}" alt="">
+                    <span>{{ __('НОВЫЙ') }}<br>{{ __('ТРАНСПОРТ') }}</span>
+                </a>
+            @endif
+            
+            @if($hasCashbox)
+                @if($isBoss && $currentPeriod)
+                    <a href="#" class="jobsi-action-btn" data-bs-toggle="modal" data-bs-target="#dashboardDepositModal">
+                        <img src="{{ asset('fromfigma/new_in.svg') }}" alt="">
+                        <span>{{ __('ВНЕСТИ В') }}<br>{{ __('КАССУ') }}</span>
+                    </a>
+                @else
+                    <a href="{{ route('cashbox.index') }}" class="jobsi-action-btn">
+                        <img src="{{ asset('fromfigma/new_in.svg') }}" alt="">
+                        <span>{{ __('ВНЕСТИ В') }}<br>{{ __('КАССУ') }}</span>
+                    </a>
+                @endif
+                
+                @if($canDistribute && $currentPeriod)
+                    <a href="#" class="jobsi-action-btn" data-bs-toggle="modal" data-bs-target="#dashboardDistributeModal">
+                        <img src="{{ asset('fromfigma/new_out.svg') }}" alt="">
+                        <span>{{ __('ВЫДАТЬ ИЗ') }}<br>{{ __('КАССЫ') }}</span>
+                    </a>
+                @else
+                    <a href="{{ route('cashbox.index') }}" class="jobsi-action-btn">
+                        <img src="{{ asset('fromfigma/new_out.svg') }}" alt="">
+                        <span>{{ __('ВЫДАТЬ ИЗ') }}<br>{{ __('КАССЫ') }}</span>
+                    </a>
+                @endif
+            @endif
+            
+            @if($hasDocuments)
+                @can('document_generate')
+                    <a href="#" class="jobsi-action-btn" data-bs-toggle="modal" data-bs-target="#dashboardDocumentModal">
+                        <img src="{{ asset('fromfigma/new_document.svg') }}" alt="">
+                        <span>{{ __('СГЕНЕРИРОВАТЬ') }}<br>{{ __('ДОКУМЕНТЫ') }}</span>
+                    </a>
+                @else
+                    <a href="{{ route('documents.index') }}" class="jobsi-action-btn">
+                        <img src="{{ asset('fromfigma/new_document.svg') }}" alt="">
+                        <span>{{ __('СГЕНЕРИРОВАТЬ') }}<br>{{ __('ДОКУМЕНТЫ') }}</span>
+                    </a>
+                @endcan
+            @endif
         </div>
 
         <!-- Widgets Row -->
@@ -287,7 +450,7 @@
     </div>
 
     {{-- Deposit Modal (only for Boss) --}}
-    @if($isBoss && $currentPeriod)
+    @if($hasCashbox && $isBoss && $currentPeriod)
         <div class="modal fade" id="dashboardDepositModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -326,12 +489,12 @@
     @endif
 
     {{-- Distribute Modal --}}
-    @if($canDistribute && $currentPeriod)
+    @if($hasCashbox && $canDistribute && $currentPeriod)
         <div class="modal fade" id="dashboardDistributeModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Выдать деньги из кассы') }}</h5>
+                        <h5 class="modal-title">{{ __('Distribute Money') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <form id="dashboardDistributeForm">
@@ -339,48 +502,130 @@
                         <input type="hidden" name="period_id" value="{{ $currentPeriod->id }}">
                         <div class="modal-body">
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Тип выдачи') }} <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Distribution Type') }} <span class="text-danger">*</span></label>
                                 <select name="distribution_type" id="dashboardDistributionType" class="form-control" required>
-                                    <option value="">{{ __('Выберите тип выдачи') }}</option>
-                                    <option value="salary">{{ __('Зарплата сотруднику') }}</option>
-                                    <option value="transfer">{{ __('Передача средств') }}</option>
+                                    <option value="">{{ __('Select distribution type') }}</option>
+                                    <option value="salary">{{ __('Employee Salary') }}</option>
+                                    <option value="transfer">{{ __('Fund Transfer') }}</option>
                                 </select>
                                 <small class="text-muted" id="dashboardDistributionTypeHint"></small>
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Получатель') }} <span class="text-danger">*</span></label>
-                                <select name="recipient" class="form-control" required>
-                                    <option value="">{{ __('Выберите получателя') }}</option>
-                                    @foreach($recipients as $recipient)
-                                        @if(!isset($recipient['is_self']))
-                                            <option value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}" data-role="{{ $recipient['role'] }}">
-                                                {{ $recipient['name'] }}
-                                                ({{ $recipient['role'] === 'manager' ? __('Менеджер') : ($recipient['role'] === 'curator' ? __('Куратор') : __('Работник')) }})
-                                            </option>
-                                        @endif
-                                    @endforeach
-                                </select>
+                                <label class="form-label">{{ __('Recipient') }} <span class="text-danger">*</span></label>
+                                <input type="hidden" name="recipient" id="desktopRecipientValue" value="">
+
+                                {{-- Search Input --}}
+                                <div class="recipient-search-box mb-2">
+                                    <i class="ti ti-search recipient-search-icon"></i>
+                                    <input type="text" id="desktopRecipientSearch" class="form-control recipient-search-input"
+                                        placeholder="{{ __('Search recipient') }}..." autocomplete="off">
+                                </div>
+
+                                {{-- Recipients List --}}
+                                <div class="recipients-list" id="desktopRecipientsList">
+                                    @php
+                                        $deskManagers = collect($recipients)->filter(fn($r) => $r['role'] === 'manager');
+                                        $deskCurators = collect($recipients)->filter(fn($r) => $r['role'] === 'curator');
+                                        $deskWorkers = collect($recipients)->filter(fn($r) => $r['role'] === 'worker');
+                                    @endphp
+
+                                    @if($deskManagers->count() > 0)
+                                        <div class="recipient-group" data-group="managers">
+                                            <div class="recipient-group-title">
+                                                <i class="ti ti-user"></i> {{ __('Managers') }}
+                                            </div>
+                                            @foreach($deskManagers as $recipient)
+                                                <div class="recipient-card"
+                                                    data-value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
+                                                    data-name="{{ strtolower($recipient['name']) }}">
+                                                    <div class="recipient-avatar">{{ strtoupper(substr($recipient['name'], 0, 1)) }}</div>
+                                                    <div class="recipient-info">
+                                                        <div class="recipient-name">{{ $recipient['name'] }}</div>
+                                                        <div class="recipient-role">{{ __('Manager') }}</div>
+                                                    </div>
+                                                    <div class="recipient-check"><i class="ti ti-check"></i></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    @if($deskCurators->count() > 0)
+                                        <div class="recipient-group" data-group="curators">
+                                            <div class="recipient-group-title">
+                                                <i class="ti ti-user"></i> {{ __('Curators') }}
+                                            </div>
+                                            @foreach($deskCurators as $recipient)
+                                                <div class="recipient-card"
+                                                    data-value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
+                                                    data-name="{{ strtolower($recipient['name']) }}">
+                                                    <div class="recipient-avatar curator">{{ strtoupper(substr($recipient['name'], 0, 1)) }}</div>
+                                                    <div class="recipient-info">
+                                                        <div class="recipient-name">{{ $recipient['name'] }}</div>
+                                                        <div class="recipient-role">{{ __('Curator') }}</div>
+                                                    </div>
+                                                    <div class="recipient-check"><i class="ti ti-check"></i></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    @if($deskWorkers->count() > 0)
+                                        <div class="recipient-group" data-group="workers">
+                                            <div class="recipient-group-title">
+                                                <i class="ti ti-user"></i> {{ __('Workers') }}
+                                            </div>
+                                            @foreach($deskWorkers as $recipient)
+                                                <div class="recipient-card"
+                                                    data-value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
+                                                    data-name="{{ strtolower($recipient['name']) }}">
+                                                    <div class="recipient-avatar worker">{{ strtoupper(substr($recipient['name'], 0, 1)) }}</div>
+                                                    <div class="recipient-info">
+                                                        <div class="recipient-name">{{ $recipient['name'] }}</div>
+                                                        <div class="recipient-role">{{ __('Worker') }}</div>
+                                                    </div>
+                                                    <div class="recipient-check"><i class="ti ti-check"></i></div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    <div class="recipients-no-results" id="desktopNoResults" style="display: none;">
+                                        <i class="ti ti-user-off"></i>
+                                        <span>{{ __('No recipients found') }}</span>
+                                    </div>
+                                </div>
+
+                                {{-- Selected Display --}}
+                                <div class="selected-recipient" id="desktopSelectedRecipient" style="display: none;">
+                                    <div class="selected-recipient-info">
+                                        <span class="selected-recipient-label">{{ __('Selected') }}:</span>
+                                        <span class="selected-recipient-name" id="desktopSelectedName"></span>
+                                    </div>
+                                    <button type="button" class="selected-recipient-clear" id="desktopClearRecipient">
+                                        <i class="ti ti-x"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Сумма') }} <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
                                     <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                                 </div>
-                                <small class="text-muted">{{ __('Доступно:') }} {{ formatCashboxCurrency($cashboxBalance['available']) }}</small>
+                                <small class="text-muted">{{ __('Available:') }} {{ formatCashboxCurrency($cashboxBalance['available']) }}</small>
                             </div>
                             <div class="form-group mb-3">
-                                <label class="form-label">{{ __('Задача') }}</label>
-                                <input type="text" name="task" class="form-control" placeholder="{{ __('Описание задачи...') }}">
+                                <label class="form-label">{{ __('Task') }}</label>
+                                <input type="text" name="task" class="form-control" placeholder="{{ __('Task description...') }}">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">{{ __('Комментарий') }}</label>
-                                <textarea name="comment" class="form-control" rows="2" placeholder="{{ __('Дополнительная информация...') }}"></textarea>
+                                <label class="form-label">{{ __('Comment') }}</label>
+                                <textarea name="comment" class="form-control" rows="2" placeholder="{{ __('Additional information...') }}"></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Отмена') }}</button>
-                            <button type="submit" class="btn btn-success" id="dashboardDistributeSubmitBtn">{{ __('Выдать') }}</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-success" id="dashboardDistributeSubmitBtn">{{ __('Distribute') }}</button>
                         </div>
                     </form>
                 </div>
@@ -390,6 +635,7 @@
 
     {{-- Document Generation Modal --}}
     @can('document_generate')
+    @if($hasDocuments)
     @php
         $docWorkers = \App\Models\Worker::where('created_by', Auth::user()->creatorId())->get();
         $docTemplates = \App\Models\DocumentTemplate::where('created_by', Auth::user()->creatorId())
@@ -469,6 +715,7 @@
         </div>
     </div>
     @endcan
+    @endif
 @endsection
 
 @push('script-page')
@@ -577,20 +824,138 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Distribution type hint
+    // Distribution type hint and recipient filtering
     var distributionTypeSelect = document.getElementById('dashboardDistributionType');
     var distributionTypeHint = document.getElementById('dashboardDistributionTypeHint');
     
-    if (distributionTypeSelect && distributionTypeHint) {
+    function filterDesktopRecipients(distributionType) {
+        var managersGroup = document.querySelector('#desktopRecipientsList [data-group="managers"]');
+        var curatorsGroup = document.querySelector('#desktopRecipientsList [data-group="curators"]');
+        var workersGroup = document.querySelector('#desktopRecipientsList [data-group="workers"]');
+
+        if (!distributionType) {
+            if (managersGroup) managersGroup.classList.remove('d-none');
+            if (curatorsGroup) curatorsGroup.classList.remove('d-none');
+            if (workersGroup) workersGroup.classList.add('d-none');
+        } else if (distributionType === 'salary') {
+            if (managersGroup) managersGroup.classList.add('d-none');
+            if (curatorsGroup) curatorsGroup.classList.remove('d-none');
+            if (workersGroup) workersGroup.classList.remove('d-none');
+        } else if (distributionType === 'transfer') {
+            if (managersGroup) managersGroup.classList.remove('d-none');
+            if (curatorsGroup) curatorsGroup.classList.remove('d-none');
+            if (workersGroup) workersGroup.classList.add('d-none');
+        }
+
+        // Clear selection
+        var cards = document.querySelectorAll('#desktopRecipientsList .recipient-card');
+        cards.forEach(function(c) { c.classList.remove('selected'); });
+        var recipientValue = document.getElementById('desktopRecipientValue');
+        var selectedDiv = document.getElementById('desktopSelectedRecipient');
+        var searchInput = document.getElementById('desktopRecipientSearch');
+        if (recipientValue) recipientValue.value = '';
+        if (selectedDiv) selectedDiv.style.display = 'none';
+        if (searchInput) searchInput.value = '';
+    }
+    
+    if (distributionTypeSelect) {
         distributionTypeSelect.addEventListener('change', function() {
             var value = this.value;
-            if (value === 'salary') {
-                distributionTypeHint.textContent = '{{ __("Конечная выплата зарплаты. Транзакция будет сразу завершена.") }}';
-            } else if (value === 'transfer') {
-                distributionTypeHint.textContent = '{{ __("Передача денег для дальнейшего распределения другим сотрудникам.") }}';
-            } else {
-                distributionTypeHint.textContent = '';
+            if (distributionTypeHint) {
+                if (value === 'salary') {
+                    distributionTypeHint.textContent = '{{ __("Final salary payment. Transaction will be completed immediately.") }}';
+                } else if (value === 'transfer') {
+                    distributionTypeHint.textContent = '{{ __("Money transfer for further distribution to other employees.") }}';
+                } else {
+                    distributionTypeHint.textContent = '';
+                }
             }
+            filterDesktopRecipients(value);
+        });
+        filterDesktopRecipients(distributionTypeSelect.value);
+    }
+    
+    // Filter on modal open
+    var distributeModal = document.getElementById('dashboardDistributeModal');
+    if (distributeModal) {
+        distributeModal.addEventListener('shown.bs.modal', function() {
+            var distType = document.getElementById('dashboardDistributionType');
+            if (distType) filterDesktopRecipients(distType.value);
+        });
+    }
+    
+    // Desktop recipient search and selection
+    var deskSearch = document.getElementById('desktopRecipientSearch');
+    var deskCards = document.querySelectorAll('#desktopRecipientsList .recipient-card');
+    var deskGroups = document.querySelectorAll('#desktopRecipientsList .recipient-group');
+    var deskNoResults = document.getElementById('desktopNoResults');
+    var deskSelected = document.getElementById('desktopSelectedRecipient');
+    var deskSelectedName = document.getElementById('desktopSelectedName');
+    var deskClear = document.getElementById('desktopClearRecipient');
+    var deskValue = document.getElementById('desktopRecipientValue');
+    var deskOriginalNames = {};
+
+    deskCards.forEach(function(card, index) {
+        var nameEl = card.querySelector('.recipient-name');
+        if (nameEl) deskOriginalNames[index] = nameEl.innerHTML;
+    });
+
+    if (deskSearch) {
+        deskSearch.addEventListener('input', function() {
+            var query = this.value.toLowerCase().trim();
+            var visibleCount = 0;
+
+            deskCards.forEach(function(card, index) {
+                var name = card.dataset.name || '';
+                var nameEl = card.querySelector('.recipient-name');
+                
+                if (query.length < 2) {
+                    card.style.display = '';
+                    if (nameEl && deskOriginalNames[index]) nameEl.innerHTML = deskOriginalNames[index];
+                    visibleCount++;
+                } else if (name.includes(query)) {
+                    card.style.display = '';
+                    if (nameEl && deskOriginalNames[index]) {
+                        var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                        nameEl.innerHTML = deskOriginalNames[index].replace(regex, '<span class="highlight">$1</span>');
+                    }
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            deskGroups.forEach(function(group) {
+                var visibleCards = group.querySelectorAll('.recipient-card:not([style*="display: none"])');
+                group.style.display = visibleCards.length > 0 ? '' : 'none';
+            });
+
+            if (deskNoResults) {
+                deskNoResults.style.display = visibleCount === 0 ? '' : 'none';
+            }
+        });
+    }
+
+    deskCards.forEach(function(card) {
+        card.addEventListener('click', function() {
+            deskCards.forEach(function(c) { c.classList.remove('selected'); });
+            this.classList.add('selected');
+            
+            var value = this.dataset.value;
+            var nameEl = this.querySelector('.recipient-name');
+            var name = nameEl ? (deskOriginalNames[Array.from(deskCards).indexOf(this)] || nameEl.textContent) : '';
+            
+            if (deskValue) deskValue.value = value;
+            if (deskSelectedName) deskSelectedName.textContent = name;
+            if (deskSelected) deskSelected.style.display = 'flex';
+        });
+    });
+
+    if (deskClear) {
+        deskClear.addEventListener('click', function() {
+            deskCards.forEach(function(c) { c.classList.remove('selected'); });
+            if (deskValue) deskValue.value = '';
+            if (deskSelected) deskSelected.style.display = 'none';
         });
     }
     

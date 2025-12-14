@@ -1,5 +1,6 @@
 @php
     use App\Models\Utility;
+    use App\Services\PlanModuleService;
     $setting = \App\Models\Utility::settings();
 @endphp
 
@@ -25,6 +26,7 @@
                 </li>
 
                 <!-- Работники -->
+                @if(PlanModuleService::hasModule('workers'))
                 <li class="dash-item {{ Request::routeIs('worker.*') ? 'active' : '' }}">
                     <a href="{{ route('worker.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -33,8 +35,10 @@
                         <span class="dash-mtext">{{ __('Работники') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Рабочие места -->
+                @if(PlanModuleService::hasModule('workplaces'))
                 <li class="dash-item {{ Request::routeIs('work-place.*') || Request::routeIs('position.*') ? 'active' : '' }}">
                     <a href="{{ route('work-place.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -43,8 +47,10 @@
                         <span class="dash-mtext">{{ __('Рабочие места') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Проживание (Hotels) -->
+                @if(PlanModuleService::hasModule('hotels'))
                 <li class="dash-item {{ Request::routeIs('hotel.*') || Request::routeIs('room.*') ? 'active' : '' }}">
                     <a href="{{ route('hotel.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -53,8 +59,10 @@
                         <span class="dash-mtext">{{ __('Проживание') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Транспорт -->
+                @if(PlanModuleService::hasModule('vehicles'))
                 <li class="dash-item dash-hasmenu {{ Request::routeIs('vehicles.*') || Request::routeIs('inspections.*') ? 'active dash-trigger' : '' }}">
                     <a href="{{ route('vehicles.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -63,8 +71,10 @@
                         <span class="dash-mtext">{{ __('Транспорт') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Документы -->
+                @if(PlanModuleService::hasModule('documents'))
                 <li class="dash-item {{ Request::routeIs('documents.*') ? 'active' : '' }}">
                     <a href="{{ route('documents.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -73,8 +83,10 @@
                         <span class="dash-mtext">{{ __('Документы') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Касса -->
+                @if(PlanModuleService::hasModule('cashbox'))
                 <li class="dash-item {{ Request::routeIs('cashbox.*') ? 'active' : '' }}">
                     <a href="{{ route('cashbox.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -83,8 +95,10 @@
                         <span class="dash-mtext">{{ __('Касса') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Календарь (Audit) -->
+                @if(PlanModuleService::hasModule('calendar'))
                 <li class="dash-item {{ Request::routeIs('audit.*') ? 'active' : '' }}">
                     <a href="{{ route('audit.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -93,8 +107,10 @@
                         <span class="dash-mtext">{{ __('Календарь') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Уведомления -->
+                @if(PlanModuleService::hasModule('notifications'))
                 <li class="dash-item {{ Request::routeIs('notifications.*') || Request::routeIs('notification-rules.*') ? 'active' : '' }}">
                     <a href="{{ route('notifications.index') }}" class="dash-link">
                         <span class="dash-micon">
@@ -103,6 +119,7 @@
                         <span class="dash-mtext">{{ __('Уведомления') }}</span>
                     </a>
                 </li>
+                @endif
 
                 <!-- Сообщения -->
                 <li class="dash-item {{ Request::segment(1) == 'chatify' ? 'active' : '' }}">
@@ -113,6 +130,18 @@
                         <span class="dash-mtext">{{ __('Сообщения') }}</span>
                     </a>
                 </li>
+
+                <!-- Биллинг -->
+                @if(Auth::user()->type == 'company')
+                <li class="dash-item {{ Request::routeIs('billing.*') ? 'active' : '' }}">
+                    <a href="{{ route('billing.index') }}" class="dash-link">
+                        <span class="dash-micon">
+                            <i class="ti ti-receipt" style="color: #FF0049; font-size: 12px;"></i>
+                        </span>
+                        <span class="dash-mtext">{{ __('Billing') }}</span>
+                    </a>
+                </li>
+                @endif
 
                 <!-- Настройки -->
                 @if (Gate::check('manage company plan') || Gate::check('manage order') || Gate::check('manage company settings'))

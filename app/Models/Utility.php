@@ -2516,6 +2516,18 @@ class Utility extends Model
                     // get email content language base
                     $content = EmailTemplateLang::where('parent_id', '=', $template->id)->where('lang', 'LIKE', $usr->lang)->first();
 
+                    // Fallback to English if template not found for user's language
+                    if (empty($content)) {
+                        $content = EmailTemplateLang::where('parent_id', '=', $template->id)->where('lang', 'en')->first();
+                    }
+                    
+                    if (empty($content)) {
+                        return [
+                            'is_success' => false,
+                            'error' => __('Email template not found for this language.'),
+                        ];
+                    }
+
                     $content->from = $template->from;
                     if (!empty($content->content)) {
 
@@ -3607,6 +3619,174 @@ class Utility extends Model
         }
 
         return $settings;
+    }
+
+    /**
+     * Get admin billing settings for user pricing
+     */
+    public static function getAdminBillingSettings()
+    {
+        $settings = [
+            'manager_price' => 50.00,
+            'curator_price' => 30.00,
+            'base_currency' => 'USD',
+        ];
+
+        $data = \DB::table('settings')
+            ->whereIn('name', ['billing_manager_price', 'billing_curator_price', 'billing_base_currency'])
+            ->where('created_by', 1)
+            ->get();
+
+        foreach ($data as $row) {
+            if ($row->name == 'billing_manager_price') {
+                $settings['manager_price'] = floatval($row->value);
+            } elseif ($row->name == 'billing_curator_price') {
+                $settings['curator_price'] = floatval($row->value);
+            } elseif ($row->name == 'billing_base_currency') {
+                $settings['base_currency'] = $row->value;
+            }
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Save admin billing settings
+     */
+    public static function saveAdminBillingSettings($managerPrice, $curatorPrice, $baseCurrency = 'USD')
+    {
+        $settings = [
+            'billing_manager_price' => $managerPrice,
+            'billing_curator_price' => $curatorPrice,
+            'billing_base_currency' => $baseCurrency,
+        ];
+
+        foreach ($settings as $name => $value) {
+            \DB::table('settings')->updateOrInsert(
+                ['name' => $name, 'created_by' => 1],
+                ['value' => $value]
+            );
+        }
+    }
+
+    /**
+     * Convert billing price from base currency to company currency
+     */
+    public static function convertBillingPrice($priceUsd, $companyCurrency)
+    {
+        // Exchange rates (approximate, can be updated or fetched from API)
+        $rates = [
+            'USD' => 1.0,
+            'EUR' => 0.92,
+            'PLN' => 4.0,
+            'CZK' => 23.0,
+            'GBP' => 0.79,
+            'UAH' => 41.0,
+        ];
+
+        $rate = $rates[$companyCurrency] ?? 1.0;
+        return $priceUsd * $rate;
+    }
+
+    /**
+     * Get billing price for role in company currency
+     */
+    public static function getBillingPriceForCompany($role, $companyId = null)
+    {
+        $billingSettings = self::getAdminBillingSettings();
+        $baseCurrency = $billingSettings['base_currency'] ?? 'USD';
+        
+        $basePrice = $role == 'manager' 
+            ? $billingSettings['manager_price'] 
+            : $billingSettings['curator_price'];
+
+        // Get company currency from cashbox_currency setting
+        if ($companyId) {
+            $companyCurrency = \DB::table('settings')
+                ->where('name', 'cashbox_currency')
+                ->where('created_by', $companyId)
+                ->value('value') ?? 'EUR';
+        } else {
+            $companyCurrency = self::getValByName('cashbox_currency') ?? 'EUR';
+        }
+
+        // Convert from base currency to company currency
+        $convertedPrice = self::convertBillingPriceBetweenCurrencies($basePrice, $baseCurrency, $companyCurrency);
+        
+        // Round to nice numbers (up to nearest 100 for large amounts, 10 for smaller)
+        $roundedPrice = self::roundToNiceNumber($convertedPrice);
+
+        return [
+            'price' => $roundedPrice,
+            'currency' => $companyCurrency,
+            'symbol' => self::getCurrencySymbol($companyCurrency),
+            'base_price' => $basePrice,
+            'base_currency' => $baseCurrency,
+            'raw_price' => $convertedPrice,
+        ];
+    }
+
+    /**
+     * Round price to nice number (ceiling to nearest 100 for large, 10 for small)
+     */
+    public static function roundToNiceNumber($price)
+    {
+        if ($price >= 100) {
+            // Round up to nearest 100 (1001 -> 1100, 1169 -> 1200)
+            return ceil($price / 100) * 100;
+        } elseif ($price >= 10) {
+            // Round up to nearest 10 (45 -> 50, 67 -> 70)
+            return ceil($price / 10) * 10;
+        } else {
+            // Round up to nearest 1 for small amounts
+            return ceil($price);
+        }
+    }
+
+    /**
+     * Convert price between any two currencies
+     */
+    public static function convertBillingPriceBetweenCurrencies($price, $fromCurrency, $toCurrency)
+    {
+        if ($fromCurrency === $toCurrency) {
+            return $price;
+        }
+
+        // Exchange rates relative to USD
+        $ratesToUsd = [
+            'USD' => 1.0,
+            'EUR' => 1.09,  // 1 EUR = 1.09 USD
+            'PLN' => 0.25,  // 1 PLN = 0.25 USD
+            'CZK' => 0.043, // 1 CZK = 0.043 USD
+            'GBP' => 1.27,  // 1 GBP = 1.27 USD
+            'UAH' => 0.024, // 1 UAH = 0.024 USD
+        ];
+
+        // Convert to USD first, then to target currency
+        $fromRate = $ratesToUsd[$fromCurrency] ?? 1.0;
+        $toRate = $ratesToUsd[$toCurrency] ?? 1.0;
+
+        // price in USD
+        $priceInUsd = $price * $fromRate;
+        
+        // price in target currency
+        return $priceInUsd / $toRate;
+    }
+
+    /**
+     * Get currency symbol
+     */
+    public static function getCurrencySymbol($currency)
+    {
+        $symbols = [
+            'USD' => '$',
+            'EUR' => '€',
+            'PLN' => 'zł',
+            'CZK' => 'Kč',
+            'GBP' => '£',
+            'UAH' => '₴',
+        ];
+        return $symbols[$currency] ?? $currency;
     }
 
     public static function getCompanyPaymentSetting($user_id)

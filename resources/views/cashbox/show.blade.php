@@ -198,19 +198,35 @@
         }
 
         @keyframes balance-update {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-                color: #0d6efd;
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); color: #0d6efd; }
+            100% { transform: scale(1); }
         }
+        
+        /* Recipient Cards Styles */
+        .recipient-search-box { position: relative; }
+        .recipient-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; }
+        .recipient-search-input { padding-left: 36px; }
+        .recipients-list { max-height: 200px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px; }
+        .recipient-group-title { padding: 8px 12px; background: #f8f9fa; font-size: 11px; font-weight: 600; color: #FF0049; text-transform: uppercase; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 6px; }
+        .recipient-card { display: flex; align-items: center; padding: 10px 12px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid #f0f0f0; }
+        .recipient-card:hover { background: #fff5f7; }
+        .recipient-card.selected { background: #ffe0e8; }
+        .recipient-card.selected .recipient-check { opacity: 1; }
+        .recipient-avatar { width: 36px; height: 36px; border-radius: 50%; background: #FF0049; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin-right: 10px; }
+        .recipient-avatar.curator { background: #17a2b8; }
+        .recipient-avatar.worker { background: #6c757d; }
+        .recipient-info { flex: 1; }
+        .recipient-name { font-weight: 500; font-size: 14px; }
+        .recipient-role { font-size: 12px; color: #888; }
+        .recipient-check { opacity: 0; color: #FF0049; transition: opacity 0.15s; }
+        .recipients-no-results { padding: 20px; text-align: center; color: #999; }
+        .recipients-no-results i { font-size: 24px; display: block; margin-bottom: 8px; }
+        .selected-recipient { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fff5f7; border-radius: 8px; margin-top: 8px; }
+        .selected-recipient-label { font-size: 12px; color: #888; }
+        .selected-recipient-name { font-size: 14px; font-weight: 600; color: #FF0049; }
+        .selected-recipient-clear { width: 24px; height: 24px; border: none; background: rgba(255, 0, 73, 0.1); border-radius: 50%; color: #FF0049; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .selected-recipient-clear:hover { background: #FF0049; color: #fff; }
     </style>
 @endpush
 
@@ -383,19 +399,99 @@
                         </div>
                         <div class="form-group mb-3">
                             <label class="form-label">{{ __('Recipient') }} <span class="text-danger">*</span></label>
-                            <select name="recipient" class="form-control" required>
-                                <option value="">{{ __('Select recipient') }}</option>
-                                @foreach ($recipients as $recipient)
-                                    @if (!isset($recipient['is_self']))
-                                        <option
-                                            value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
-                                            data-role="{{ $recipient['role'] }}">
-                                            {{ $recipient['name'] }}
-                                            ({{ $recipient['role'] === 'manager' ? __('Manager') : ($recipient['role'] === 'curator' ? __('Curator') : __('Worker')) }})
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </select>
+                            <input type="hidden" name="recipient" id="cashboxRecipientValue" value="">
+
+                            {{-- Search Input --}}
+                            <div class="recipient-search-box mb-2">
+                                <i class="ti ti-search recipient-search-icon"></i>
+                                <input type="text" id="cashboxRecipientSearch" class="form-control recipient-search-input"
+                                    placeholder="{{ __('Search recipient') }}..." autocomplete="off">
+                            </div>
+
+                            {{-- Recipients List --}}
+                            <div class="recipients-list" id="cashboxRecipientsList">
+                                @php
+                                    $cbManagers = collect($recipients)->filter(fn($r) => $r['role'] === 'manager' && !isset($r['is_self']));
+                                    $cbCurators = collect($recipients)->filter(fn($r) => $r['role'] === 'curator' && !isset($r['is_self']));
+                                    $cbWorkers = collect($recipients)->filter(fn($r) => $r['role'] === 'worker' && !isset($r['is_self']));
+                                @endphp
+
+                                @if($cbManagers->count() > 0)
+                                    <div class="recipient-group" data-group="managers">
+                                        <div class="recipient-group-title">
+                                            <i class="ti ti-user"></i> {{ __('Managers') }}
+                                        </div>
+                                        @foreach($cbManagers as $recipient)
+                                            <div class="recipient-card"
+                                                data-value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
+                                                data-name="{{ strtolower($recipient['name']) }}">
+                                                <div class="recipient-avatar">{{ strtoupper(substr($recipient['name'], 0, 1)) }}</div>
+                                                <div class="recipient-info">
+                                                    <div class="recipient-name">{{ $recipient['name'] }}</div>
+                                                    <div class="recipient-role">{{ __('Manager') }}</div>
+                                                </div>
+                                                <div class="recipient-check"><i class="ti ti-check"></i></div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                @if($cbCurators->count() > 0)
+                                    <div class="recipient-group" data-group="curators">
+                                        <div class="recipient-group-title">
+                                            <i class="ti ti-user"></i> {{ __('Curators') }}
+                                        </div>
+                                        @foreach($cbCurators as $recipient)
+                                            <div class="recipient-card"
+                                                data-value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
+                                                data-name="{{ strtolower($recipient['name']) }}">
+                                                <div class="recipient-avatar curator">{{ strtoupper(substr($recipient['name'], 0, 1)) }}</div>
+                                                <div class="recipient-info">
+                                                    <div class="recipient-name">{{ $recipient['name'] }}</div>
+                                                    <div class="recipient-role">{{ __('Curator') }}</div>
+                                                </div>
+                                                <div class="recipient-check"><i class="ti ti-check"></i></div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                @if($cbWorkers->count() > 0)
+                                    <div class="recipient-group" data-group="workers">
+                                        <div class="recipient-group-title">
+                                            <i class="ti ti-user"></i> {{ __('Workers') }}
+                                        </div>
+                                        @foreach($cbWorkers as $recipient)
+                                            <div class="recipient-card"
+                                                data-value="{{ $recipient['type'] === 'App\\Models\\Worker' ? 'worker' : 'user' }}_{{ $recipient['id'] }}"
+                                                data-name="{{ strtolower($recipient['name']) }}">
+                                                <div class="recipient-avatar worker">{{ strtoupper(substr($recipient['name'], 0, 1)) }}</div>
+                                                <div class="recipient-info">
+                                                    <div class="recipient-name">{{ $recipient['name'] }}</div>
+                                                    <div class="recipient-role">{{ __('Worker') }}</div>
+                                                </div>
+                                                <div class="recipient-check"><i class="ti ti-check"></i></div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <div class="recipients-no-results" id="cashboxNoResults" style="display: none;">
+                                    <i class="ti ti-user-off"></i>
+                                    <span>{{ __('No recipients found') }}</span>
+                                </div>
+                            </div>
+
+                            {{-- Selected Display --}}
+                            <div class="selected-recipient" id="cashboxSelectedRecipient" style="display: none;">
+                                <div class="selected-recipient-info">
+                                    <span class="selected-recipient-label">{{ __('Selected') }}:</span>
+                                    <span class="selected-recipient-name" id="cashboxSelectedName"></span>
+                                </div>
+                                <button type="button" class="selected-recipient-clear" id="cashboxClearRecipient">
+                                    <i class="ti ti-x"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
@@ -1014,22 +1110,86 @@
                 });
             }
 
-            // Distribution type hint
+            // Distribution type hint and recipient filtering
             var distributionTypeSelect = document.getElementById('distributionTypeSelect');
             var distributionTypeHint = document.getElementById('distributionTypeHintMain');
 
-            if (distributionTypeSelect && distributionTypeHint) {
+            function filterCashboxRecipients(distributionType) {
+                var managersGroup = document.querySelector('#cashboxRecipientsList [data-group="managers"]');
+                var curatorsGroup = document.querySelector('#cashboxRecipientsList [data-group="curators"]');
+                var workersGroup = document.querySelector('#cashboxRecipientsList [data-group="workers"]');
+
+                if (!distributionType) {
+                    if (managersGroup) managersGroup.classList.remove('d-none');
+                    if (curatorsGroup) curatorsGroup.classList.remove('d-none');
+                    if (workersGroup) workersGroup.classList.add('d-none');
+                } else if (distributionType === 'salary') {
+                    if (managersGroup) managersGroup.classList.add('d-none');
+                    if (curatorsGroup) curatorsGroup.classList.remove('d-none');
+                    if (workersGroup) workersGroup.classList.remove('d-none');
+                } else if (distributionType === 'transfer') {
+                    if (managersGroup) managersGroup.classList.remove('d-none');
+                    if (curatorsGroup) curatorsGroup.classList.remove('d-none');
+                    if (workersGroup) workersGroup.classList.add('d-none');
+                }
+
+                // Clear selection
+                var cards = document.querySelectorAll('#cashboxRecipientsList .recipient-card');
+                cards.forEach(function(c) { c.classList.remove('selected'); });
+                document.getElementById('cashboxRecipientValue').value = '';
+                document.getElementById('cashboxSelectedRecipient').style.display = 'none';
+            }
+
+            if (distributionTypeSelect) {
                 distributionTypeSelect.addEventListener('change', function() {
                     var value = this.value;
-                    if (value === 'salary') {
-                        distributionTypeHint.textContent =
-                            '{{ __('Final salary payment. Transaction will be completed immediately.') }}';
-                    } else if (value === 'transfer') {
-                        distributionTypeHint.textContent =
-                            '{{ __('Money transfer for further distribution to other employees.') }}';
-                    } else {
-                        distributionTypeHint.textContent = '';
+                    if (distributionTypeHint) {
+                        if (value === 'salary') {
+                            distributionTypeHint.textContent = '{{ __('Final salary payment. Transaction will be completed immediately.') }}';
+                        } else if (value === 'transfer') {
+                            distributionTypeHint.textContent = '{{ __('Money transfer for further distribution to other employees.') }}';
+                        } else {
+                            distributionTypeHint.textContent = '';
+                        }
                     }
+                    filterCashboxRecipients(value);
+                });
+                filterCashboxRecipients(distributionTypeSelect.value);
+            }
+
+            // Recipient search and selection
+            var cbSearch = document.getElementById('cashboxRecipientSearch');
+            var cbCards = document.querySelectorAll('#cashboxRecipientsList .recipient-card');
+            var cbValue = document.getElementById('cashboxRecipientValue');
+            var cbSelected = document.getElementById('cashboxSelectedRecipient');
+            var cbSelectedName = document.getElementById('cashboxSelectedName');
+            var cbClear = document.getElementById('cashboxClearRecipient');
+
+            if (cbSearch) {
+                cbSearch.addEventListener('input', function() {
+                    var query = this.value.toLowerCase().trim();
+                    cbCards.forEach(function(card) {
+                        var name = card.dataset.name || '';
+                        card.style.display = (query.length < 2 || name.includes(query)) ? '' : 'none';
+                    });
+                });
+            }
+
+            cbCards.forEach(function(card) {
+                card.addEventListener('click', function() {
+                    cbCards.forEach(function(c) { c.classList.remove('selected'); });
+                    this.classList.add('selected');
+                    cbValue.value = this.dataset.value;
+                    cbSelectedName.textContent = this.querySelector('.recipient-name').textContent;
+                    cbSelected.style.display = 'flex';
+                });
+            });
+
+            if (cbClear) {
+                cbClear.addEventListener('click', function() {
+                    cbCards.forEach(function(c) { c.classList.remove('selected'); });
+                    cbValue.value = '';
+                    cbSelected.style.display = 'none';
                 });
             }
         });

@@ -363,41 +363,54 @@ Route::group(['middleware' => ['verified']], function () {
     // Mobile Routes Group
     Route::prefix('mobile')->middleware(['auth', 'XSS', 'revalidate'])->group(function () {
         // Workers
-        Route::get('/workers', [\App\Http\Controllers\MobileController::class, 'workers'])->name('mobile.workers.index');
-        Route::get('/workers/{id}', [\App\Http\Controllers\MobileController::class, 'workerShow'])->name('mobile.workers.show');
+        Route::middleware(['plan.module:workers'])->group(function () {
+            Route::get('/workers', [\App\Http\Controllers\MobileController::class, 'workers'])->name('mobile.workers.index');
+            Route::get('/workers/{id}', [\App\Http\Controllers\MobileController::class, 'workerShow'])->name('mobile.workers.show');
+        });
         
         // Hotels
-        Route::get('/hotels', [\App\Http\Controllers\MobileController::class, 'hotels'])->name('mobile.hotels.index');
-        Route::get('/hotels/{id}/rooms', [\App\Http\Controllers\MobileController::class, 'hotelRooms'])->name('mobile.hotels.rooms');
-        
-        // Rooms
-        Route::get('/rooms/{id}', [\App\Http\Controllers\MobileController::class, 'roomShow'])->name('mobile.rooms.show');
+        Route::middleware(['plan.module:hotels'])->group(function () {
+            Route::get('/hotels', [\App\Http\Controllers\MobileController::class, 'hotels'])->name('mobile.hotels.index');
+            Route::get('/hotels/{id}/rooms', [\App\Http\Controllers\MobileController::class, 'hotelRooms'])->name('mobile.hotels.rooms');
+            // Rooms
+            Route::get('/rooms/{id}', [\App\Http\Controllers\MobileController::class, 'roomShow'])->name('mobile.rooms.show');
+        });
         
         // Workplaces
-        Route::get('/workplaces', [\App\Http\Controllers\MobileController::class, 'workplaces'])->name('mobile.workplaces.index');
-        Route::get('/workplaces/{id}', [\App\Http\Controllers\MobileController::class, 'workplaceShow'])->name('mobile.workplaces.show');
+        Route::middleware(['plan.module:workplaces'])->group(function () {
+            Route::get('/workplaces', [\App\Http\Controllers\MobileController::class, 'workplaces'])->name('mobile.workplaces.index');
+            Route::get('/workplaces/{id}', [\App\Http\Controllers\MobileController::class, 'workplaceShow'])->name('mobile.workplaces.show');
+        });
         
         // Vehicles
-        Route::get('/vehicles', [\App\Http\Controllers\MobileController::class, 'vehicles'])->name('mobile.vehicles.index');
-        Route::get('/vehicles/create', [\App\Http\Controllers\MobileController::class, 'vehicleCreate'])->name('mobile.vehicles.create');
-        Route::get('/vehicles/{id}', [\App\Http\Controllers\MobileController::class, 'vehicleShow'])->name('mobile.vehicles.show');
-        Route::get('/vehicles/{id}/edit', [\App\Http\Controllers\MobileController::class, 'vehicleEdit'])->name('mobile.vehicles.edit');
+        Route::middleware(['plan.module:vehicles'])->group(function () {
+            Route::get('/vehicles', [\App\Http\Controllers\MobileController::class, 'vehicles'])->name('mobile.vehicles.index');
+            Route::get('/vehicles/create', [\App\Http\Controllers\MobileController::class, 'vehicleCreate'])->name('mobile.vehicles.create');
+            Route::get('/vehicles/{id}', [\App\Http\Controllers\MobileController::class, 'vehicleShow'])->name('mobile.vehicles.show');
+            Route::get('/vehicles/{id}/edit', [\App\Http\Controllers\MobileController::class, 'vehicleEdit'])->name('mobile.vehicles.edit');
+        });
         
         // Cashbox
-        Route::get('/cashbox', [\App\Http\Controllers\MobileController::class, 'cashbox'])->name('mobile.cashbox.index');
-        Route::get('/cashbox/{id}', [\App\Http\Controllers\MobileController::class, 'cashboxShow'])->name('mobile.cashbox.show');
+        Route::middleware(['plan.module:cashbox'])->group(function () {
+            Route::get('/cashbox', [\App\Http\Controllers\MobileController::class, 'cashbox'])->name('mobile.cashbox.index');
+            Route::get('/cashbox/{id}', [\App\Http\Controllers\MobileController::class, 'cashboxShow'])->name('mobile.cashbox.show');
+        });
         
         // Documents
-        Route::get('/documents', [\App\Http\Controllers\MobileController::class, 'documents'])->name('mobile.documents.index');
+        Route::middleware(['plan.module:documents'])->group(function () {
+            Route::get('/documents', [\App\Http\Controllers\MobileController::class, 'documents'])->name('mobile.documents.index');
+        });
         
         // Calendar
-        Route::get('/calendar', [\App\Http\Controllers\MobileController::class, 'calendar'])->name('mobile.calendar.index');
-        
-        // Audit
-        Route::get('/audit', [\App\Http\Controllers\MobileController::class, 'audit'])->name('mobile.audit.index');
+        Route::middleware(['plan.module:calendar'])->group(function () {
+            Route::get('/calendar', [\App\Http\Controllers\MobileController::class, 'calendar'])->name('mobile.calendar.index');
+            Route::get('/audit', [\App\Http\Controllers\MobileController::class, 'audit'])->name('mobile.audit.index');
+        });
         
         // Notifications
-        Route::get('/notifications', [\App\Http\Controllers\MobileController::class, 'notifications'])->name('mobile.notifications.index');
+        Route::middleware(['plan.module:notifications'])->group(function () {
+            Route::get('/notifications', [\App\Http\Controllers\MobileController::class, 'notifications'])->name('mobile.notifications.index');
+        });
         
         // Profile
         Route::get('/profile', [\App\Http\Controllers\MobileController::class, 'profile'])->name('mobile.profile.index');
@@ -412,6 +425,16 @@ Route::group(['middleware' => ['verified']], function () {
     Route::any('edit-profile', [UserController::class, 'editprofile'])->name('update.account')->middleware(['auth', 'XSS', 'revalidate']);
 
     Route::resource('users', UserController::class)->middleware(['auth', 'XSS', 'revalidate']);
+
+    // Billing routes
+    Route::group(['prefix' => 'billing', 'middleware' => ['auth', 'XSS', 'revalidate']], function () {
+        Route::get('/', [\App\Http\Controllers\BillingController::class, 'index'])->name('billing.index');
+        Route::get('/info', [\App\Http\Controllers\BillingController::class, 'getBillingInfo'])->name('billing.info');
+        Route::post('/check-limit', [\App\Http\Controllers\BillingController::class, 'checkRoleLimit'])->name('billing.check-limit');
+        Route::post('/delete-warning', [\App\Http\Controllers\BillingController::class, 'getDeleteWarning'])->name('billing.delete-warning');
+        Route::get('/history', [\App\Http\Controllers\BillingController::class, 'history'])->name('billing.history');
+        Route::get('/period/{id}', [\App\Http\Controllers\BillingController::class, 'periodDetails'])->name('billing.period');
+    });
 
     Route::post('change-password', [UserController::class, 'updatePassword'])->name('update.password');
 
@@ -496,6 +519,9 @@ Route::group(['middleware' => ['verified']], function () {
             Route::post('cookie-setting', [SystemController::class, 'saveCookieSettings'])->name('cookie.setting');
 
             Route::post('cache-settings', [SystemController::class, 'cacheSettingStore'])->name('cache.settings.store')->middleware(['auth', 'XSS']);
+            
+            // Admin Billing Settings
+            Route::post('admin-billing-settings', [SystemController::class, 'saveBillingSettings'])->name('admin.billing.settings.save');
         }
     );
 
@@ -862,147 +888,147 @@ Route::group(['middleware' => ['verified']], function () {
 
     // Worker export routes (must be before resource route)
     Route::get('/worker/export', [WorkerExportController::class, 'showExportModal'])
-        ->name('worker.export.modal')->middleware(['auth', 'XSS']);
+        ->name('worker.export.modal')->middleware(['auth', 'XSS', 'plan.module:workers']);
     Route::post('/worker/export/pdf', [WorkerExportController::class, 'exportPdf'])
-        ->name('worker.export.pdf')->middleware(['auth', 'XSS']);
+        ->name('worker.export.pdf')->middleware(['auth', 'XSS', 'plan.module:workers']);
     Route::post('/worker/export/excel', [WorkerExportController::class, 'exportExcel'])
-        ->name('worker.export.excel')->middleware(['auth', 'XSS']);
+        ->name('worker.export.excel')->middleware(['auth', 'XSS', 'plan.module:workers']);
 
     // Worker scan document (must be before resource route)
     Route::post('/worker/scan-document', [WorkerController::class, 'scanDocument'])
-        ->name('worker.scan.document')->middleware(['auth', 'XSS']);
+        ->name('worker.scan.document')->middleware(['auth', 'XSS', 'plan.module:workers']);
     
     // Worker duplicate check
     Route::post('/worker/check-duplicate', [WorkerController::class, 'checkDuplicate'])
-        ->name('worker.check.duplicate')->middleware(['auth', 'XSS']);
+        ->name('worker.check.duplicate')->middleware(['auth', 'XSS', 'plan.module:workers']);
     
     // Bulk actions for workers (must be before resource route)
     Route::post('/worker/bulk-assign', [WorkerController::class, 'bulkAssign'])
-        ->name('worker.bulk.assign')->middleware(['auth', 'XSS']);
+        ->name('worker.bulk.assign')->middleware(['auth', 'XSS', 'plan.module:workers']);
     Route::post('/worker/bulk-dismiss', [WorkerController::class, 'bulkDismiss'])
-        ->name('worker.bulk.dismiss')->middleware(['auth', 'XSS']);
+        ->name('worker.bulk.dismiss')->middleware(['auth', 'XSS', 'plan.module:workers']);
     Route::post('/worker/bulk-checkout', [WorkerController::class, 'bulkCheckout'])
-        ->name('worker.bulk.checkout')->middleware(['auth', 'XSS']);
+        ->name('worker.bulk.checkout')->middleware(['auth', 'XSS', 'plan.module:workers']);
     Route::post('/worker/bulk-generate-documents', [App\Http\Controllers\DocumentGeneratorController::class, 'bulkGenerate'])
-        ->name('worker.bulk.generate-documents')->middleware(['auth', 'XSS']);
+        ->name('worker.bulk.generate-documents')->middleware(['auth', 'XSS', 'plan.module:documents']);
 
-    Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate', 'plan.module:workers']);
 
     // Worker assignment routes
     Route::post('/worker/{worker}/assign-room', [RoomAssignmentController::class, 'assignWorker'])
-        ->name('worker.assign.room')->middleware(['auth', 'XSS']);
+        ->name('worker.assign.room')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::post('/worker/{worker}/unassign-room', [RoomAssignmentController::class, 'unassignWorker'])
-        ->name('worker.unassign.room')->middleware(['auth', 'XSS']);
+        ->name('worker.unassign.room')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::post('/room/{room}/assign-worker', [RoomAssignmentController::class, 'assignWorkerToRoom'])
-        ->name('room.assign.worker')->middleware(['auth', 'XSS']);
+        ->name('room.assign.worker')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::post('/room/{room}/assign-workers-bulk', [RoomAssignmentController::class, 'assignWorkersBulk'])
-        ->name('room.assign.workers.bulk')->middleware(['auth', 'XSS']);
+        ->name('room.assign.workers.bulk')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::post('/room/{room}/checkout-bulk', [RoomAssignmentController::class, 'bulkCheckout'])
-        ->name('room.checkout.bulk')->middleware(['auth', 'XSS']);
+        ->name('room.checkout.bulk')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::get('/room/{room}/assign-form', [RoomAssignmentController::class, 'assignForm'])
-        ->name('room.assign.form')->middleware(['auth', 'XSS']);
+        ->name('room.assign.form')->middleware(['auth', 'XSS', 'plan.module:hotels']);
 
     // Hotel export routes (must be before resource route)
     Route::get('/hotel/export', [HotelExportController::class, 'showExportModal'])
-        ->name('hotel.export.modal')->middleware(['auth', 'XSS']);
+        ->name('hotel.export.modal')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::post('/hotel/export/pdf', [HotelExportController::class, 'exportPdf'])
-        ->name('hotel.export.pdf')->middleware(['auth', 'XSS']);
+        ->name('hotel.export.pdf')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::post('/hotel/export/excel', [HotelExportController::class, 'exportExcel'])
-        ->name('hotel.export.excel')->middleware(['auth', 'XSS']);
+        ->name('hotel.export.excel')->middleware(['auth', 'XSS', 'plan.module:hotels']);
 
-    Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS', 'revalidate']);
-    Route::get('/hotel/{hotel}/rooms', [HotelController::class, 'showRooms'])->name('hotel.rooms')->middleware(['auth', 'XSS', 'revalidate']);
+    Route::resource('hotel', HotelController::class)->middleware(['auth', 'XSS', 'revalidate', 'plan.module:hotels']);
+    Route::get('/hotel/{hotel}/rooms', [HotelController::class, 'showRooms'])->name('hotel.rooms')->middleware(['auth', 'XSS', 'revalidate', 'plan.module:hotels']);
 
     // API route for getting available rooms
     Route::get('/hotel/{hotel}/available-rooms', [RoomAssignmentController::class, 'getAvailableRooms'])
-        ->name('hotel.available.rooms')->middleware(['auth', 'XSS']);
+        ->name('hotel.available.rooms')->middleware(['auth', 'XSS', 'plan.module:hotels']);
 
-    Route::resource('room', RoomController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::resource('room', RoomController::class)->middleware(['auth', 'XSS', 'revalidate', 'plan.module:hotels']);
 
     // Work Place export routes (must be before resource route)
     Route::get('/work-place/export', [WorkPlaceExportController::class, 'showExportModal'])
-        ->name('work-place.export.modal')->middleware(['auth', 'XSS']);
+        ->name('work-place.export.modal')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/work-place/export/pdf', [WorkPlaceExportController::class, 'exportPdf'])
-        ->name('work-place.export.pdf')->middleware(['auth', 'XSS']);
+        ->name('work-place.export.pdf')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/work-place/export/excel', [WorkPlaceExportController::class, 'exportExcel'])
-        ->name('work-place.export.excel')->middleware(['auth', 'XSS']);
+        ->name('work-place.export.excel')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
 
     // Work Place routes
-    Route::resource('work-place', WorkPlaceController::class)->middleware(['auth', 'XSS', 'revalidate']);
+    Route::resource('work-place', WorkPlaceController::class)->middleware(['auth', 'XSS', 'revalidate', 'plan.module:workplaces']);
     Route::get('/work-place/{workPlace}/workers', [WorkPlaceController::class, 'showWorkers'])
-        ->name('work-place.workers')->middleware(['auth', 'XSS']);
+        ->name('work-place.workers')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     
     // Position routes
     Route::get('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'index'])
-        ->name('work-place.positions')->middleware(['auth', 'XSS']);
+        ->name('work-place.positions')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::get('/work-place/{workPlace}/positions/json', [App\Http\Controllers\PositionController::class, 'getPositionsJson'])
-        ->name('work-place.positions.json')->middleware(['auth', 'XSS']);
+        ->name('work-place.positions.json')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'store'])
-        ->name('positions.store')->middleware(['auth', 'XSS']);
+        ->name('positions.store')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::delete('/positions/{position}', [App\Http\Controllers\PositionController::class, 'destroy'])
-        ->name('positions.destroy')->middleware(['auth', 'XSS']);
+        ->name('positions.destroy')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::get('/positions/{position}/workers', [App\Http\Controllers\PositionController::class, 'showWorkers'])
-        ->name('positions.workers')->middleware(['auth', 'XSS']);
+        ->name('positions.workers')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/positions/{position}/assign-workers', [App\Http\Controllers\PositionController::class, 'assignWorkers'])
-        ->name('positions.assign.workers')->middleware(['auth', 'XSS']);
+        ->name('positions.assign.workers')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/positions/{position}/dismiss-workers', [App\Http\Controllers\PositionController::class, 'dismissWorkers'])
-        ->name('positions.dismiss.workers')->middleware(['auth', 'XSS']);
+        ->name('positions.dismiss.workers')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/positions/{position}/assign', [App\Http\Controllers\WorkAssignmentController::class, 'assignToPosition'])
-        ->name('positions.assign')->middleware(['auth', 'XSS']);
+        ->name('positions.assign')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::get('/workers/unassigned', [App\Http\Controllers\WorkAssignmentController::class, 'getUnassignedWorkers'])
-        ->name('workers.unassigned')->middleware(['auth', 'XSS']);
+        ->name('workers.unassigned')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
 
     // Work Assignment routes
     Route::post('/work-place/{workPlace}/assign-worker', [WorkAssignmentController::class, 'assignWorker'])
-        ->name('work-place.assign.worker')->middleware(['auth', 'XSS']);
+        ->name('work-place.assign.worker')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/work-place/{workPlace}/assign-workers-bulk', [WorkAssignmentController::class, 'assignWorkersBulk'])
-        ->name('work-place.assign.workers.bulk')->middleware(['auth', 'XSS']);
+        ->name('work-place.assign.workers.bulk')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/work-place/{workPlace}/dismiss-bulk', [WorkAssignmentController::class, 'dismissBulk'])
-        ->name('work-place.dismiss.bulk')->middleware(['auth', 'XSS']);
+        ->name('work-place.dismiss.bulk')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::get('/work-place/{workPlace}/assign-form', [WorkAssignmentController::class, 'assignForm'])
-        ->name('work-place.assign.form')->middleware(['auth', 'XSS']);
+        ->name('work-place.assign.form')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/worker/{worker}/assign-work', [WorkAssignmentController::class, 'assignWorkerFromProfile'])
-        ->name('worker.assign.work')->middleware(['auth', 'XSS']);
+        ->name('worker.assign.work')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/worker/{worker}/dismiss', [WorkAssignmentController::class, 'dismissWorker'])
-        ->name('worker.dismiss')->middleware(['auth', 'XSS']);
+        ->name('worker.dismiss')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
 
     // System Notifications routes
     Route::get('/notifications/check', [App\Http\Controllers\NotificationController::class, 'check'])
-        ->name('notifications.check')->middleware(['auth']);
+        ->name('notifications.check')->middleware(['auth', 'plan.module:notifications']);
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
-        ->name('notifications.index')->middleware(['auth', 'XSS']);
+        ->name('notifications.index')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])
-        ->name('notifications.read')->middleware(['auth']);
+        ->name('notifications.read')->middleware(['auth', 'plan.module:notifications']);
     Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
-        ->name('notifications.read.all')->middleware(['auth']);
+        ->name('notifications.read.all')->middleware(['auth', 'plan.module:notifications']);
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
-        ->name('notifications.mark-all-read')->middleware(['auth']);
+        ->name('notifications.mark-all-read')->middleware(['auth', 'plan.module:notifications']);
     Route::post('/notifications/clear-all', [App\Http\Controllers\NotificationController::class, 'clearAll'])
-        ->name('notifications.clear-all')->middleware(['auth']);
+        ->name('notifications.clear-all')->middleware(['auth', 'plan.module:notifications']);
     Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])
-        ->name('notifications.destroy')->middleware(['auth']);
+        ->name('notifications.destroy')->middleware(['auth', 'plan.module:notifications']);
     Route::post('/notifications/settings', [App\Http\Controllers\NotificationController::class, 'saveSettings'])
-        ->name('notifications.settings.save')->middleware(['auth']);
+        ->name('notifications.settings.save')->middleware(['auth', 'plan.module:notifications']);
 
     // Notification Rules (Constructor)
     Route::get('/notification-rules', [App\Http\Controllers\NotificationRuleController::class, 'index'])
-        ->name('notification-rules.index')->middleware(['auth']);
+        ->name('notification-rules.index')->middleware(['auth', 'plan.module:notifications']);
     Route::get('/notification-rules/create', [App\Http\Controllers\NotificationRuleController::class, 'create'])
-        ->name('notification-rules.create')->middleware(['auth']);
+        ->name('notification-rules.create')->middleware(['auth', 'plan.module:notifications']);
     Route::post('/notification-rules', [App\Http\Controllers\NotificationRuleController::class, 'store'])
-        ->name('notification-rules.store')->middleware(['auth']);
+        ->name('notification-rules.store')->middleware(['auth', 'plan.module:notifications']);
     Route::get('/notification-rules/{notificationRule}/edit', [App\Http\Controllers\NotificationRuleController::class, 'edit'])
-        ->name('notification-rules.edit')->middleware(['auth']);
+        ->name('notification-rules.edit')->middleware(['auth', 'plan.module:notifications']);
     Route::put('/notification-rules/{notificationRule}', [App\Http\Controllers\NotificationRuleController::class, 'update'])
-        ->name('notification-rules.update')->middleware(['auth']);
+        ->name('notification-rules.update')->middleware(['auth', 'plan.module:notifications']);
     Route::delete('/notification-rules/{notificationRule}', [App\Http\Controllers\NotificationRuleController::class, 'destroy'])
-        ->name('notification-rules.destroy')->middleware(['auth']);
+        ->name('notification-rules.destroy')->middleware(['auth', 'plan.module:notifications']);
     Route::post('/notification-rules/{notificationRule}/toggle', [App\Http\Controllers\NotificationRuleController::class, 'toggle'])
-        ->name('notification-rules.toggle')->middleware(['auth']);
+        ->name('notification-rules.toggle')->middleware(['auth', 'plan.module:notifications']);
     Route::get('/notification-rules/conditions', [App\Http\Controllers\NotificationRuleController::class, 'getConditions'])
-        ->name('notification-rules.conditions')->middleware(['auth']);
+        ->name('notification-rules.conditions')->middleware(['auth', 'plan.module:notifications']);
     Route::get('/notification-rules/template-variables', [App\Http\Controllers\NotificationRuleController::class, 'getTemplateVariables'])
-        ->name('notification-rules.template-variables')->middleware(['auth']);
+        ->name('notification-rules.template-variables')->middleware(['auth', 'plan.module:notifications']);
 
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');
@@ -2015,7 +2041,7 @@ Route::group(['middleware' => ['verified']], function () {
 Route::any('/cookie-consent', [SystemController::class, 'CookieConsent'])->name('cookie-consent');
 Route::get('payslip/payslipPdf/{id}/{month}', [PaySlipController::class, 'payslipPdf'])->name('payslip.payslipPdf')->middleware(['XSS']);
 
-Route::group(['prefix' => 'audit', 'as' => 'audit.', 'middleware' => ['auth', 'XSS']], function () {
+Route::group(['prefix' => 'audit', 'as' => 'audit.', 'middleware' => ['auth', 'XSS', 'plan.module:calendar']], function () {
     Route::get('/', [AuditLogController::class, 'index'])->name('index');
     Route::get('/calendar-view', [AuditLogController::class, 'calendarView'])->name('calendar.view'); // New route for calendar page
     Route::get('/calendar/{year}/{month}', [AuditLogController::class, 'calendar'])->name('calendar');
@@ -2023,7 +2049,7 @@ Route::group(['prefix' => 'audit', 'as' => 'audit.', 'middleware' => ['auth', 'X
 });
 
 // Cashbox (Касса) routes
-Route::group(['prefix' => 'cashbox', 'as' => 'cashbox.', 'middleware' => ['auth', 'XSS']], function () {
+Route::group(['prefix' => 'cashbox', 'as' => 'cashbox.', 'middleware' => ['auth', 'XSS', 'plan.module:cashbox']], function () {
     // Period routes
     Route::get('/', [App\Http\Controllers\CashboxController::class, 'index'])->name('index');
     
@@ -2055,7 +2081,7 @@ Route::group(['prefix' => 'cashbox', 'as' => 'cashbox.', 'middleware' => ['auth'
 
 
 // Document Templates routes
-Route::group(['prefix' => 'documents', 'as' => 'documents.', 'middleware' => ['auth', 'XSS']], function () {
+Route::group(['prefix' => 'documents', 'as' => 'documents.', 'middleware' => ['auth', 'XSS', 'plan.module:documents']], function () {
     Route::get('/', [App\Http\Controllers\DocumentTemplateController::class, 'index'])->name('index');
     Route::get('/create', [App\Http\Controllers\DocumentTemplateController::class, 'create'])->name('create');
     Route::post('/', [App\Http\Controllers\DocumentTemplateController::class, 'store'])->name('store');
@@ -2065,29 +2091,31 @@ Route::group(['prefix' => 'documents', 'as' => 'documents.', 'middleware' => ['a
 });
 
 // Document Generation routes
-Route::post('/worker/{worker}/generate-document', [App\Http\Controllers\DocumentGeneratorController::class, 'generate'])
-    ->name('worker.generate-document')
-    ->middleware(['auth', 'XSS']);
-Route::get('/documents/templates-list', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplates'])
-    ->name('documents.templates-list')
-    ->middleware(['auth', 'XSS']);
-Route::get('/documents/template-fields/{template}', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplateFields'])
-    ->name('documents.template-fields')
-    ->middleware(['auth', 'XSS']);
+Route::middleware(['plan.module:documents'])->group(function () {
+    Route::post('/worker/{worker}/generate-document', [App\Http\Controllers\DocumentGeneratorController::class, 'generate'])
+        ->name('worker.generate-document')
+        ->middleware(['auth', 'XSS']);
+    Route::get('/documents/templates-list', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplates'])
+        ->name('documents.templates-list')
+        ->middleware(['auth', 'XSS']);
+    Route::get('/documents/template-fields/{template}', [App\Http\Controllers\DocumentGeneratorController::class, 'getTemplateFields'])
+        ->name('documents.template-fields')
+        ->middleware(['auth', 'XSS']);
+});
 
 // Vehicle (Transport) routes
 Route::post('/vehicles/scan-document', [App\Http\Controllers\VehicleController::class, 'scanDocument'])
     ->name('vehicles.scan.document')
-    ->middleware(['auth', 'XSS']);
-Route::resource('vehicles', App\Http\Controllers\VehicleController::class)->middleware(['auth', 'XSS']);
+    ->middleware(['auth', 'XSS', 'plan.module:vehicles']);
+Route::resource('vehicles', App\Http\Controllers\VehicleController::class)->middleware(['auth', 'XSS', 'plan.module:vehicles']);
 
 // Technical Inspection routes
 Route::post('/vehicles/{vehicle}/inspections', [App\Http\Controllers\TechnicalInspectionController::class, 'store'])
     ->name('inspections.store')
-    ->middleware(['auth', 'XSS']);
+    ->middleware(['auth', 'XSS', 'plan.module:vehicles']);
 Route::put('/inspections/{inspection}', [App\Http\Controllers\TechnicalInspectionController::class, 'update'])
     ->name('inspections.update')
-    ->middleware(['auth', 'XSS']);
+    ->middleware(['auth', 'XSS', 'plan.module:vehicles']);
 Route::delete('/inspections/{inspection}', [App\Http\Controllers\TechnicalInspectionController::class, 'destroy'])
     ->name('inspections.destroy')
-    ->middleware(['auth', 'XSS']);
+    ->middleware(['auth', 'XSS', 'plan.module:vehicles']);

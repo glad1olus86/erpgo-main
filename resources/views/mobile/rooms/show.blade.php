@@ -82,16 +82,15 @@
         </div>
 
         {{-- Current Occupants --}}
-        <div class="mobile-card mb-3">
-            <div class="mobile-section-header">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2">
-                    <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                    <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    <path d="M21 21v-2a4 4 0 0 0 -3 -3.85"></path>
-                </svg>
+        <div class="mobile-section-title">
+            <div class="mobile-section-title-left">
+                <img src="{{ asset('fromfigma/workers.svg') }}" alt="" width="20" height="20"
+                     onerror="this.outerHTML='<svg width=20 height=20 viewBox=\'0 0 24 24\' fill=none stroke=#FF0049 stroke-width=2><path d=\'M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0\'></path><path d=\'M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2\'></path></svg>'">
                 <span>{{ __('Current Occupants') }}</span>
             </div>
+        </div>
+        
+        <div class="mobile-card mb-3">
 
             @forelse($room->currentAssignments as $assignment)
                 <div class="mobile-list-item" onclick="window.location='{{ route('mobile.workers.show', $assignment->worker->id) }}'">
@@ -171,4 +170,120 @@
             </div>
         @endcan
     </div>
+
+    <style>
+        .mobile-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+        .mobile-section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #FFE0E6;
+        }
+        .mobile-section-title-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mobile-section-title-left span {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FF0049;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .mobile-info-section {
+            margin-top: 10px;
+        }
+        .mobile-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .mobile-info-row:last-child {
+            border-bottom: none;
+        }
+        .mobile-info-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .mobile-info-value {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .mobile-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .mobile-badge-success {
+            background: #22B404;
+            color: #fff;
+        }
+        .mobile-badge-danger {
+            background: #FF0049;
+            color: #fff;
+        }
+        .mobile-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+        .mobile-list-item:last-child {
+            border-bottom: none;
+        }
+        .mobile-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .mobile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .mobile-avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF0049, #FF6B6B);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .mobile-btn-primary {
+            background: #FF0049 !important;
+            border-color: #FF0049 !important;
+            color: #fff !important;
+        }
+        .mobile-btn-primary:hover {
+            background: #e00040 !important;
+            border-color: #e00040 !important;
+        }
+        .mobile-btn-danger {
+            background: transparent;
+            border: 1px solid #dc3545;
+            color: #dc3545;
+        }
+        .mobile-btn-danger:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+    </style>
 @endsection

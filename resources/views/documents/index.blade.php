@@ -20,11 +20,91 @@
     </div>
 @endsection
 
+@push('css-page')
+<style>
+    .search-filter-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .search-box {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+    }
+    .search-box .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+        pointer-events: none;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 12px 40px 12px 42px;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .search-box input:focus {
+        outline: none;
+        border-color: #FF0049;
+        box-shadow: 0 0 0 3px rgba(255, 0, 73, 0.1);
+    }
+    .search-box input.searching {
+        border-color: #FF0049;
+        background: #FFF8FA;
+    }
+    .search-box .search-clear {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        cursor: pointer;
+        display: none;
+    }
+    .search-box .search-clear:hover {
+        color: #FF0049;
+    }
+    .results-count {
+        font-size: 13px;
+        color: #888;
+        padding: 8px 0;
+        margin-bottom: 20px;
+    }
+    .results-count strong {
+        color: #FF0049;
+    }
+    tr.search-hidden {
+        display: none !important;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body table-border-style">
+                    {{-- Search --}}
+                    <div class="search-filter-wrapper">
+                        <div class="search-box">
+                            <i class="ti ti-search search-icon"></i>
+                            <input type="text" id="liveSearchInput" placeholder="{{ __('Search by name, description...') }}" autocomplete="off">
+                            <span class="search-clear" id="clearSearch"><i class="ti ti-x"></i></span>
+                        </div>
+                    </div>
+                    
+                    {{-- Results Count --}}
+                    <div class="results-count">
+                        {{ __('Found') }}: <strong id="resultsCount">{{ count($templates) }}</strong> {{ __('templates') }}
+                    </div>
+                    
                     <div class="table-responsive">
                         <table class="table" id="templates-table">
                             <thead>
@@ -39,7 +119,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($templates as $template)
-                                    <tr>
+                                    <tr data-name="{{ strtolower($template->name) }}" data-description="{{ strtolower($template->description ?? '') }}">
                                         <td>
                                             @can('document_template_edit')
                                                 <a href="{{ route('documents.edit', $template->id) }}" class="text-primary fw-medium">
@@ -119,12 +199,36 @@
 @push('script-page')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    @if($templates->count() > 0)
-    new simpleDatatables.DataTable("#templates-table", {
-        perPage: 10,
-        perPageSelect: [10, 25, 50, 100]
+    var searchInput = document.getElementById('liveSearchInput');
+    var clearBtn = document.getElementById('clearSearch');
+    var rows = document.querySelectorAll('#templates-table tbody tr[data-name]');
+
+    searchInput.addEventListener('input', function() {
+        var query = this.value.toLowerCase().trim();
+        var visibleCount = 0;
+
+        clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+        this.classList.toggle('searching', query.length > 0);
+
+        rows.forEach(function(row) {
+            var name = row.dataset.name || '';
+            var description = row.dataset.description || '';
+
+            if (query.length < 2 || name.includes(query) || description.includes(query)) {
+                row.classList.remove('search-hidden');
+                visibleCount++;
+            } else {
+                row.classList.add('search-hidden');
+            }
+        });
+
+        document.getElementById('resultsCount').textContent = visibleCount;
     });
-    @endif
+
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+    });
 });
 </script>
 @endpush

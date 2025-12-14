@@ -307,6 +307,30 @@ class SystemController extends Controller
         }
     }
 
+    /**
+     * Save admin billing settings for user pricing
+     */
+    public function saveBillingSettings(Request $request)
+    {
+        if (\Auth::user()->type != 'super admin') {
+            return redirect()->back()->with('error', 'Permission denied.');
+        }
+
+        $request->validate([
+            'billing_manager_price' => 'required|numeric|min:0',
+            'billing_curator_price' => 'required|numeric|min:0',
+            'billing_base_currency' => 'required|in:USD,EUR',
+        ]);
+
+        Utility::saveAdminBillingSettings(
+            $request->billing_manager_price,
+            $request->billing_curator_price,
+            $request->billing_base_currency
+        );
+
+        return redirect()->back()->with('success', __('Billing pricing settings saved successfully.'));
+    }
+
     public function saveSystemSettings(Request $request)
     {
 

@@ -1,4 +1,5 @@
 @php
+    use App\Services\PlanModuleService;
     $userPlan = \App\Models\Plan::getPlan(\Auth::user()->show_dashboard());
 @endphp
 {{Form::model($role,array('route' => array('roles.update', $role->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate')) }}
@@ -1303,10 +1304,25 @@
                         </div>
                     </div>
                 </div>
-                {{-- Agency Tab --}}
+                {{-- Agency Tab (JOBSI Modules) --}}
                 <div class="tab-pane fade" id="agency" role="tabpanel" aria-labelledby="pills-agency-tab">
                     @php
-                        $agencyModules=['worker','hotel','room','work place','room assignment','work assignment','notification rule','audit log','cashbox'];
+                        // Фильтруем модули по доступности в плане
+                        $allAgencyModules = [
+                            'workers' => ['worker'],
+                            'hotels' => ['hotel', 'room', 'room assignment'],
+                            'workplaces' => ['work place', 'work assignment'],
+                            'notifications' => ['notification rule'],
+                            'calendar' => ['audit log'],
+                            'cashbox' => ['cashbox'],
+                        ];
+                        
+                        $agencyModules = [];
+                        foreach ($allAgencyModules as $planModule => $permissions) {
+                            if (PlanModuleService::hasModule($planModule)) {
+                                $agencyModules = array_merge($agencyModules, $permissions);
+                            }
+                        }
                     @endphp
                     <div class="col-md-12">
                         <div class="form-group">
@@ -1390,6 +1406,7 @@
                                         </tr>
                                     @endforeach
                                     {{-- Cashbox special permissions --}}
+                                    @if(PlanModuleService::hasModule('cashbox'))
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input ischeck agency_checkall" data-id="cashboxspecial"></td>
                                         <td><label class="ischeck agency_checkall" data-id="cashboxspecial">{{ __('Cashbox Special') }}</label></td>
@@ -1478,7 +1495,9 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    @endif
                                     {{-- Document permissions --}}
+                                    @if(PlanModuleService::hasModule('documents'))
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input ischeck agency_checkall" data-id="documents"></td>
                                         <td><label class="ischeck agency_checkall" data-id="documents">{{ __('Documents') }}</label></td>
@@ -1527,7 +1546,9 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    @endif
                                     {{-- Transport/Vehicle permissions --}}
+                                    @if(PlanModuleService::hasModule('vehicles'))
                                     <tr>
                                         <td><input type="checkbox" class="form-check-input ischeck agency_checkall" data-id="transport"></td>
                                         <td><label class="ischeck agency_checkall" data-id="transport">{{ __('Transport') }}</label></td>
@@ -1568,6 +1589,7 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    @endif
                                     </tbody>
                                 </table>
                             @endif

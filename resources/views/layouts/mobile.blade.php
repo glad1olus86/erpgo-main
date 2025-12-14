@@ -70,9 +70,14 @@
             transform: translateX(-100%);
             transition: transform 0.3s ease;
             overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
             box-shadow: 2px 0 15px rgba(0,0,0,0.1);
         }
         .mobile-sidebar.active { transform: translateX(0); }
+        .mobile-sidebar::-webkit-scrollbar { display: none; }
+        .mobile-sidebar { -ms-overflow-style: none; scrollbar-width: none; }
         .mobile-sidebar-overlay {
             position: fixed;
             top: 0;
@@ -161,6 +166,16 @@
             justify-content: center;
             text-decoration: none;
             padding: 10px 5px;
+        }
+        .mobile-action-btn-full {
+            flex: 1;
+            aspect-ratio: auto;
+            height: 80px;
+            flex-direction: row;
+            gap: 15px;
+        }
+        .mobile-action-btn-full .mobile-action-icon {
+            margin-bottom: 0;
         }
         .mobile-action-icon {
             width: 42px;
@@ -444,35 +459,52 @@
         <div class="mobile-sidebar-header">
             <img src="{{ asset('fromfigma/jobsi_logo.png') }}" alt="JOBSI">
         </div>
+        @php use App\Services\PlanModuleService; @endphp
         <div class="mobile-sidebar-menu">
             <a href="{{ route('mobile.dashboard') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.dashboard') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/mainpanel.svg') }}" alt=""> {{ __('Dashboard') }}
             </a>
+            @if(PlanModuleService::hasModule('workers'))
             <a href="{{ route('mobile.workers.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.workers.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/workers.svg') }}" alt=""> {{ __('Workers') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('workplaces'))
             <a href="{{ route('mobile.workplaces.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.workplaces.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/workplaces.svg') }}" alt=""> {{ __('Work Places') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('hotels'))
             <a href="{{ route('mobile.hotels.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.hotels.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/hotel.svg') }}" alt=""> {{ __('Accommodation') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('vehicles'))
             <a href="{{ route('mobile.vehicles.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.vehicles.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/vehicles.svg') }}" alt=""> {{ __('Vehicles') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('documents'))
             <a href="{{ route('mobile.documents.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.documents.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/document.svg') }}" alt=""> {{ __('Documents') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('cashbox'))
             <a href="{{ route('mobile.cashbox.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.cashbox.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/cashbox.svg') }}" alt=""> {{ __('Cashbox') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('calendar'))
             <a href="{{ route('mobile.calendar.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.calendar.*') ? 'active' : '' }}">
                 <img src="{{ asset('fromfigma/calendar.svg') }}" alt=""> {{ __('Calendar') }}
             </a>
+            @endif
+            @if(PlanModuleService::hasModule('notifications'))
             <a href="{{ route('mobile.notifications.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.notifications.*') ? 'active' : '' }}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                 {{ __('Notifications') }}
             </a>
+            @endif
             <a href="{{ route('mobile.profile.index') }}" class="mobile-sidebar-item {{ Request::routeIs('mobile.profile.*') ? 'active' : '' }}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 {{ __('Profile') }}

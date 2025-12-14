@@ -7,13 +7,45 @@
 @endsection
 @push('css-page')
 <style>
-    /* 20.01  */
+    /* Plan card styles */
     .price-card .list-unstyled .theme-avtar{
-        width: 20px ;
-        margin-right: 5px !important;
+        width: 22px;
+        min-width: 22px;
+        margin-right: 8px !important;
+    }
+    
+    .plan-features li, .plan-modules li {
+        padding: 6px 0;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+    
+    .plan-value {
+        font-weight: 600;
+        color: #FF0049;
+        min-width: 30px;
+        margin-right: 6px;
+        font-size: 14px;
+    }
+    
+    .plan-label {
+        color: #555;
+        word-break: break-word;
+    }
+    
+    .plan-modules .plan-label {
+        margin-left: 0;
+    }
+    
+    .ti-circle-check {
+        font-size: 18px;
+    }
+    
+    .ti-circle-x {
+        font-size: 18px;
     }
 
-        .request-btn .btn{
+    .request-btn .btn{
         padding: 8px 12px !important;
     }
 
@@ -44,8 +76,10 @@
         .plan_card .price-card{
             max-height: unset;
         }
+        .plan-features li, .plan-modules li {
+            font-size: 12px;
+        }
     }
-/* 20.01  */
 </style>
 @endpush
 @section('breadcrumb')
@@ -104,47 +138,82 @@
                             {{ __('Free Trial Days : ') . __($plan->trial_days ? $plan->trial_days : 0) }}<br />
                         </p>
 
-                        <div class="row ">
+                        <div class="row">
                             <div class="col-6">
-                                <ul class="list-unstyled my-5">
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="text-primary ti ti-circle-plus"></i></span>{{ $plan->max_users == -1 ? __('Unlimited') : $plan->max_users }}
-                                        {{ __('Users') }}</li>
-                                    <li class="text-wrap"><span class="theme-avtar"><i
-                                                class="text-primary ti ti-circle-plus"></i></span>{{ $plan->max_customers == -1 ? __('Unlimited') : $plan->max_customers }}
-                                        {{ __('Customers') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="text-primary ti ti-circle-plus"></i></span>{{ $plan->max_venders == -1 ? __('Unlimited') : $plan->max_venders }}
-                                        {{ __('Vendors') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="text-primary ti ti-circle-plus"></i></span>{{ $plan->max_clients == -1 ? __('Unlimited') : $plan->max_clients }}
-                                        {{ __('Clients') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="text-primary ti ti-circle-plus"></i></span>{{ $plan->storage_limit == -1 ? __('Unlimited') : $plan->storage_limit . ' MB'}}
-                                        {{ __('Storage') }}</li>
+                                <ul class="list-unstyled my-4 plan-features">
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
+                                        <span class="plan-value">{{ $plan->max_users == -1 ? '∞' : $plan->max_users }}</span>
+                                        <span class="plan-label">{{ __('Users') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
+                                        <span class="plan-value">{{ ($plan->max_roles ?? -1) == -1 ? '∞' : $plan->max_roles }}</span>
+                                        <span class="plan-label">{{ __('Roles') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-user"></i></span>
+                                        <span class="plan-value">{{ $plan->base_users_limit ?? $plan->max_users }}</span>
+                                        <span class="plan-label">{{ __('Base Users') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-warning ti ti-currency-dollar"></i></span>
+                                        <span class="plan-value">${{ number_format($plan->manager_price ?? 50, 0) }}</span>
+                                        <span class="plan-label">{{ __('Manager') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-info ti ti-currency-dollar"></i></span>
+                                        <span class="plan-value">${{ number_format($plan->curator_price ?? 30, 0) }}</span>
+                                        <span class="plan-label">{{ __('Curator') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
+                                        <span class="plan-value">{{ ($plan->max_workers ?? -1) == -1 ? '∞' : $plan->max_workers }}</span>
+                                        <span class="plan-label">{{ __('Workers') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
+                                        <span class="plan-value">{{ ($plan->max_hotels ?? -1) == -1 ? '∞' : $plan->max_hotels }}</span>
+                                        <span class="plan-label">{{ __('Hotels') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
+                                        <span class="plan-value">{{ ($plan->max_vehicles ?? -1) == -1 ? '∞' : $plan->max_vehicles }}</span>
+                                        <span class="plan-label">{{ __('Vehicles') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
+                                        <span class="plan-value">{{ ($plan->max_workplaces ?? -1) == -1 ? '∞' : $plan->max_workplaces }}</span>
+                                        <span class="plan-label">{{ __('Workplaces') }}</span>
+                                    </li>
                                 </ul>
                             </div>
                             <div class="col-6">
-                                <ul class="list-unstyled my-5">
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="ti {{ $plan->account == 1 ? 'ti-circle-plus text-primary' : 'ti-circle-minus text-danger' }} "></i></span>{{ $plan->account == 1 ? __('Enable') : __('Disable') }}
-                                        {{ __('Account') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="ti {{ $plan->crm == 1 ? 'ti-circle-plus text-primary' : 'ti-circle-minus text-danger' }} "></i></span>{{ $plan->crm == 1 ? __('Enable') : __('Disable') }}
-                                        {{ __('CRM') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="ti {{ $plan->hrm == 1 ? 'ti-circle-plus text-primary' : 'ti-circle-minus text-danger' }} "></i></span>{{ $plan->hrm == 1 ? __('Enable') : __('Disable') }}
-                                        {{ __('HRM') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="ti {{ $plan->project == 1 ? 'ti-circle-plus text-primary' : 'ti-circle-minus text-danger' }} "></i></span>{{ $plan->project == 1 ? __('Enable') : __('Disable') }}
-                                        {{ __('Project') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="ti {{ $plan->pos == 1 ? 'ti-circle-plus text-primary' : 'ti-circle-minus text-danger' }} "></i></span>{{ $plan->pos == 1 ? __('Enable') : __('Disable') }}
-                                        {{ __('POS') }}</li>
-                                    <li class="white-sapce-nowrap"><span class="theme-avtar"><i
-                                                class="ti {{ $plan->chatgpt == 1 ? 'ti-circle-plus text-primary' : 'ti-circle-minus text-danger' }} "></i></span>{{ $plan->chatgpt == 1 ? __('Enable') : __('Disable') }}
-                                        {{ __('Chat GPT') }}</li>
-
+                                <ul class="list-unstyled my-4 plan-modules">
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="ti {{ ($plan->module_workers ?? 1) == 1 ? 'ti-circle-check text-success' : 'ti-circle-x text-danger' }}"></i></span>
+                                        <span class="plan-label">{{ __('Workers') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="ti {{ ($plan->module_hotels ?? 1) == 1 ? 'ti-circle-check text-success' : 'ti-circle-x text-danger' }}"></i></span>
+                                        <span class="plan-label">{{ __('Hotels') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="ti {{ ($plan->module_vehicles ?? 1) == 1 ? 'ti-circle-check text-success' : 'ti-circle-x text-danger' }}"></i></span>
+                                        <span class="plan-label">{{ __('Vehicles') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="ti {{ ($plan->module_workplaces ?? 1) == 1 ? 'ti-circle-check text-success' : 'ti-circle-x text-danger' }}"></i></span>
+                                        <span class="plan-label">{{ __('Workplaces') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="ti {{ ($plan->module_cashbox ?? 1) == 1 ? 'ti-circle-check text-success' : 'ti-circle-x text-danger' }}"></i></span>
+                                        <span class="plan-label">{{ __('Cashbox') }}</span>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-2">
+                                        <span class="theme-avtar"><i class="ti {{ ($plan->module_documents ?? 1) == 1 ? 'ti-circle-check text-success' : 'ti-circle-x text-danger' }}"></i></span>
+                                        <span class="plan-label">{{ __('Documents') }}</span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
