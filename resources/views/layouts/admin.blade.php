@@ -33,7 +33,7 @@
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
 
 <head>
-    <title>{{ $setting['title_text'] ? $setting['title_text'] : config('app.name', 'ERPGo SaaS') }} - @yield('page-title')
+    <title>{{ $setting['title_text'] ? $setting['title_text'] : env('APP_NAME', 'Jobsi') }} - @yield('page-title')
     </title>
 
     <meta name="title" content="{{ $metatitle }}">
