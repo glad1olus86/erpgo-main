@@ -7,77 +7,101 @@
 @endsection
 @push('css-page')
 <style>
-    /* Plan card styles */
-    .price-card .list-unstyled .theme-avtar{
-        width: 22px;
-        min-width: 22px;
-        margin-right: 8px !important;
+    /* Plan cards grid */
+    .plan_card {
+        width: 33.333%;
+        padding: 0 10px;
+        margin-bottom: 30px;
     }
     
+    .plan_card .price-card {
+        height: 100%;
+        position: relative;
+        padding-top: 15px;
+    }
+    
+    .plan_card .card-body {
+        padding: 25px 20px 20px;
+    }
+    
+    /* Badge - название плана */
+    .plan_card .price-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        white-space: nowrap;
+    }
+    
+    /* Списки фич */
     .plan-features li, .plan-modules li {
-        padding: 6px 0;
-        font-size: 13px;
-        line-height: 1.4;
+        padding: 5px 0;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .price-card .list-unstyled .theme-avtar {
+        width: 20px;
+        min-width: 20px;
+        margin-right: 8px !important;
+        flex-shrink: 0;
     }
     
     .plan-value {
         font-weight: 600;
         color: #FF0049;
         min-width: 30px;
-        margin-right: 6px;
-        font-size: 14px;
+        margin-right: 5px;
+        font-size: 12px;
+        flex-shrink: 0;
     }
     
     .plan-label {
         color: #555;
-        word-break: break-word;
+        font-size: 12px;
     }
     
-    .plan-modules .plan-label {
-        margin-left: 0;
-    }
-    
-    .ti-circle-check {
-        font-size: 18px;
-    }
-    
-    .ti-circle-x {
-        font-size: 18px;
+    /* Иконки */
+    .ti-circle-check, .ti-circle-x, .ti-circle-plus, .ti-user, .ti-currency-dollar {
+        font-size: 16px;
     }
 
-    .request-btn .btn{
-        padding: 8px 12px !important;
+    /* Кнопки */
+    .request-btn .btn {
+        padding: 8px 15px !important;
+        font-size: 13px;
+    }
+    
+    /* Цена */
+    .price-card h1 {
+        font-size: 1.6rem;
+    }
+    
+    .price-card h1 small {
+        font-size: 0.75rem;
     }
 
-    @media screen and (max-width:991px){
-        .plan_card{
+    /* Responsive */
+    @media screen and (max-width: 1200px) {
+        .plan_card {
             width: 50%;
         }
     }
-    @media screen and (max-width:767px){
-        .plan_card{
+    
+    @media screen and (max-width: 767px) {
+        .plan_card {
             width: 100%;
         }
-        .plan_card .price-card{
-            height: auto ;
-            margin-bottom: 0;
+        .plan_card .price-card {
+            height: auto;
         }
     }
-    @media screen and (max-width:481px){
-        .plan_card .card-body .row .col-6{
+    
+    @media screen and (max-width: 481px) {
+        .plan_card .card-body .row .col-6 {
             width: 100%;
-        }
-        .plan_card .card-body .row .col-6:not(:first-of-type) .list-unstyled{
-            margin:0 0 20px!important;
-        }
-        .plan_card .card-body .row .col-6:first-of-type .list-unstyled{
-            margin:20px 0 7px!important;
-        }
-        .plan_card .price-card{
-            max-height: unset;
-        }
-        .plan-features li, .plan-modules li {
-            font-size: 12px;
         }
     }
 </style>
@@ -151,20 +175,13 @@
                                         <span class="plan-value">{{ ($plan->max_roles ?? -1) == -1 ? '∞' : $plan->max_roles }}</span>
                                         <span class="plan-label">{{ __('Roles') }}</span>
                                     </li>
+                                    @php
+                                        $billingSettings = \App\Models\Utility::getAdminBillingSettings();
+                                    @endphp
                                     <li class="d-flex align-items-center mb-2">
                                         <span class="theme-avtar"><i class="text-primary ti ti-user"></i></span>
                                         <span class="plan-value">{{ $plan->base_users_limit ?? $plan->max_users }}</span>
                                         <span class="plan-label">{{ __('Base Users') }}</span>
-                                    </li>
-                                    <li class="d-flex align-items-center mb-2">
-                                        <span class="theme-avtar"><i class="text-warning ti ti-currency-dollar"></i></span>
-                                        <span class="plan-value">${{ number_format($plan->manager_price ?? 50, 0) }}</span>
-                                        <span class="plan-label">{{ __('Manager') }}</span>
-                                    </li>
-                                    <li class="d-flex align-items-center mb-2">
-                                        <span class="theme-avtar"><i class="text-info ti ti-currency-dollar"></i></span>
-                                        <span class="plan-value">${{ number_format($plan->curator_price ?? 30, 0) }}</span>
-                                        <span class="plan-label">{{ __('Curator') }}</span>
                                     </li>
                                     <li class="d-flex align-items-center mb-2">
                                         <span class="theme-avtar"><i class="text-primary ti ti-circle-plus"></i></span>
