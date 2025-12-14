@@ -4047,7 +4047,6 @@
     "Company name": "Název společnosti",
     "I've read the terms and conditions": "Přečetl/a jsem si podmínky",
     "Sign up": "Zaregistrujte se",
-
     "Hotel Management": "Hotelový management",
     "Hotels": "Hotely",
     "Export Hotels": "Exportní hotely",
@@ -4088,7 +4087,6 @@
     "Number": "Číslo",
     "Cap.": "Kap.",
     "Pays": "Platí",
-
     "Room Management": "Správa místností",
     "Rooms": "Pokoje",
     "Select Hotel": "Select Hotel",
@@ -4118,7 +4116,6 @@
     "M": "M",
     "F": "F",
     "No available workers for check-in": "Žádní volní pracovníci pro odbavení",
-
     "Work Places Management": "Správa pracovních míst",
     "Work Places": "Pracovní místa",
     "Export Work Places": "Pracoviště pro export",
@@ -4157,7 +4154,6 @@
     "Select Position": "Výběr pozice",
     "First Name Last Name": "Jméno Příjmení",
     "No available workers without job": "Žádní volní pracovníci bez práce",
-
     "Worker Management": "Řízení pracovníků",
     "Export Workers": "Pracovníci ve vývozu",
     "Add New Worker": "Přidat nového pracovníka",
@@ -4250,7 +4246,6 @@
     "Duration": "Doba trvání",
     "Nat.": "Nat.",
     "Count": "Hrabě",
-
     "Insufficient permissions": "Nedostatečná povolení",
     "Vehicle not found": "Vozidlo nebylo nalezeno",
     "Vehicle successfully added": "Vozidlo bylo úspěšně přidáno",
@@ -4334,7 +4329,6 @@
     "Hotel created": "Vytvořený hotel",
     "Hotel updated": "Hotel aktualizován",
     "Hotel deleted": "Hotel smazán",
-
     "Full Company Name": "Úplný název společnosti",
     "Enter full company name": "Zadejte celý název společnosti",
     "Used in document workflow and {company_name} variable": "Používá se v pracovním postupu dokumentu a proměnné {company_name}",
@@ -4771,6 +4765,6 @@
     "hotels": "hotelů",
     "Search by name, description...": "Hledat podle názvu, popisu...",
     "templates": "šablon",
-    "Біллінг": "Fakturace",
-    "Користувачі": "Uživatelé"
+    "Billing": "Fakturace",
+    "Users": "Uživatelé"
 }

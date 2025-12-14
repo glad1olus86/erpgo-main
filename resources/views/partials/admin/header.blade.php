@@ -99,11 +99,11 @@
                         $pageIcon = 'settings.svg';
                         $pageTitle = __('Настройки');
                     } elseif (Request::routeIs('billing.*') || Request::segment(1) == 'billing') {
-                        $pageIcon = 'receipt.svg';
-                        $pageTitle = __('Біллінг');
+                        $pageIcon = null;
+                        $pageTitle = __('Billing');
                     } elseif (Request::routeIs('users.*') || Request::segment(1) == 'users') {
                         $pageIcon = 'workers.svg';
-                        $pageTitle = __('Користувачі');
+                        $pageTitle = __('Users');
                     }
                 @endphp
                 <div class="jobsi-page-icon">
