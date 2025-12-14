@@ -99,7 +99,7 @@
                         $pageIcon = 'settings.svg';
                         $pageTitle = __('Настройки');
                     } elseif (Request::routeIs('billing.*') || Request::segment(1) == 'billing') {
-                        $pageIcon = null;
+                        $pageIcon = 'receipt.svg';
                         $pageTitle = __('Billing');
                     } elseif (Request::routeIs('users.*') || Request::segment(1) == 'users') {
                         $pageIcon = 'workers.svg';
