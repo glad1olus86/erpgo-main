@@ -4069,6 +4069,9 @@ class User extends Authenticatable implements MustVerifyEmail
                 );
             }
         }
+        
+        // Create default notification rules for new company
+        self::createDefaultNotificationRules($user_id);
     }
 
     public static function userDefaultWarehouse()
@@ -4224,5 +4227,155 @@ class User extends Authenticatable implements MustVerifyEmail
     public function countEmployees()
     {
         return Employee::where('created_by', '=', $this->creatorId())->count();
+    }
+
+    /**
+     * Create default notification rules for new company
+     * Names are in English - will be translated dynamically
+     */
+    public static function createDefaultNotificationRules($user_id)
+    {
+        // Check if rules already exist for this user
+        if (NotificationRule::where('created_by', $user_id)->exists()) {
+            return;
+        }
+        
+        $rules = [
+            // Worker rules - not employed but living in hotel
+            [
+                'name' => 'Worker not employed but living in hotel',
+                'entity_type' => 'worker',
+                'conditions' => [
+                    ['field' => 'not_employed', 'value' => null],
+                    ['field' => 'is_housed', 'value' => null],
+                ],
+                'period_from' => 1,
+                'period_to' => 3,
+                'severity' => 'info',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Worker not employed but living in hotel',
+                'entity_type' => 'worker',
+                'conditions' => [
+                    ['field' => 'not_employed', 'value' => null],
+                    ['field' => 'is_housed', 'value' => null],
+                ],
+                'period_from' => 4,
+                'period_to' => 7,
+                'severity' => 'warning',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Worker not employed but living in hotel',
+                'entity_type' => 'worker',
+                'conditions' => [
+                    ['field' => 'not_employed', 'value' => null],
+                    ['field' => 'is_housed', 'value' => null],
+                ],
+                'period_from' => 8,
+                'period_to' => null,
+                'severity' => 'danger',
+                'is_grouped' => true,
+            ],
+            // Hotel occupancy rules - 5-6 days
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '51']],
+                'period_from' => 5,
+                'period_to' => 6,
+                'severity' => 'info',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '31']],
+                'period_from' => 5,
+                'period_to' => 6,
+                'severity' => 'warning',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '10']],
+                'period_from' => 5,
+                'period_to' => 6,
+                'severity' => 'danger',
+                'is_grouped' => true,
+            ],
+            // Hotel occupancy rules - 13-14 days
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '81']],
+                'period_from' => 13,
+                'period_to' => 14,
+                'severity' => 'info',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '51']],
+                'period_from' => 13,
+                'period_to' => 14,
+                'severity' => 'warning',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '31']],
+                'period_from' => 13,
+                'period_to' => 14,
+                'severity' => 'danger',
+                'is_grouped' => true,
+            ],
+            // Hotel occupancy rules - 21+ days
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '100']],
+                'period_from' => 21,
+                'period_to' => null,
+                'severity' => 'info',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '81']],
+                'period_from' => 21,
+                'period_to' => null,
+                'severity' => 'warning',
+                'is_grouped' => true,
+            ],
+            [
+                'name' => 'Hotel occupancy',
+                'entity_type' => 'hotel',
+                'conditions' => [['field' => 'occupancy_below', 'value' => '51']],
+                'period_from' => 21,
+                'period_to' => null,
+                'severity' => 'danger',
+                'is_grouped' => true,
+            ],
+        ];
+
+        foreach ($rules as $rule) {
+            NotificationRule::create([
+                'name' => $rule['name'],
+                'entity_type' => $rule['entity_type'],
+                'conditions' => $rule['conditions'],
+                'period_from' => $rule['period_from'],
+                'period_to' => $rule['period_to'],
+                'severity' => $rule['severity'],
+                'is_active' => false, // Disabled by default
+                'is_grouped' => $rule['is_grouped'],
+                'created_by' => $user_id,
+            ]);
+        }
     }
 }

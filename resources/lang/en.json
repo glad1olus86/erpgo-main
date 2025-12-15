@@ -4812,5 +4812,14 @@
     "users over limit": "users over limit",
     "managers": "managers",
     "curators": "curators",
-    "Additional Users": "Additional Users"
+    "Additional Users": "Additional Users",
+    "Filter Workers": "Filter Workers",
+    "Date of Birth From": "Date of Birth From",
+    "Date of Birth To": "Date of Birth To",
+    "Registration From": "Registration From",
+    "Registration To": "Registration To",
+    "Reg. from": "Reg. from",
+    "Reg. to": "Reg. to",
+    "DOB from": "DOB from",
+    "DOB to": "DOB to"
 }

@@ -121,15 +121,15 @@
                 </li>
                 @endif
 
-                <!-- Сообщения -->
-                <li class="dash-item {{ Request::segment(1) == 'chatify' ? 'active' : '' }}">
+                <!-- Сообщения (временно скрыто) -->
+                {{-- <li class="dash-item {{ Request::segment(1) == 'chatify' ? 'active' : '' }}">
                     <a href="{{ url('chatify') }}" class="dash-link">
                         <span class="dash-micon">
                             <img src="{{ asset('fromfigma/message.svg') }}" alt="">
                         </span>
                         <span class="dash-mtext">{{ __('Сообщения') }}</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <!-- Биллинг -->
                 @if(Auth::user()->type == 'company')

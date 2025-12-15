@@ -4,8 +4,17 @@
     $languages = App\Models\Utility::languages();
     // $lang is passed from controller
     $currentLang = $lang ?? \App::getLocale();
-    // Check for Russian/Ukrainian language
-    $isRussian = in_array(strtolower($currentLang), ['ru', 'russian', 'uk', 'ua', 'ukrainian']);
+    
+    // Language configuration
+    $langConfig = [
+        'uk' => ['name' => 'Українська', 'flag' => 'ukraine_flag.png'],
+        'ru' => ['name' => 'Русский', 'flag' => 'globe_icon.svg'],
+        'cs' => ['name' => 'Čeština', 'flag' => 'czech_flag.png'],
+        'en' => ['name' => 'English', 'flag' => 'uk_flag.png'],
+    ];
+    
+    // Get current language info
+    $currentLangInfo = $langConfig[$currentLang] ?? $langConfig['en'];
 @endphp
 
 @section('page-title')
@@ -46,20 +55,18 @@
 
                     <!-- Language Selector -->
                     <div class="lang-selector" onclick="toggleLangDropdown()">
-                        <img src="{{ asset('assets/images/login/' . ($isRussian ? 'ukraine_flag.png' : 'uk_flag.png')) }}"
-                            alt="" class="lang-flag">
-                        <span class="lang-text">{{ $isRussian ? 'Українська' : 'English' }}</span>
+                        <img src="{{ asset('assets/images/login/' . $currentLangInfo['flag']) }}"
+                            alt="" class="lang-flag {{ $currentLang == 'ru' ? 'globe-icon' : '' }}">
+                        <span class="lang-text">{{ $currentLangInfo['name'] }}</span>
                         <span class="lang-arrow">▼</span>
 
                         <div class="lang-dropdown" id="langDropdown">
-                            <a href="{{ route('login', 'ru') }}" class="{{ $isRussian ? 'active' : '' }}">
-                                <img src="{{ asset('assets/images/login/ukraine_flag.png') }}" alt="">
-                                <span>Українська</span>
-                            </a>
-                            <a href="{{ route('login', 'en') }}" class="{{ !$isRussian ? 'active' : '' }}">
-                                <img src="{{ asset('assets/images/login/uk_flag.png') }}" alt="">
-                                <span>English</span>
-                            </a>
+                            @foreach($langConfig as $code => $info)
+                                <a href="{{ route('login', $code) }}" class="{{ $currentLang == $code ? 'active' : '' }}">
+                                    <img src="{{ asset('assets/images/login/' . $info['flag']) }}" alt="" class="{{ $code == 'ru' ? 'globe-icon' : '' }}">
+                                    <span>{{ $info['name'] }}</span>
+                                </a>
+                            @endforeach
                         </div>
                     </div>
                 </div>

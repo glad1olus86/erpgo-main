@@ -41,7 +41,7 @@ class NotificationController extends Controller
                     'id' => $n->id,
                     'type' => $n->type,
                     'title' => $n->title,
-                    'message' => $n->message,
+                    'message' => $n->translated_message,
                     'link' => $n->link,
                     'icon' => $n->icon,
                     'color' => $n->color,

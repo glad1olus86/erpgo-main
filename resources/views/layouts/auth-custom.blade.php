@@ -179,6 +179,13 @@
             object-fit: cover;
         }
 
+        .lang-flag.globe-icon {
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+
         .lang-text {
             font-family: 'Inter', sans-serif;
             font-weight: 300;
@@ -230,6 +237,14 @@
             width: 30px;
             height: 20px;
             border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .lang-dropdown a img.globe-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: contain;
         }
 
         /* Right Side - Video */
@@ -286,7 +301,7 @@
         .express-guide {
             position: absolute;
             top: 20px;
-            right: -30px;
+            right: 15px;
             font-family: 'Amatic SC', cursive;
             font-weight: 700;
             font-size: 45px;

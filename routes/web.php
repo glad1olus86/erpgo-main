@@ -994,7 +994,7 @@ Route::group(['middleware' => ['verified']], function () {
 
     // System Notifications routes
     Route::get('/notifications/check', [App\Http\Controllers\NotificationController::class, 'check'])
-        ->name('notifications.check')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notifications.check')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
         ->name('notifications.index')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])
@@ -1012,23 +1012,23 @@ Route::group(['middleware' => ['verified']], function () {
 
     // Notification Rules (Constructor)
     Route::get('/notification-rules', [App\Http\Controllers\NotificationRuleController::class, 'index'])
-        ->name('notification-rules.index')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.index')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::get('/notification-rules/create', [App\Http\Controllers\NotificationRuleController::class, 'create'])
-        ->name('notification-rules.create')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.create')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::post('/notification-rules', [App\Http\Controllers\NotificationRuleController::class, 'store'])
-        ->name('notification-rules.store')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.store')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::get('/notification-rules/{notificationRule}/edit', [App\Http\Controllers\NotificationRuleController::class, 'edit'])
-        ->name('notification-rules.edit')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.edit')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::put('/notification-rules/{notificationRule}', [App\Http\Controllers\NotificationRuleController::class, 'update'])
-        ->name('notification-rules.update')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.update')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::delete('/notification-rules/{notificationRule}', [App\Http\Controllers\NotificationRuleController::class, 'destroy'])
-        ->name('notification-rules.destroy')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.destroy')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::post('/notification-rules/{notificationRule}/toggle', [App\Http\Controllers\NotificationRuleController::class, 'toggle'])
-        ->name('notification-rules.toggle')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.toggle')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::get('/notification-rules/conditions', [App\Http\Controllers\NotificationRuleController::class, 'getConditions'])
-        ->name('notification-rules.conditions')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.conditions')->middleware(['auth', 'XSS', 'plan.module:notifications']);
     Route::get('/notification-rules/template-variables', [App\Http\Controllers\NotificationRuleController::class, 'getTemplateVariables'])
-        ->name('notification-rules.template-variables')->middleware(['auth', 'plan.module:notifications']);
+        ->name('notification-rules.template-variables')->middleware(['auth', 'XSS', 'plan.module:notifications']);
 
     Route::get('import/deals/file', [DealController::class, 'importFile'])->name('deals.import');
     Route::post('deals/import', [DealController::class, 'fileImport'])->name('deals.file.import');

@@ -20,16 +20,8 @@
 @endif
 <div class="navbar-wrapper">
     <div class="m-header main-logo">
-        <a href="#" class="b-brand">
-
-            @if ($setting['cust_darklayout'] && $setting['cust_darklayout'] == 'on')
-                <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') . '?' . time() }}"
-                    alt="{{ config('app.name', 'ERPGo-SaaS') }}" class="logo logo-lg">
-            @else
-                <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-light.png') . '?' . time() }}"
-                    alt="{{ config('app.name', 'ERPGo-SaaS') }}" class="logo logo-lg">
-            @endif
-
+        <a href="{{ route('dashboard') }}" class="b-brand">
+            <img src="{{ asset('fromfigma/jobsi_logo.png') }}" alt="JOBSI" class="logo logo-lg">
         </a>
     </div>
     <div class="navbar-content">

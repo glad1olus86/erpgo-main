@@ -45,11 +45,11 @@ class NotificationRule extends Model
     public static function getEntityTypes(): array
     {
         return [
-            self::ENTITY_WORKER => __('Работник'),
-            self::ENTITY_ROOM => __('Комната'),
-            self::ENTITY_HOTEL => __('Отель'),
-            self::ENTITY_WORK_PLACE => __('Рабочее место'),
-            self::ENTITY_CASHBOX => __('Касса'),
+            self::ENTITY_WORKER => __('Worker'),
+            self::ENTITY_ROOM => __('Room'),
+            self::ENTITY_HOTEL => __('Hotel'),
+            self::ENTITY_WORK_PLACE => __('Work Place'),
+            self::ENTITY_CASHBOX => __('Cashbox'),
         ];
     }
 
@@ -59,9 +59,9 @@ class NotificationRule extends Model
     public static function getSeverityLevels(): array
     {
         return [
-            self::SEVERITY_INFO => ['label' => __('Штатное'), 'color' => 'info', 'icon' => 'ti-info-circle'],
-            self::SEVERITY_WARNING => ['label' => __('Почти критичное'), 'color' => 'warning', 'icon' => 'ti-alert-triangle'],
-            self::SEVERITY_DANGER => ['label' => __('Критическое'), 'color' => 'danger', 'icon' => 'ti-alert-circle'],
+            self::SEVERITY_INFO => ['label' => __('Normal'), 'color' => 'info', 'icon' => 'ti-info-circle'],
+            self::SEVERITY_WARNING => ['label' => __('Almost Critical'), 'color' => 'warning', 'icon' => 'ti-alert-triangle'],
+            self::SEVERITY_DANGER => ['label' => __('Critical'), 'color' => 'danger', 'icon' => 'ti-alert-circle'],
         ];
     }
 
@@ -72,35 +72,35 @@ class NotificationRule extends Model
     {
         return match($entityType) {
             self::ENTITY_WORKER => [
-                'is_employed' => ['label' => __('Трудоустроен'), 'type' => 'boolean'],
-                'not_employed' => ['label' => __('Не трудоустроен'), 'type' => 'boolean'],
-                'is_housed' => ['label' => __('Проживает в отеле'), 'type' => 'boolean'],
-                'not_housed' => ['label' => __('Не проживает в отеле'), 'type' => 'boolean'],
-                'no_assignment' => ['label' => __('Без назначения (ни работы, ни жилья)'), 'type' => 'boolean'],
+                'is_employed' => ['label' => __('Employed'), 'type' => 'boolean'],
+                'not_employed' => ['label' => __('Not employed'), 'type' => 'boolean'],
+                'is_housed' => ['label' => __('Living in hotel'), 'type' => 'boolean'],
+                'not_housed' => ['label' => __('Not living in hotel'), 'type' => 'boolean'],
+                'no_assignment' => ['label' => __('No assignment (no work, no housing)'), 'type' => 'boolean'],
             ],
             self::ENTITY_ROOM => [
-                'is_full' => ['label' => __('Полностью заполнена'), 'type' => 'boolean'],
-                'is_empty' => ['label' => __('Пустая'), 'type' => 'boolean'],
-                'is_partial' => ['label' => __('Частично заполнена'), 'type' => 'boolean'],
-                'occupancy_above' => ['label' => __('Заполненность выше %'), 'type' => 'number', 'suffix' => '%'],
-                'occupancy_below' => ['label' => __('Заполненность ниже %'), 'type' => 'number', 'suffix' => '%'],
+                'is_full' => ['label' => __('Fully occupied'), 'type' => 'boolean'],
+                'is_empty' => ['label' => __('Empty'), 'type' => 'boolean'],
+                'is_partial' => ['label' => __('Partially occupied'), 'type' => 'boolean'],
+                'occupancy_above' => ['label' => __('Occupancy above %'), 'type' => 'number', 'suffix' => '%'],
+                'occupancy_below' => ['label' => __('Occupancy below %'), 'type' => 'number', 'suffix' => '%'],
             ],
             self::ENTITY_HOTEL => [
-                'occupancy_above' => ['label' => __('Заполненность выше %'), 'type' => 'number', 'suffix' => '%'],
-                'occupancy_below' => ['label' => __('Заполненность ниже %'), 'type' => 'number', 'suffix' => '%'],
-                'has_empty_rooms' => ['label' => __('Есть пустые комнаты'), 'type' => 'boolean'],
-                'no_empty_rooms' => ['label' => __('Нет пустых комнат'), 'type' => 'boolean'],
+                'occupancy_above' => ['label' => __('Occupancy above %'), 'type' => 'number', 'suffix' => '%'],
+                'occupancy_below' => ['label' => __('Occupancy below %'), 'type' => 'number', 'suffix' => '%'],
+                'has_empty_rooms' => ['label' => __('Has empty rooms'), 'type' => 'boolean'],
+                'no_empty_rooms' => ['label' => __('No empty rooms'), 'type' => 'boolean'],
             ],
             self::ENTITY_WORK_PLACE => [
-                'has_no_workers' => ['label' => __('Нет сотрудников'), 'type' => 'boolean'],
-                'workers_below' => ['label' => __('Сотрудников меньше'), 'type' => 'number'],
-                'workers_above' => ['label' => __('Сотрудников больше'), 'type' => 'number'],
+                'has_no_workers' => ['label' => __('No workers'), 'type' => 'boolean'],
+                'workers_below' => ['label' => __('Workers below'), 'type' => 'number'],
+                'workers_above' => ['label' => __('Workers above'), 'type' => 'number'],
             ],
             self::ENTITY_CASHBOX => [
-                'cashbox_money_received' => ['label' => __('Получение денег'), 'type' => 'event'],
-                'cashbox_money_sent' => ['label' => __('Выдача денег'), 'type' => 'event'],
-                'cashbox_money_refunded' => ['label' => __('Возврат денег'), 'type' => 'event'],
-                'cashbox_taken_to_work' => ['label' => __('Взятие в работу'), 'type' => 'event'],
+                'cashbox_money_received' => ['label' => __('Money received'), 'type' => 'event'],
+                'cashbox_money_sent' => ['label' => __('Money sent'), 'type' => 'event'],
+                'cashbox_money_refunded' => ['label' => __('Money refunded'), 'type' => 'event'],
+                'cashbox_taken_to_work' => ['label' => __('Taken to work'), 'type' => 'event'],
             ],
             default => [],
         };
@@ -114,11 +114,11 @@ class NotificationRule extends Model
     {
         return match($entityType) {
             self::ENTITY_CASHBOX => [
-                '{amount}' => __('Сумма транзакции'),
-                '{sender_name}' => __('Имя отправителя'),
-                '{recipient_name}' => __('Имя получателя'),
-                '{comment}' => __('Комментарий'),
-                '{task}' => __('Задача'),
+                '{amount}' => __('Transaction amount'),
+                '{sender_name}' => __('Sender name'),
+                '{recipient_name}' => __('Recipient name'),
+                '{comment}' => __('Comment'),
+                '{task}' => __('Task'),
             ],
             default => [],
         };
@@ -146,14 +146,14 @@ class NotificationRule extends Model
     public function getPeriodTextAttribute(): string
     {
         if ($this->period_from == 0 && !$this->period_to) {
-            return __('Сразу');
+            return __('Immediately');
         }
         
         if ($this->period_to) {
-            return $this->period_from . '-' . $this->period_to . ' ' . __('дней');
+            return $this->period_from . '-' . $this->period_to . ' ' . __('days');
         }
         
-        return __('от') . ' ' . $this->period_from . ' ' . __('дней');
+        return __('from') . ' ' . $this->period_from . ' ' . __('days');
     }
 
     /**

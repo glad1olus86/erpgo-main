@@ -131,13 +131,16 @@
                         </div>
                     @endif
                 </div>
+                @php
+                    $displayName = !empty($user->company_name) ? $user->company_name : $user->name;
+                    $initials = collect(explode(' ', $displayName))->map(fn($word) => mb_strtoupper(mb_substr($word, 0, 1)))->take(2)->implode('');
+                @endphp
                 <div class="user-info-wrp d-flex align-items-center gap-3 border-bottom pb-3 mb-3">
-                    <div class="user-image rounded-1 border-1 border border-primary">
-                        <img src="{{ !empty($user->avatar) ? Utility::get_file('uploads/avatar/') . $user->avatar : asset(Storage::url('uploads/avatar/avatar.png')) }}"
-                            alt="user-image" height="100%" width="100%">
+                    <div class="company-avatar rounded-1 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; min-width: 60px; background: linear-gradient(135deg, #FF0049 0%, #ff6b8a 100%); color: white; font-weight: 600; font-size: 18px;">
+                        {{ $initials }}
                     </div>
                     <div class="user-info flex-1">
-                        <h5 class="mb-1">{{ $user->name }}</h5>
+                        <h5 class="mb-1">{{ $displayName }}</h5>
                         @if ($user->delete_status == 0)
                             <h6 class="mb-1">{{ __('Soft Deleted') }}</h6>
                         @endif

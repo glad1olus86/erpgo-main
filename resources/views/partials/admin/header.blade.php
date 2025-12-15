@@ -119,8 +119,8 @@
 
         <div class="ms-auto">
             <ul class="list-unstyled d-flex align-items-center gap-2 mb-0">
-                {{-- Messages Icon --}}
-                <li class="dash-h-item">
+                {{-- Messages Icon (временно скрыто) --}}
+                {{-- <li class="dash-h-item">
                     <a class="jobsi-header-btn" href="{{ url('chats') }}" title="{{ __('Сообщения') }}">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFAAAA">
                             <path
@@ -130,7 +130,7 @@
                             <span class="jobsi-badge">{{ $unseenCounter }}</span>
                         @endif
                     </a>
-                </li>
+                </li> --}}
 
                 {{-- Notifications Icon --}}
                 <li class="dropdown dash-h-item" id="notification-dropdown">
@@ -272,9 +272,11 @@
                 <li class="dropdown dash-h-item drp-company">
                     <a class="dash-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown"
                         href="#" role="button" aria-haspopup="false" aria-expanded="false">
-                        <span class="theme-avtar">
-                            <img src="{{ !empty(\Auth::user()->avatar) ? $profile . \Auth::user()->avatar : $profile . 'avatar.png' }}"
-                                class="img-fluid rounded border-2 border border-primary">
+                        @php
+                            $adminInitials = mb_strtoupper(mb_substr(\Auth::user()->name, 0, 2));
+                        @endphp
+                        <span class="theme-avtar d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #FF0049 0%, #ff6b8a 100%); color: white; font-weight: 600; font-size: 14px; width: 40px; height: 40px; border-radius: 8px;">
+                            {{ $adminInitials }}
                         </span>
                         <span class="hide-mob ms-2">{{ __('Hi, ') }}{{ \Auth::user()->name }}!</span>
                         <i class="ti ti-chevron-down drp-arrow nocolor hide-mob"></i>

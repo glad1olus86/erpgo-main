@@ -14,11 +14,11 @@
 @section('action-btn')
     <div class="float-end">
         @can('document_generate')
-            <a href="#" id="bulk-generate-doc-btn"
+            <button type="button" id="bulk-generate-doc-btn"
                 data-bs-toggle="tooltip" title="{{ __('Document Generation') }}"
                 class="btn btn-sm btn-info me-1">
                 <i class="ti ti-file-text"></i>
-            </a>
+            </button>
         @endcan
         @can('manage worker')
             <a href="#" data-url="{{ route('worker.export.modal') }}" data-ajax-popup="true"
@@ -342,7 +342,8 @@
                             </span>
                             <button type="button" class="btn-close" onclick="toggleFilters()"></button>
                         </div>
-                        <div class="filter-grid">
+                        {{-- Row 1: Main filters --}}
+                        <div class="filter-grid" style="grid-template-columns: repeat(4, 1fr);">
                             <div class="filter-group">
                                 <label><i class="ti ti-home-2 me-1"></i>{{ __('Accommodation') }}</label>
                                 <select id="filterHotel">
@@ -384,6 +385,25 @@
                                         <span>{{ __('Female') }}</span>
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+                        {{-- Row 2: Date filters --}}
+                        <div class="filter-grid mt-3" style="grid-template-columns: repeat(4, 1fr);">
+                            <div class="filter-group">
+                                <label><i class="ti ti-cake me-1"></i>{{ __('Date of Birth From') }}</label>
+                                <input type="date" id="filterDobFrom" class="form-control">
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-cake me-1"></i>{{ __('Date of Birth To') }}</label>
+                                <input type="date" id="filterDobTo" class="form-control">
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-calendar me-1"></i>{{ __('Registration From') }}</label>
+                                <input type="date" id="filterRegDateFrom" class="form-control">
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-calendar me-1"></i>{{ __('Registration To') }}</label>
+                                <input type="date" id="filterRegDateTo" class="form-control">
                             </div>
                         </div>
                         <div class="filter-actions">
@@ -458,7 +478,9 @@
                                         data-nationality="{{ strtolower($worker->nationality ?? '') }}"
                                         data-gender="{{ $worker->gender }}"
                                         data-hotel-id="{{ $worker->currentAssignment?->hotel_id }}"
-                                        data-workplace-id="{{ $worker->currentWorkAssignment?->work_place_id }}">
+                                        data-workplace-id="{{ $worker->currentWorkAssignment?->work_place_id }}"
+                                        data-registration-date="{{ $worker->registration_date ? \Carbon\Carbon::parse($worker->registration_date)->format('Y-m-d') : '' }}"
+                                        data-dob="{{ $worker->dob ? \Carbon\Carbon::parse($worker->dob)->format('Y-m-d') : '' }}">
                                         <td>
                                             <div class="form-check">
                                                 <input type="checkbox" class="form-check-input worker-checkbox" 
@@ -756,6 +778,10 @@ function resetFilters() {
     document.getElementById('genderFemale').classList.remove('active');
     document.querySelector('#genderMale input').checked = false;
     document.querySelector('#genderFemale input').checked = false;
+    document.getElementById('filterRegDateFrom').value = '';
+    document.getElementById('filterRegDateTo').value = '';
+    document.getElementById('filterDobFrom').value = '';
+    document.getElementById('filterDobTo').value = '';
     applyFilters();
 }
 
@@ -766,6 +792,10 @@ function applyFilters() {
     var nationality = document.getElementById('filterNationality').value.toLowerCase();
     var maleChecked = document.querySelector('#genderMale input').checked;
     var femaleChecked = document.querySelector('#genderFemale input').checked;
+    var regDateFrom = document.getElementById('filterRegDateFrom').value;
+    var regDateTo = document.getElementById('filterRegDateTo').value;
+    var dobFrom = document.getElementById('filterDobFrom').value;
+    var dobTo = document.getElementById('filterDobTo').value;
     
     var rows = document.querySelectorAll('#workers-table tbody tr[data-worker-id]');
     var visibleCount = 0;
@@ -795,6 +825,24 @@ function applyFilters() {
             var gender = row.dataset.gender;
             if (maleChecked && !femaleChecked && gender !== 'male') show = false;
             if (femaleChecked && !maleChecked && gender !== 'female') show = false;
+        }
+        
+        // Registration date filter
+        var regDate = row.dataset.registrationDate;
+        if (regDateFrom && regDate && regDate < regDateFrom) {
+            show = false;
+        }
+        if (regDateTo && regDate && regDate > regDateTo) {
+            show = false;
+        }
+        
+        // Date of birth filter
+        var dob = row.dataset.dob;
+        if (dobFrom && dob && dob < dobFrom) {
+            show = false;
+        }
+        if (dobTo && dob && dob > dobTo) {
+            show = false;
         }
         
         if (show) {
@@ -834,6 +882,22 @@ function applyFilters() {
         activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'female\')"><i class="ti ti-woman"></i>{{ __("Female") }}<i class="ti ti-x chip-remove"></i></span>';
         filterCount++;
     }
+    if (regDateFrom) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'regDateFrom\')"><i class="ti ti-calendar"></i>{{ __("Reg. from") }}: ' + regDateFrom + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (regDateTo) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'regDateTo\')"><i class="ti ti-calendar"></i>{{ __("Reg. to") }}: ' + regDateTo + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (dobFrom) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'dobFrom\')"><i class="ti ti-cake"></i>{{ __("DOB from") }}: ' + dobFrom + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
+    if (dobTo) {
+        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'dobTo\')"><i class="ti ti-cake"></i>{{ __("DOB to") }}: ' + dobTo + '<i class="ti ti-x chip-remove"></i></span>';
+        filterCount++;
+    }
     
     activeFiltersEl.innerHTML = activeFiltersHtml;
     
@@ -867,6 +931,10 @@ function clearFilter(type) {
         document.getElementById('genderFemale').classList.remove('active');
         document.querySelector('#genderFemale input').checked = false;
     }
+    if (type === 'regDateFrom') document.getElementById('filterRegDateFrom').value = '';
+    if (type === 'regDateTo') document.getElementById('filterRegDateTo').value = '';
+    if (type === 'dobFrom') document.getElementById('filterDobFrom').value = '';
+    if (type === 'dobTo') document.getElementById('filterDobTo').value = '';
     applyFilters();
 }
 
@@ -1134,15 +1202,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Update select-all when DataTable redraws (search, pagination, etc.)
-    workersTable.on('datatable.page', function() {
-        selectAllCheckbox.checked = false;
-    });
-    workersTable.on('datatable.search', function() {
-        selectAllCheckbox.checked = false;
-    });
-    workersTable.on('datatable.sort', function() {
-        selectAllCheckbox.checked = false;
-    });
+    // DISABLED - DataTable is not used, using custom filtering instead
+    // workersTable.on('datatable.page', function() {
+    //     selectAllCheckbox.checked = false;
+    // });
+    // workersTable.on('datatable.search', function() {
+    //     selectAllCheckbox.checked = false;
+    // });
+    // workersTable.on('datatable.sort', function() {
+    //     selectAllCheckbox.checked = false;
+    // });
 
     // Bulk Document Generation - function to open modal
     function openDocumentModal() {
@@ -1192,6 +1261,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (bulkDocBtn) {
         bulkDocBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            console.log('Document button clicked');
             openDocumentModal();
         });
     }
@@ -1200,6 +1271,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.bulk-generate-doc-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            console.log('Bulk document button clicked');
             openDocumentModal();
         });
     });

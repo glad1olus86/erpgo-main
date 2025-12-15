@@ -264,8 +264,8 @@ class NotificationService
         // Reload relationships to get fresh data
         $worker->load(['currentAssignment.hotel', 'currentWorkAssignment.workPlace']);
         
-        $hotelName = $worker->currentAssignment?->hotel?->name ?? __('Not specified');
-        $workPlaceName = $worker->currentWorkAssignment?->workPlace?->name ?? __('Not specified');
+        $hotelName = $worker->currentAssignment?->hotel?->name ?? '';
+        $workPlaceName = $worker->currentWorkAssignment?->workPlace?->name ?? '';
 
         $message = $this->buildWorkerMessage($worker, $rule, $days, $hotelName, $workPlaceName);
 
@@ -277,6 +277,10 @@ class NotificationService
             'data' => [
                 'rule_id' => $rule->id,
                 'worker_id' => $worker->id,
+                'worker_name' => $worker->first_name . ' ' . $worker->last_name,
+                'conditions' => $rule->conditions,
+                'hotel_name' => $hotelName,
+                'work_place_name' => $workPlaceName,
                 'days' => $days,
             ],
             'link' => route('worker.show', $worker->id),

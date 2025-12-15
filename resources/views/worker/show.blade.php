@@ -67,9 +67,13 @@
                                         class="img-fluid rounded-circle"
                                         style="width: 150px; height: 150px; object-fit: cover;">
                                 @else
-                                    <img src="{{ asset('assets/images/user/avatar-4.jpg') }}" alt="photo"
-                                        class="img-fluid rounded-circle"
-                                        style="width: 150px; height: 150px; object-fit: cover;">
+                                    @php
+                                        $workerInitials = mb_strtoupper(mb_substr($worker->first_name, 0, 1) . mb_substr($worker->last_name, 0, 1));
+                                    @endphp
+                                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
+                                        style="width: 150px; height: 150px; background: linear-gradient(135deg, #FF0049 0%, #ff6b8a 100%); color: white; font-weight: 600; font-size: 48px;">
+                                        {{ $workerInitials }}
+                                    </div>
                                 @endif
                             </div>
                         </div>

@@ -184,12 +184,19 @@ class AuthenticatedSessionController extends Controller
         $timezone = $setting['timezone'] ? $setting['timezone'] : 'UTC';
         date_default_timezone_set($timezone);
 
-        // Update Last Login Time
-        $user->update(
-            [
-                'last_login_at' => Carbon::now()->toDateTimeString(),
-            ]
-        );
+        // Update Last Login Time and Language
+        $updateData = [
+            'last_login_at' => Carbon::now()->toDateTimeString(),
+        ];
+        
+        // Save selected language from session
+        $selectedLang = session('selected_lang');
+        if ($selectedLang && in_array($selectedLang, ['en', 'ru', 'uk', 'cs'])) {
+            $updateData['lang'] = $selectedLang;
+            \App::setLocale($selectedLang);
+        }
+        
+        $user->update($updateData);
 
         //start for user log
         if($user->type != 'company' && $user->type != 'super admin')
@@ -260,12 +267,17 @@ class AuthenticatedSessionController extends Controller
     {
         if($lang == '')
         {
-            $lang = Utility::getValByName('default_language');
+            // Check session first, then default
+            $lang = session('selected_lang', Utility::getValByName('default_language'));
         }
 
         $langList = Utility::languages()->toArray();
-        $lang = array_key_exists($lang, $langList) ? $lang : 'en';
+        $allowedLangs = ['en', 'ru', 'uk', 'cs'];
+        $lang = (array_key_exists($lang, $langList) && in_array($lang, $allowedLangs)) ? $lang : 'en';
 
+        // Save to session for persistence
+        session(['selected_lang' => $lang]);
+        
         \App::setLocale($lang);
 
         $settings = Utility::settings();

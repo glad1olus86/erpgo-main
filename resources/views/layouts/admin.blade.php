@@ -118,6 +118,18 @@
         <link rel="stylesheet" href="{{ asset('css/jobsi-theme.css') }}">
     @endif
 
+    {{-- Global fix for pagination SVG icons --}}
+    <style>
+        nav[role="navigation"] svg,
+        .pagination svg,
+        [aria-label="Pagination Navigation"] svg {
+            width: 20px !important;
+            height: 20px !important;
+            max-width: 20px !important;
+            max-height: 20px !important;
+        }
+    </style>
+
     @stack('css-page')
 
 

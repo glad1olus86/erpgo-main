@@ -59,7 +59,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <div class="notification-title">{{ $notification->title ?? __('Notification') }}</div>
-                                <div class="notification-text">{{ Str::limit($notification->message, 60) }}</div>
+                                <div class="notification-text">{{ Str::limit($notification->translated_message, 60) }}</div>
                                 <div class="notification-time">
                                     <i class="ti ti-clock me-1"></i>{{ $notification->created_at->diffForHumans() }}
                                 </div>
