@@ -172,14 +172,6 @@
                                     <a href="{{ route('cashbox.settings') }}" class="dash-link">{{ __('Cashbox Settings') }}</a>
                                 </li>
                             @endcan
-                            @if (Gate::check('manage order') && Auth::user()->type == 'company')
-                                <li class="dash-item {{ Request::segment(1) == 'order' ? 'active' : '' }}">
-                                    <a href="{{ route('order.index') }}" class="dash-link">{{ __('Order') }}</a>
-                                </li>
-                                <li class="dash-item {{ Request::routeIs('referral-program.company') ? 'active' : '' }}">
-                                    <a href="{{ route('referral-program.company') }}" class="dash-link">{{ __('Referral Program') }}</a>
-                                </li>
-                            @endif
                         </ul>
                     </li>
                 @endif
@@ -187,13 +179,13 @@
         </div>
 
         <!-- Google Reviews Block -->
-        <div class="jobsi-google-reviews">
+        {{--<div class="jobsi-google-reviews">
             <div class="review-card">
                 <span class="review-label">{{ __('Оставьте ваш отзыв') }}</span>
                 <a href="https://g.page/r/YOUR_GOOGLE_REVIEW_LINK/review" target="_blank">
                     <img src="{{ asset('fromfigma/otzivi.png') }}" alt="Google Reviews">
                 </a>
             </div>
-        </div>
+        </div> --}}
     </div>
 </nav>
