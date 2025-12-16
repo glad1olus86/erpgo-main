@@ -122,6 +122,10 @@ class DocumentGeneratorController extends Controller
      */
     public function bulkGenerate(Request $request)
     {
+        // Increase limits for bulk operations
+        set_time_limit(0);
+        ini_set('memory_limit', '1024M');
+        
         if (!Auth::user()->can('document_generate')) {
             return redirect()->back()->with('error', __('Insufficient permissions'));
         }
@@ -190,8 +194,20 @@ class DocumentGeneratorController extends Controller
 
         // Multiple workers - generate ZIP archive
         try {
+            \Log::info('Bulk document generation started', [
+                'workers_count' => $workers->count(),
+                'format' => $format,
+                'template_id' => $template->id,
+                'memory_limit' => ini_get('memory_limit'),
+            ]);
+            
             return $this->generatorService->generateBulkZip($template, $workers, $format, $dynamicData);
         } catch (\Exception $e) {
+            \Log::error('Bulk document generation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'workers_count' => $workers->count(),
+            ]);
             return redirect()->back()->with('error', __('Documents generation error: ') . $e->getMessage());
         }
     }

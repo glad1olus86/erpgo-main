@@ -64,6 +64,36 @@ class PositionController extends Controller
     }
 
     /**
+     * Update a position
+     */
+    public function update(Request $request, Position $position)
+    {
+        if (!Auth::user()->can('manage work place')) {
+            return redirect()->back()->with('error', __('Insufficient permissions'));
+        }
+
+        // Multi-tenancy check
+        if ($position->created_by !== Auth::user()->creatorId()) {
+            return redirect()->back()->with('error', __('Position not found'));
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $position->update([
+            'name' => $request->name,
+        ]);
+
+        // Handle mobile redirect
+        if ($request->has('redirect_to') && str_starts_with($request->redirect_to, 'mobile_workplace_')) {
+            return redirect()->route('mobile.workplaces.show', $position->work_place_id)->with('success', __('Position updated'));
+        }
+
+        return redirect()->back()->with('success', __('Position updated'));
+    }
+
+    /**
      * Delete a position
      */
     public function destroy(Request $request, Position $position)

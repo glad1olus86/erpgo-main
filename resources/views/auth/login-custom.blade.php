@@ -5,12 +5,12 @@
     // $lang is passed from controller
     $currentLang = $lang ?? \App::getLocale();
     
-    // Language configuration
+    // Language configuration (order: English, Czech, Ukrainian, Russian)
     $langConfig = [
+        'en' => ['name' => 'English', 'flag' => 'uk_flag.png'],
+        'cs' => ['name' => 'Čeština', 'flag' => 'czech_flag.png'],
         'uk' => ['name' => 'Українська', 'flag' => 'ukraine_flag.png'],
         'ru' => ['name' => 'Русский', 'flag' => 'globe_icon.svg'],
-        'cs' => ['name' => 'Čeština', 'flag' => 'czech_flag.png'],
-        'en' => ['name' => 'English', 'flag' => 'uk_flag.png'],
     ];
     
     // Get current language info

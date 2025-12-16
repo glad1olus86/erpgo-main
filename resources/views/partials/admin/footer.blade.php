@@ -188,11 +188,9 @@
         });
     }
 
-    // Initial check after 2 seconds
-    setTimeout(function() {
-        checkNotifications();
-        startPolling();
-    }, 2000);
+    // Initial check immediately on page load
+    checkNotifications();
+    startPolling();
 })();
 </script>
 @endif

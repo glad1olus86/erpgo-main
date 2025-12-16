@@ -168,7 +168,7 @@
                 <a href="#" data-url="{{ route('worker.create') }}" data-ajax-popup="true" 
                     data-title="{{ __('Добавить нового работника') }}" data-size="lg" class="jobsi-action-btn">
                     <img src="{{ asset('fromfigma/new_worker.svg') }}" alt="">
-                    <span>{{ __('НОВЫЙ') }}<br>{{ __('РАБОТНИК') }}</span>
+                    <span>{{ __('НОВЫЙ (Работник)') }}<br>{{ __('РАБОТНИК') }}</span>
                 </a>
             @endif
             
@@ -183,7 +183,7 @@
             @if($hasVehicles)
                 <a href="{{ route('vehicles.create') }}" class="jobsi-action-btn">
                     <img src="{{ asset('fromfigma/new_car.svg') }}" alt="">
-                    <span>{{ __('НОВЫЙ') }}<br>{{ __('ТРАНСПОРТ') }}</span>
+                    <span>{{ __('НОВЫЙ (Транспорт)') }}<br>{{ __('ТРАНСПОРТ') }}</span>
                 </a>
             @endif
             

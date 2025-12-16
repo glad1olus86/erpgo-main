@@ -148,7 +148,7 @@
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label><i class="ti ti-building-factory-2 me-1"></i>{{ __('Work Place') }}</label>
+                                <label><i class="ti ti-building-factory me-1"></i>{{ __('Work Place') }}</label>
                                 <select id="filterWorkplace">
                                     <option value="">{{ __('All workplaces') }}</option>
                                     @foreach($workplaces ?? [] as $workplace)
@@ -166,7 +166,7 @@
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label><i class="ti ti-gender-bigender me-1"></i>{{ __('Gender') }}</label>
+                                <label><i class="ti ti-man"></i>{{ __('Gender') }}</label>
                                 <div class="gender-toggles">
                                     <label class="gender-toggle" id="genderMale">
                                         <input type="checkbox" value="male">
@@ -181,11 +181,11 @@
                         </div>
                         <div class="filter-grid mt-3" style="grid-template-columns: repeat(4, 1fr);">
                             <div class="filter-group">
-                                <label><i class="ti ti-cake me-1"></i>{{ __('Date of Birth From') }}</label>
+                                <label><i class="ti ti-calendar me-1"></i>{{ __('Date of Birth From') }}</label>
                                 <input type="date" id="filterDobFrom">
                             </div>
                             <div class="filter-group">
-                                <label><i class="ti ti-cake me-1"></i>{{ __('Date of Birth To') }}</label>
+                                <label><i class="ti ti-calendar me-1"></i>{{ __('Date of Birth To') }}</label>
                                 <input type="date" id="filterDobTo">
                             </div>
                             <div class="filter-group">
@@ -231,7 +231,7 @@
                             @endcan
                             @can('manage worker')
                                 <button type="button" class="btn btn-sm btn-danger" id="bulk-checkout-btn">
-                                    <i class="ti ti-door-exit me-1"></i>{{ __('Check Out') }}
+                                    <i class="ti ti-logout me-1"></i>{{ __('Check Out') }}
                                 </button>
                             @endcan
                             @can('document_generate')
@@ -370,12 +370,12 @@
     </div>
 
     {{-- Document Generation Modal --}}
-    <div class="modal fade" id="bulkDocumentModal" tabindex="-1">
+    <div class="modal fade" id="bulkDocumentModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">{{ __('Generate Document') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="doc-modal-close"></button>
                 </div>
                 <form id="bulk-document-form" method="POST" action="{{ route('worker.bulk.generate-documents') }}">
                     @csrf
@@ -422,11 +422,24 @@
                                 </div>
                             </div>
                         </div>
+                        {{-- Progress Bar --}}
+                        <div id="doc-progress-container" class="mt-3" style="display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted" id="doc-progress-text">{{ __('Generating...') }}</small>
+                                <small class="text-muted" id="doc-progress-percent">0%</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                                     role="progressbar" id="doc-progress-bar" 
+                                     style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="doc-cancel-btn">{{ __('Cancel') }}</button>
                         <button type="submit" class="btn btn-info" id="doc-generate-btn">
-                            <i class="ti ti-download me-1"></i>{{ __('Generate') }}
+                            <i class="ti ti-download me-1" id="doc-btn-icon"></i>
+                            <span id="doc-btn-text">{{ __('Generate') }}</span>
                         </button>
                     </div>
                 </form>
@@ -608,7 +621,7 @@ const WorkerTable = {
         }
         if (this.currentFilters.workplace_id) {
             const name = document.querySelector(`#filterWorkplace option[value="${this.currentFilters.workplace_id}"]`)?.text;
-            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('workplace_id')"><i class="ti ti-building-factory-2 me-1"></i>${name} <i class="ti ti-x chip-remove"></i></span>`);
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('workplace_id')"><i class="ti ti-building-factory me-1"></i>${name} <i class="ti ti-x chip-remove"></i></span>`);
             count++;
         }
         if (this.currentFilters.nationality) {
@@ -617,7 +630,7 @@ const WorkerTable = {
         }
         if (this.currentFilters.gender?.length) {
             const genderText = this.currentFilters.gender.map(g => genderLabels[g] || g).join(', ');
-            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('gender')"><i class="ti ti-gender-bigender me-1"></i>${genderText} <i class="ti ti-x chip-remove"></i></span>`);
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('gender')"><i class="ti ti-man me-1"></i>${genderText} <i class="ti ti-x chip-remove"></i></span>`);
             count++;
         }
         
@@ -677,6 +690,12 @@ const WorkerTable = {
             this.renderPagination(result);
             document.getElementById('resultsCount').textContent = result.total;
             document.getElementById('total-filtered-count').textContent = result.total;
+            
+            // Show/hide "Select all filtered" button based on whether there are more results than displayed
+            const selectAllBtn = document.getElementById('select-all-filtered-btn');
+            if (selectAllBtn) {
+                selectAllBtn.style.display = result.total > this.perPage ? 'inline-flex' : 'none';
+            }
             
         } catch (error) {
             console.error('Error loading workers:', error);
@@ -831,9 +850,15 @@ const WorkerTable = {
 
     updateBulkPanel() {
         const panel = document.getElementById('bulk-actions-panel');
+        const selectAllBtn = document.getElementById('select-all-filtered-btn');
         const count = this.selectAllFiltered ? this.totalRecords : this.selectedIds.size;
         document.getElementById('selected-count').textContent = count;
         panel.style.display = count > 0 ? 'block' : 'none';
+        
+        // Show "Select all filtered" button only if there are more results than currently displayed
+        if (selectAllBtn) {
+            selectAllBtn.style.display = this.totalRecords > this.perPage ? 'inline-flex' : 'none';
+        }
     },
 
     async selectAllFilteredWorkers() {
@@ -902,5 +927,110 @@ const WorkerTable = {
 };
 
 document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
+
+// Document Generation Progress Handler
+(function() {
+    const form = document.getElementById('bulk-document-form');
+    const btn = document.getElementById('doc-generate-btn');
+    const btnText = document.getElementById('doc-btn-text');
+    const btnIcon = document.getElementById('doc-btn-icon');
+    const progressContainer = document.getElementById('doc-progress-container');
+    const progressBar = document.getElementById('doc-progress-bar');
+    const progressPercent = document.getElementById('doc-progress-percent');
+    const progressText = document.getElementById('doc-progress-text');
+    const cancelBtn = document.getElementById('doc-cancel-btn');
+    const closeBtn = document.getElementById('doc-modal-close');
+    
+    let isGenerating = false;
+    let progressInterval = null;
+    
+    form.addEventListener('submit', function(e) {
+        if (isGenerating) {
+            e.preventDefault();
+            return;
+        }
+        
+        // Get worker count for progress estimation
+        const workerIds = document.getElementById('doc-worker-ids').value;
+        const singleWorker = document.getElementById('doc-single-worker').value;
+        let workerCount = 1;
+        
+        if (workerIds) {
+            workerCount = workerIds.split(',').filter(id => id.trim()).length;
+        }
+        
+        // Start progress animation
+        isGenerating = true;
+        btn.disabled = true;
+        cancelBtn.disabled = true;
+        closeBtn.style.display = 'none';
+        btnText.textContent = '{{ __("Generating...") }}';
+        btnIcon.className = 'ti ti-loader ti-spin me-1';
+        progressContainer.style.display = 'block';
+        
+        // Estimate time based on worker count (roughly 0.1-0.15 sec per document)
+        const estimatedTime = Math.max(3000, workerCount * 120); // min 3 sec
+        let progress = 0;
+        const startTime = Date.now();
+        
+        progressInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            // Use easing function for more realistic progress
+            progress = Math.min(95, (elapsed / estimatedTime) * 100 * (1 - Math.exp(-elapsed / (estimatedTime * 0.5))));
+            
+            progressBar.style.width = progress + '%';
+            progressPercent.textContent = Math.round(progress) + '%';
+            
+            // Update text based on progress
+            if (progress < 30) {
+                progressText.textContent = '{{ __("Preparing documents...") }}';
+            } else if (progress < 70) {
+                progressText.textContent = '{{ __("Generating documents...") }}';
+            } else {
+                progressText.textContent = '{{ __("Finalizing...") }}';
+            }
+        }, 100);
+        
+        // Form will submit normally, but we need to detect when download starts
+        // Use a cookie-based approach or just reset after timeout
+        setTimeout(() => {
+            resetProgress();
+        }, estimatedTime + 5000);
+    });
+    
+    // Reset when modal is hidden
+    document.getElementById('bulkDocumentModal').addEventListener('hidden.bs.modal', function() {
+        resetProgress();
+    });
+    
+    function resetProgress() {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+        isGenerating = false;
+        btn.disabled = false;
+        cancelBtn.disabled = false;
+        closeBtn.style.display = '';
+        btnText.textContent = '{{ __("Generate") }}';
+        btnIcon.className = 'ti ti-download me-1';
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressPercent.textContent = '0%';
+    }
+    
+    // Detect when file download starts (browser will trigger this)
+    window.addEventListener('focus', function() {
+        if (isGenerating) {
+            // Small delay to ensure download has started
+            setTimeout(() => {
+                progressBar.style.width = '100%';
+                progressPercent.textContent = '100%';
+                progressText.textContent = '{{ __("Complete!") }}';
+                setTimeout(resetProgress, 1000);
+            }, 500);
+        }
+    });
+})();
 </script>
 @endpush

@@ -19,6 +19,9 @@ class LanguageController extends Controller
         $user       = Auth::user();
         $user->lang = $lang;
         $user->save();
+        
+        // Also save to session for consistency
+        session(['selected_lang' => $lang]);
 
         $setting = Utility::settings();
         if($user->lang == 'ar' || $user->lang =='he'){

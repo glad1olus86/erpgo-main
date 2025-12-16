@@ -145,18 +145,18 @@
                     <div class="dropdown-menu dash-h-dropdown dropdown-menu-end notification-dropdown-menu"
                         style="width: 380px; max-height: 400px; overflow-y: auto;">
                         <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                            <h6 class="mb-0">{{ __('Уведомления') }}</h6>
+                            <h6 class="mb-0">{{ __('Notifications') }}</h6>
                             <a href="#" id="mark-all-read"
-                                class="text-primary small">{{ __('Прочитать все') }}</a>
+                                class="text-primary small">{{ __('Mark all as read') }}</a>
                         </div>
                         <div id="notification-list">
                             <div class="text-center py-3 text-muted">
-                                <i class="ti ti-bell-off"></i> {{ __('Нет уведомлений') }}
+                                <i class="ti ti-bell-off"></i> {{ __('No notifications') }}
                             </div>
                         </div>
                         <div class="border-top px-3 py-2 text-center">
                             <a href="{{ route('notifications.index') }}"
-                                class="text-primary small">{{ __('Все уведомления') }}</a>
+                                class="text-primary small">{{ __('All notifications') }}</a>
                         </div>
                     </div>
                 </li>

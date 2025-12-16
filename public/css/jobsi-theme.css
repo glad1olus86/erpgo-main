@@ -388,9 +388,18 @@
     border-radius: 10px;
     padding: 20px 25px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     min-height: 290px;
     padding-bottom: 70px;
+}
+
+/* Dropdown menu in widgets - ensure it appears above other elements */
+.jobsi-widget .dropdown-menu {
+    z-index: 1050;
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 230px;
+    /* Минимальная ширина dropdown меню */
 }
 
 /* ===== CASHBOX WIDGET STYLES ===== */
@@ -889,6 +898,7 @@
 .jobsi-quick-actions[data-buttons="1"] {
     grid-template-columns: 1fr;
 }
+
 .jobsi-quick-actions[data-buttons="1"] .jobsi-action-btn {
     aspect-ratio: 4 / 1;
     max-width: 400px;
@@ -897,6 +907,7 @@
 .jobsi-quick-actions[data-buttons="2"] {
     grid-template-columns: repeat(2, 1fr);
 }
+
 .jobsi-quick-actions[data-buttons="2"] .jobsi-action-btn {
     aspect-ratio: 2 / 1;
 }
@@ -904,6 +915,7 @@
 .jobsi-quick-actions[data-buttons="3"] {
     grid-template-columns: repeat(3, 1fr);
 }
+
 .jobsi-quick-actions[data-buttons="3"] .jobsi-action-btn {
     aspect-ratio: 1.5 / 1;
 }
@@ -911,6 +923,7 @@
 .jobsi-quick-actions[data-buttons="4"] {
     grid-template-columns: repeat(4, 1fr);
 }
+
 .jobsi-quick-actions[data-buttons="4"] .jobsi-action-btn {
     aspect-ratio: 1.2 / 1;
 }
@@ -960,10 +973,12 @@
     .jobsi-quick-actions {
         grid-template-columns: repeat(3, 1fr);
     }
+
     .jobsi-quick-actions[data-buttons="1"],
     .jobsi-quick-actions[data-buttons="2"] {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .jobsi-quick-actions[data-buttons="1"] .jobsi-action-btn,
     .jobsi-quick-actions[data-buttons="2"] .jobsi-action-btn {
         aspect-ratio: 2 / 1;
@@ -975,12 +990,15 @@
     .jobsi-quick-actions {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .jobsi-quick-actions[data-buttons="1"] {
         grid-template-columns: 1fr;
     }
+
     .jobsi-quick-actions .jobsi-action-btn {
         aspect-ratio: 1.5 / 1;
     }
+
     .jobsi-quick-actions[data-buttons="1"] .jobsi-action-btn {
         aspect-ratio: 3 / 1;
         max-width: none;

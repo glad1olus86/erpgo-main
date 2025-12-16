@@ -471,77 +471,119 @@ class DocumentGeneratorService
 
     /**
      * Generate bulk documents as ZIP archive
+     * Optimized for large batches (500+ workers) - saves to temp files to avoid memory issues
      */
     public function generateBulkZip(DocumentTemplate $template, $workers, string $format, array $dynamicData = []): StreamedResponse
     {
+        // Increase limits for bulk generation
+        set_time_limit(0);
+        
         $zipFilename = $this->transliterate($template->name) . '_' . date('Y-m-d') . '.zip';
         $zipFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $zipFilename);
         
-        return response()->streamDownload(function () use ($template, $workers, $format, $dynamicData) {
-            $zip = new \ZipArchive();
-            $tempFile = tempnam(sys_get_temp_dir(), 'bulk_docs_');
+        // Create temp directory for this batch
+        $tempDir = sys_get_temp_dir() . '/bulk_docs_' . uniqid();
+        if (!mkdir($tempDir, 0777, true)) {
+            throw new \Exception('Cannot create temp directory');
+        }
+        
+        $tempFiles = [];
+        $zipTempFile = $tempDir . '/archive.zip';
+        
+        try {
+            // Generate all documents to temp files first (outside of streamDownload)
+            $batchSize = 25; // Smaller batches for better memory management
+            $workerChunks = $workers->chunk($batchSize);
+            $fileIndex = 0;
             
-            if ($zip->open($tempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            foreach ($workerChunks as $chunk) {
+                foreach ($chunk as $worker) {
+                    $content = $this->replaceVariables($template->content, $worker, $dynamicData);
+                    $filename = $this->generateFilename($template, $worker, $format);
+                    $tempFilePath = $tempDir . '/' . $fileIndex . '_' . $filename;
+                    
+                    switch ($format) {
+                        case 'pdf':
+                            $content = $this->cleanHtmlForPdf($content);
+                            $html = $this->wrapHtml($content);
+                            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
+                            $pdf->setPaper('a4', 'portrait');
+                            $pdf->save($tempFilePath);
+                            unset($pdf);
+                            break;
+                            
+                        case 'docx':
+                            $content = $this->convertToXhtml($content);
+                            $phpWord = new \PhpOffice\PhpWord\PhpWord();
+                            $section = $phpWord->addSection();
+                            \PhpOffice\PhpWord\Shared\Html::addHtml($section, $content, false, false);
+                            $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+                            $writer->save($tempFilePath);
+                            unset($phpWord, $writer);
+                            break;
+                            
+                        case 'xlsx':
+                            $plainText = strip_tags($content);
+                            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+                            $sheet = $spreadsheet->getActiveSheet();
+                            $sheet->setCellValue('A1', $template->name);
+                            $lines = explode("\n", $plainText);
+                            $row = 3;
+                            foreach ($lines as $line) {
+                                $line = trim($line);
+                                if (!empty($line)) {
+                                    $sheet->setCellValue('A' . $row++, $line);
+                                }
+                            }
+                            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+                            $writer->save($tempFilePath);
+                            unset($spreadsheet, $writer);
+                            break;
+                    }
+                    
+                    $tempFiles[] = ['path' => $tempFilePath, 'name' => $filename];
+                    unset($content);
+                    $fileIndex++;
+                }
+                
+                // Force garbage collection after each batch
+                gc_collect_cycles();
+            }
+            
+            // Now create ZIP from temp files
+            $zip = new \ZipArchive();
+            if ($zip->open($zipTempFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
                 throw new \Exception('Cannot create ZIP archive');
             }
             
-            foreach ($workers as $worker) {
-                $content = $this->replaceVariables($template->content, $worker, $dynamicData);
-                $filename = $this->generateFilename($template, $worker, $format);
-                
-                switch ($format) {
-                    case 'pdf':
-                        $content = $this->cleanHtmlForPdf($content);
-                        $html = $this->wrapHtml($content);
-                        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html);
-                        $pdf->setPaper('a4', 'portrait');
-                        $zip->addFromString($filename, $pdf->output());
-                        break;
-                        
-                    case 'docx':
-                        $content = $this->convertToXhtml($content);
-                        $phpWord = new \PhpOffice\PhpWord\PhpWord();
-                        $section = $phpWord->addSection();
-                        \PhpOffice\PhpWord\Shared\Html::addHtml($section, $content, false, false);
-                        
-                        $tempDocx = tempnam(sys_get_temp_dir(), 'docx_');
-                        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-                        $writer->save($tempDocx);
-                        $zip->addFile($tempDocx, $filename);
-                        break;
-                        
-                    case 'xlsx':
-                        $plainText = strip_tags($content);
-                        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-                        $sheet = $spreadsheet->getActiveSheet();
-                        $sheet->setCellValue('A1', $template->name);
-                        $sheet->setCellValue('A2', '');
-                        
-                        $lines = explode("\n", $plainText);
-                        $row = 3;
-                        foreach ($lines as $line) {
-                            $line = trim($line);
-                            if (!empty($line)) {
-                                $sheet->setCellValue('A' . $row, $line);
-                                $row++;
-                            }
-                        }
-                        
-                        $tempXlsx = tempnam(sys_get_temp_dir(), 'xlsx_');
-                        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-                        $writer->save($tempXlsx);
-                        $zip->addFile($tempXlsx, $filename);
-                        break;
-                }
+            foreach ($tempFiles as $file) {
+                $zip->addFile($file['path'], $file['name']);
             }
             
             $zip->close();
             
-            readfile($tempFile);
-            unlink($tempFile);
+            // Stream the ZIP file
+            return response()->streamDownload(function () use ($zipTempFile, $tempDir, $tempFiles) {
+                readfile($zipTempFile);
+                
+                // Cleanup
+                foreach ($tempFiles as $file) {
+                    @unlink($file['path']);
+                }
+                @unlink($zipTempFile);
+                @rmdir($tempDir);
+            }, $zipFilename, [
+                'Content-Type' => 'application/zip',
+            ]);
             
-        }, $zipFilename, [
-            'Content-Type' => 'application/zip',
-        ]);
+        } catch (\Exception $e) {
+            // Cleanup on error
+            foreach ($tempFiles as $file) {
+                @unlink($file['path']);
+            }
+            @unlink($zipTempFile);
+            @rmdir($tempDir);
+            throw $e;
+        }
     }
 }

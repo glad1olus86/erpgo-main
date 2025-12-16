@@ -177,10 +177,10 @@ class NotificationService
             foreach ($rule->conditions as $condition) {
                 $field = $condition['field'] ?? '';
                 $part = match($field) {
-                    'is_employed' => ' - ' . __('works at ":place"', ['place' => $workPlaceName]),
+                    'is_employed' => ' - ' . __('employed at ":place"', ['place' => $workPlaceName]),
                     'not_employed' => ' - ' . __('not employed'),
-                    'is_housed' => ' - ' . __('at hotel ":hotel"', ['hotel' => $hotelName]),
-                    'not_housed' => ' - ' . __('not housed'),
+                    'is_housed' => ' - ' . __('staying at hotel ":hotel"', ['hotel' => $hotelName]),
+                    'not_housed' => ' - ' . __('not staying at hotel'),
                     default => '',
                 };
                 $line .= $part;

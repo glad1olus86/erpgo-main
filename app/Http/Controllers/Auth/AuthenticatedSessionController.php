@@ -254,35 +254,45 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request)
     {
+        // Save language BEFORE logout (user->lang is the source of truth)
+        $lang = 'en';
+        if (\Auth::check() && \Auth::user()->lang) {
+            $lang = \Auth::user()->lang;
+        }
+        
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Redirect to login with saved language
+        return redirect('/login/' . $lang)->withCookie(cookie('selected_lang', $lang, 60 * 24 * 30)); // 30 days
     }
 
     public function showLoginForm($lang = '')
     {
         if($lang == '')
         {
-            // Check session first, then default
-            $lang = session('selected_lang', Utility::getValByName('default_language'));
+            // Check cookie first, then session, then default
+            $lang = request()->cookie('selected_lang') ?? session('selected_lang', Utility::getValByName('default_language'));
         }
 
         $langList = Utility::languages()->toArray();
         $allowedLangs = ['en', 'ru', 'uk', 'cs'];
         $lang = (array_key_exists($lang, $langList) && in_array($lang, $allowedLangs)) ? $lang : 'en';
 
-        // Save to session for persistence
+        // Save to session and cookie for persistence
         session(['selected_lang' => $lang]);
         
         \App::setLocale($lang);
 
         $settings = Utility::settings();
 
-        return view('auth.login-custom', compact('lang','settings'));
+        // Return view with cookie
+        return response()
+            ->view('auth.login-custom', compact('lang','settings'))
+            ->withCookie(cookie('selected_lang', $lang, 60 * 24 * 30)); // 30 days
     }
 
     public function showLinkRequestForm($lang = '')

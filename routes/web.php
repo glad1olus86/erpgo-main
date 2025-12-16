@@ -971,6 +971,8 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('work-place.positions.json')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::post('/work-place/{workPlace}/positions', [App\Http\Controllers\PositionController::class, 'store'])
         ->name('positions.store')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
+    Route::put('/positions/{position}', [App\Http\Controllers\PositionController::class, 'update'])
+        ->name('positions.update')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::delete('/positions/{position}', [App\Http\Controllers\PositionController::class, 'destroy'])
         ->name('positions.destroy')->middleware(['auth', 'XSS', 'plan.module:workplaces']);
     Route::get('/positions/{position}/workers', [App\Http\Controllers\PositionController::class, 'showWorkers'])

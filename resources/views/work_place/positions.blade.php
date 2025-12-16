@@ -68,15 +68,16 @@
                                                    class="btn btn-sm btn-success">
                                                     <i class="ti ti-user-plus"></i> {{ __('Employ') }}
                                                 </a>
-                                                <form action="{{ route('positions.destroy', $position->id) }}" 
-                                                      method="POST" class="d-inline"
-                                                      onsubmit="return confirm('{{ __('Delete position?') }}')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger">
-                                                        <i class="ti ti-trash"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-warning" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#editPositionModal{{ $position->id }}">
+                                                    <i class="ti ti-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deletePositionModal{{ $position->id }}">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -114,5 +115,71 @@
             </div>
         </div>
     </div>
+
+    <!-- Edit Position Modals -->
+    @foreach($positions as $position)
+        <div class="modal fade" id="editPositionModal{{ $position->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('positions.update', $position->id) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-header">
+                            <h5 class="modal-title">{{ __('Edit Position') }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label class="form-label">{{ __('Position Name') }}</label>
+                                <input type="text" name="name" class="form-control" required 
+                                       value="{{ $position->name }}"
+                                       placeholder="{{ __('For example: Manager') }}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Position Modal -->
+        <div class="modal fade" id="deletePositionModal{{ $position->id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="ti ti-alert-triangle me-2"></i>
+                            {{ __('Delete Position') }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">
+                            {{ __('Are you sure you want to delete position') }} <strong>"{{ $position->name }}"</strong>?
+                        </p>
+                        @if($position->workers_count > 0)
+                            <div class="alert alert-warning mb-0">
+                                <i class="ti ti-alert-circle me-2"></i>
+                                {{ __('All workers will be dismissed from this position', ['count' => $position->workers_count]) }}
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <form action="{{ route('positions.destroy', $position->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">
+                                <i class="ti ti-trash me-1"></i> {{ __('Delete') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 
 @endsection

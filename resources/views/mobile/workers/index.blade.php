@@ -261,12 +261,18 @@
                         <div class="flex-grow-1">
                             <h6 class="mb-1 worker-name">{{ $worker->first_name }} {{ $worker->last_name }}</h6>
                             <div class="mobile-card-meta">
-                                <span>{!! NationalityFlagService::getFlagHtml($worker->nationality, 16) !!}</span>
-                                @if($worker->currentWorkAssignment)
-                                    <span class="mobile-badge mobile-badge-working ms-2">{{ $worker->currentWorkAssignment->workPlace->name }}</span>
-                                @endif
+                                <div class="mobile-card-meta-row">
+                                    <span>{!! NationalityFlagService::getFlagHtml($worker->nationality, 16) !!}</span>
+                                    @if($worker->currentWorkAssignment)
+                                        <span class="mobile-badge mobile-badge-working">{{ $worker->currentWorkAssignment->workPlace->name }}</span>
+                                    @else
+                                        <span class="mobile-badge mobile-badge-not-working">{{ __('Not employed') }}</span>
+                                    @endif
+                                </div>
                                 @if($worker->currentAssignment)
-                                    <span class="mobile-badge mobile-badge-housed ms-1">{{ $worker->currentAssignment->hotel->name }}, {{ $worker->currentAssignment->room->room_number }}</span>
+                                    <div class="mobile-card-meta-row" style="margin-left: 30px;">
+                                        <span class="mobile-badge mobile-badge-housed">{{ $worker->currentAssignment->hotel->name }}, {{ $worker->currentAssignment->room->room_number }}</span>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -291,8 +297,73 @@
 
         {{-- Pagination --}}
         @if($workers instanceof \Illuminate\Pagination\LengthAwarePaginator && $workers->hasPages())
-            <div class="d-flex justify-content-center mt-3">
-                {{ $workers->links('pagination::bootstrap-4') }}
+            <div class="mobile-pagination mt-3">
+                {{-- Previous --}}
+                @if($workers->onFirstPage())
+                    <span class="page-btn disabled">&lsaquo;</span>
+                @else
+                    <a href="{{ $workers->previousPageUrl() }}" class="page-btn">&lsaquo;</a>
+                @endif
+
+                @php
+                    $currentPage = $workers->currentPage();
+                    $lastPage = $workers->lastPage();
+                    $showPages = [];
+                    
+                    if ($lastPage <= 9) {
+                        // Show all pages if 9 or less
+                        for ($i = 1; $i <= $lastPage; $i++) {
+                            $showPages[] = $i;
+                        }
+                    } else {
+                        // Smart pagination
+                        if ($currentPage <= 5) {
+                            // Near start: 1 2 3 4 5 ... 13 14
+                            for ($i = 1; $i <= 5; $i++) {
+                                $showPages[] = $i;
+                            }
+                            $showPages[] = '...';
+                            $showPages[] = $lastPage - 1;
+                            $showPages[] = $lastPage;
+                        } elseif ($currentPage >= $lastPage - 4) {
+                            // Near end: 1 2 ... 10 11 12 13 14
+                            $showPages[] = 1;
+                            $showPages[] = 2;
+                            $showPages[] = '...';
+                            for ($i = $lastPage - 4; $i <= $lastPage; $i++) {
+                                $showPages[] = $i;
+                            }
+                        } else {
+                            // Middle: 1 2 ... 6 7 8 ... 13 14
+                            $showPages[] = 1;
+                            $showPages[] = 2;
+                            $showPages[] = '...';
+                            $showPages[] = $currentPage - 1;
+                            $showPages[] = $currentPage;
+                            $showPages[] = $currentPage + 1;
+                            $showPages[] = '...';
+                            $showPages[] = $lastPage - 1;
+                            $showPages[] = $lastPage;
+                        }
+                    }
+                @endphp
+
+                @foreach($showPages as $page)
+                    @if($page === '...')
+                        <span class="page-dots">...</span>
+                    @elseif($page == $currentPage)
+                        <span class="page-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $workers->url($page) }}" class="page-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if($workers->hasMorePages())
+                    <a href="{{ $workers->nextPageUrl() }}" class="page-btn">&rsaquo;</a>
+                @else
+                    <span class="page-btn disabled">&rsaquo;</span>
+                @endif
             </div>
         @endif
     </div>
@@ -309,6 +380,10 @@
         }
         .mobile-badge-working {
             background: #22B404;
+            color: #fff;
+        }
+        .mobile-badge-not-working {
+            background: #999;
             color: #fff;
         }
         .mobile-badge-housed {
@@ -355,10 +430,15 @@
             font-size: 12px;
             color: #666;
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 4px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
             margin-top: 4px;
+        }
+        .mobile-card-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .mobile-card-arrow {
             color: #ccc;
@@ -762,6 +842,56 @@
         .mobile-search-input.searching {
             border-color: #FF0049;
             background: #FFF8FA;
+        }
+        
+        /* Mobile Pagination */
+        .mobile-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+            padding: 10px 0;
+        }
+        .page-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            background: #fff;
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .page-btn:hover {
+            border-color: #FF0049;
+            color: #FF0049;
+            background: #FFF5F7;
+            text-decoration: none;
+        }
+        .page-btn.active {
+            background: linear-gradient(135deg, #FF0049 0%, #FF3366 100%);
+            border-color: #FF0049;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(255, 0, 73, 0.3);
+        }
+        .page-btn.disabled {
+            background: #f5f5f5;
+            border-color: #e8e8e8;
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .page-dots {
+            padding: 0 4px;
+            color: #999;
+            font-size: 13px;
         }
     </style>
     
