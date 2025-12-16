@@ -902,6 +902,12 @@ Route::group(['middleware' => ['verified']], function () {
     Route::post('/worker/check-duplicate', [WorkerController::class, 'checkDuplicate'])
         ->name('worker.check.duplicate')->middleware(['auth', 'XSS', 'plan.module:workers']);
     
+    // Worker AJAX search and filter (must be before resource route)
+    Route::get('/worker/search', [WorkerController::class, 'search'])
+        ->name('worker.search')->middleware(['auth', 'XSS', 'plan.module:workers']);
+    Route::get('/worker/filtered-ids', [WorkerController::class, 'getFilteredIds'])
+        ->name('worker.filtered.ids')->middleware(['auth', 'XSS', 'plan.module:workers']);
+    
     // Bulk actions for workers (must be before resource route)
     Route::post('/worker/bulk-assign', [WorkerController::class, 'bulkAssign'])
         ->name('worker.bulk.assign')->middleware(['auth', 'XSS', 'plan.module:workers']);

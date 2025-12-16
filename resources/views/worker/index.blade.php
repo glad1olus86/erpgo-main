@@ -1,7 +1,5 @@
 @extends('layouts.admin')
 
-@php use App\Services\NationalityFlagService; @endphp
-
 @section('page-title')
     {{ __('Worker Management') }}
 @endsection
@@ -40,279 +38,70 @@
 
 @push('css-page')
 <style>
-    #workers-table th:first-child {
-        cursor: default !important;
-    }
-    #workers-table th:first-child::after,
-    #workers-table th:first-child::before {
-        display: none !important;
-    }
+    .search-filter-wrapper { display: flex; gap: 12px; align-items: stretch; margin-bottom: 20px; }
+    .search-box { flex: 1; max-width: 400px; position: relative; }
+    .search-box .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #999; font-size: 18px; pointer-events: none; }
+    .search-box input { width: 100%; padding: 12px 40px 12px 42px; border: 1px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: all 0.2s; }
+    .search-box input:focus { outline: none; border-color: #FF0049; box-shadow: 0 0 0 3px rgba(255, 0, 73, 0.1); }
+    .search-box input.searching { border-color: #FF0049; background: #FFF8FA; }
+    .search-box .search-clear { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #999; cursor: pointer; display: none; }
+    .search-box .search-clear:hover { color: #FF0049; }
+    .search-box .search-spinner { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; }
     
-    /* Search & Filter Styles */
-    .search-filter-wrapper {
-        display: flex;
-        gap: 12px;
-        align-items: stretch;
-        margin-bottom: 20px;
-    }
-    .search-box {
-        flex: 1;
-        max-width: 400px;
-        position: relative;
-    }
-    .search-box .search-icon {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-        font-size: 18px;
-        pointer-events: none;
-    }
-    .search-box input {
-        width: 100%;
-        padding: 12px 40px 12px 42px;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-    .search-box input:focus {
-        outline: none;
-        border-color: #FF0049;
-        box-shadow: 0 0 0 3px rgba(255, 0, 73, 0.1);
-    }
-    .search-box input.searching {
-        border-color: #FF0049;
-        background: #FFF8FA;
-    }
-    .search-box .search-clear {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #999;
-        cursor: pointer;
-        display: none;
-    }
-    .search-box .search-clear:hover {
-        color: #FF0049;
-    }
+    .filter-toggle-btn { padding: 12px 20px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fff; color: #666; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .filter-toggle-btn:hover, .filter-toggle-btn.has-filters { border-color: #FF0049; color: #FF0049; background: #FFF5F7; }
+    .filter-toggle-btn .filter-count { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; background: #FF0049; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
     
-    /* Filter Toggle */
-    .filter-toggle-btn {
-        padding: 12px 20px;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        background: #fff;
-        color: #666;
-        font-size: 14px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-    }
-    .filter-toggle-btn:hover,
-    .filter-toggle-btn.has-filters {
-        border-color: #FF0049;
-        color: #FF0049;
-        background: #FFF5F7;
-    }
-    .filter-toggle-btn .filter-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 20px;
-        height: 20px;
-        background: #FF0049;
-        color: #fff;
-        border-radius: 50%;
-        font-size: 11px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+    .per-page-wrapper { margin-left: auto; }
+    .per-page-select { padding: 12px 16px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fff; color: #666; font-size: 14px; font-weight: 500; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+    .per-page-select:focus { outline: none; border-color: #FF0049; box-shadow: 0 0 0 3px rgba(255, 0, 73, 0.1); }
     
-    /* Filter Panel */
-    .filter-panel {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        display: none;
-        animation: slideDown 0.2s ease;
-    }
-    .filter-panel.show {
-        display: block;
-    }
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .filter-panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .filter-panel-title {
-        font-weight: 600;
-        font-size: 15px;
-        color: #333;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .filter-panel-title i {
-        color: #FF0049;
-    }
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-    }
-    .filter-group label {
-        display: block;
-        font-size: 12px;
-        font-weight: 600;
-        color: #666;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-    }
-    .filter-group select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 14px;
-        cursor: pointer;
-    }
-    .filter-group select:focus {
-        outline: none;
-        border-color: #FF0049;
-    }
-    .gender-toggles {
-        display: flex;
-        gap: 10px;
-    }
-    .gender-toggle {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        padding: 10px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
+    .filter-panel { background: #fff; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: none; }
+    .filter-panel.show { display: block; }
+    .filter-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+    .filter-panel-title { font-weight: 600; font-size: 15px; color: #333; display: flex; align-items: center; gap: 8px; }
+    .filter-panel-title i { color: #FF0049; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .filter-group label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; text-transform: uppercase; }
+    .filter-group select, .filter-group input { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+    .filter-group select:focus, .filter-group input:focus { outline: none; border-color: #FF0049; }
+    .gender-toggles { display: flex; gap: 10px; }
+    .gender-toggle { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
     .gender-toggle input { display: none; }
-    .gender-toggle:hover {
-        border-color: #FF0049;
-        background: #FFF8FA;
-    }
-    .gender-toggle.active {
-        border-color: #FF0049;
-        background: #FFF0F4;
-        color: #FF0049;
-    }
-    .filter-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid #f0f0f0;
-    }
-    .filter-btn-reset {
-        padding: 10px 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #fff;
-        color: #666;
-        font-size: 14px;
-        cursor: pointer;
-    }
-    .filter-btn-reset:hover {
-        background: #f5f5f5;
-    }
-    .filter-btn-apply {
-        padding: 10px 24px;
-        border: none;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #FF0049 0%, #FF3366 100%);
-        color: #fff;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(255, 0, 73, 0.3);
-    }
-    .filter-btn-apply:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(255, 0, 73, 0.4);
-    }
+    .gender-toggle:hover { border-color: #FF0049; background: #FFF8FA; }
+    .gender-toggle.active { border-color: #FF0049; background: #FFF0F4; color: #FF0049; }
+    .filter-actions { display: flex; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+    .filter-btn-reset { padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #666; font-size: 14px; cursor: pointer; }
+    .filter-btn-reset:hover { background: #f5f5f5; }
+    .filter-btn-apply { padding: 10px 24px; border: none; border-radius: 8px; background: linear-gradient(135deg, #FF0049 0%, #FF3366 100%); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .filter-btn-apply:hover { transform: translateY(-1px); }
     
-    /* Active Filters */
-    .active-filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-    .active-filter-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        background: #FFF0F4;
-        border: 1px solid #FFD6E0;
-        border-radius: 20px;
-        font-size: 12px;
-        color: #FF0049;
-        cursor: pointer;
-    }
-    .active-filter-chip:hover {
-        background: #FFE0E8;
-    }
-    .active-filter-chip .chip-remove {
-        font-size: 14px;
-        opacity: 0.7;
-    }
-    .active-filter-chip:hover .chip-remove {
-        opacity: 1;
-    }
+    .active-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .active-filter-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #FFF0F4; border: 1px solid #FFD6E0; border-radius: 20px; font-size: 12px; color: #FF0049; cursor: pointer; }
+    .active-filter-chip:hover { background: #FFE0E8; }
     
-    /* Results Count */
-    .results-count {
-        font-size: 13px;
-        color: #888;
-        padding: 8px 0;
-        margin-bottom: 20px;
-    }
-    .results-count strong {
-        color: #FF0049;
-    }
+    .results-info { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #888; padding: 8px 0; margin-bottom: 30px; }
+    .results-info strong { color: #FF0049; }
     
-    /* Highlight */
-    .highlight {
-        background: #FFE0E8;
-        color: #FF0049;
-        padding: 0 2px;
-        border-radius: 2px;
-    }
+    .highlight { background: #FFE0E8; color: #FF0049; padding: 0 2px; border-radius: 2px; }
     
-    /* Hidden row */
-    tr.hidden-row,
-    tr.search-hidden {
-        display: none !important;
-    }
+    .pagination-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+    .pagination-info { font-size: 13px; color: #666; }
+    .pagination-controls { display: flex; gap: 5px; }
+    .pagination-controls button { padding: 8px 12px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .pagination-controls button:hover:not(:disabled) { border-color: #FF0049; color: #FF0049; }
+    .pagination-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination-controls button.active { background: #FF0049; color: #fff; border-color: #FF0049; }
+    
+    .table-loading { position: relative; min-height: 200px; }
+    .table-loading::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; }
+    .loading-spinner { display: none; text-align: center; padding: 40px; color: #999; }
+    .loading-spinner.show { display: block; }
+    
+    #workers-table th { cursor: pointer; user-select: none; }
+    #workers-table th:first-child, #workers-table th:last-child { cursor: default; }
+    #workers-table th .sort-icon { margin-left: 5px; opacity: 0.3; }
+    #workers-table th.sorted .sort-icon { opacity: 1; color: #FF0049; }
 </style>
 @endpush
 
@@ -327,22 +116,27 @@
                             <i class="ti ti-search search-icon"></i>
                             <input type="text" id="liveSearchInput" placeholder="{{ __('Search by name, nationality...') }}" autocomplete="off">
                             <span class="search-clear" id="clearSearch"><i class="ti ti-x"></i></span>
+                            <span class="search-spinner"><i class="ti ti-loader ti-spin"></i></span>
                         </div>
                         <button type="button" class="filter-toggle-btn" id="filterToggle">
                             <i class="ti ti-adjustments-horizontal"></i>
                             <span>{{ __('Filters') }}</span>
                         </button>
+                        <div class="per-page-wrapper">
+                            <select id="perPageSelect" class="per-page-select">
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
                     </div>
                     
                     {{-- Filter Panel --}}
                     <div class="filter-panel" id="filterPanel">
                         <div class="filter-panel-header">
-                            <span class="filter-panel-title">
-                                <i class="ti ti-filter"></i>{{ __('Filter Workers') }}
-                            </span>
-                            <button type="button" class="btn-close" onclick="toggleFilters()"></button>
+                            <span class="filter-panel-title"><i class="ti ti-filter"></i>{{ __('Filter Workers') }}</span>
+                            <button type="button" class="btn-close" onclick="WorkerTable.toggleFilters()"></button>
                         </div>
-                        {{-- Row 1: Main filters --}}
                         <div class="filter-grid" style="grid-template-columns: repeat(4, 1fr);">
                             <div class="filter-group">
                                 <label><i class="ti ti-home-2 me-1"></i>{{ __('Accommodation') }}</label>
@@ -376,58 +170,56 @@
                                 <div class="gender-toggles">
                                     <label class="gender-toggle" id="genderMale">
                                         <input type="checkbox" value="male">
-                                        <i class="ti ti-man"></i>
-                                        <span>{{ __('Male') }}</span>
+                                        <i class="ti ti-man"></i><span>{{ __('Male') }}</span>
                                     </label>
                                     <label class="gender-toggle" id="genderFemale">
                                         <input type="checkbox" value="female">
-                                        <i class="ti ti-woman"></i>
-                                        <span>{{ __('Female') }}</span>
+                                        <i class="ti ti-woman"></i><span>{{ __('Female') }}</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
-                        {{-- Row 2: Date filters --}}
                         <div class="filter-grid mt-3" style="grid-template-columns: repeat(4, 1fr);">
                             <div class="filter-group">
                                 <label><i class="ti ti-cake me-1"></i>{{ __('Date of Birth From') }}</label>
-                                <input type="date" id="filterDobFrom" class="form-control">
+                                <input type="date" id="filterDobFrom">
                             </div>
                             <div class="filter-group">
                                 <label><i class="ti ti-cake me-1"></i>{{ __('Date of Birth To') }}</label>
-                                <input type="date" id="filterDobTo" class="form-control">
+                                <input type="date" id="filterDobTo">
                             </div>
                             <div class="filter-group">
                                 <label><i class="ti ti-calendar me-1"></i>{{ __('Registration From') }}</label>
-                                <input type="date" id="filterRegDateFrom" class="form-control">
+                                <input type="date" id="filterRegDateFrom">
                             </div>
                             <div class="filter-group">
                                 <label><i class="ti ti-calendar me-1"></i>{{ __('Registration To') }}</label>
-                                <input type="date" id="filterRegDateTo" class="form-control">
+                                <input type="date" id="filterRegDateTo">
                             </div>
                         </div>
                         <div class="filter-actions">
-                            <button type="button" class="filter-btn-reset" onclick="resetFilters()">
+                            <button type="button" class="filter-btn-reset" onclick="WorkerTable.resetFilters()">
                                 <i class="ti ti-refresh me-1"></i>{{ __('Reset') }}
                             </button>
-                            <button type="button" class="filter-btn-apply" onclick="applyFilters()">
+                            <button type="button" class="filter-btn-apply" onclick="WorkerTable.applyFilters()">
                                 <i class="ti ti-check me-1"></i>{{ __('Apply Filters') }}
                             </button>
                         </div>
                     </div>
                     
-                    {{-- Active Filters --}}
                     <div class="active-filters" id="activeFilters"></div>
                     
-                    {{-- Results Count --}}
-                    <div class="results-count">
-                        {{ __('Found') }}: <strong id="resultsCount">{{ count($workers) }}</strong> {{ __('workers') }}
+                    <div class="results-info">
+                        <span>{{ __('Found') }}: <strong id="resultsCount">{{ $totalWorkers ?? 0 }}</strong> {{ __('workers') }}</span>
                     </div>
                     
                     {{-- Bulk Actions Panel --}}
                     <div id="bulk-actions-panel" class="mb-3 p-3 bg-light rounded" style="display: none;">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <span class="fw-bold"><span id="selected-count">0</span> {{ __('selected') }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="select-all-filtered-btn">
+                                <i class="ti ti-checks me-1"></i>{{ __('Select all filtered') }} (<span id="total-filtered-count">0</span>)
+                            </button>
                             <div class="vr mx-2"></div>
                             @can('manage work place')
                                 <button type="button" class="btn btn-sm btn-success" id="bulk-assign-btn">
@@ -448,112 +240,47 @@
                                 </button>
                             @endcan
                             <button type="button" class="btn btn-sm btn-secondary" id="bulk-clear-btn">
-                                <i class="ti ti-x me-1"></i>{{ __('Clear Selection') }}
+                                <i class="ti ti-x me-1"></i>{{ __('Clear') }}
                             </button>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <i class="ti ti-loader ti-spin" style="font-size: 32px;"></i>
+                        <p>{{ __('Loading...') }}</p>
+                    </div>
+
+                    <div class="table-responsive" id="tableContainer">
                         <table class="table" id="workers-table">
                             <thead>
                                 <tr>
-                                    <th data-sortable="false" style="width: 40px; cursor: default !important;">
-                                        <div class="form-check" onclick="event.stopPropagation();">
+                                    <th style="width: 40px;">
+                                        <div class="form-check">
                                             <input type="checkbox" class="form-check-input" id="select-all-checkbox">
                                         </div>
                                     </th>
-                                    <th>{{ __('First Name') }}</th>
-                                    <th>{{ __('Last Name') }}</th>
-                                    <th>{{ __('Date of Birth') }}</th>
-                                    <th>{{ __('Gender') }}</th>
-                                    <th>{{ __('Nationality') }}</th>
-                                    <th>{{ __('Registration Date') }}</th>
+                                    <th data-sort="first_name">{{ __('First Name') }} <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                    <th data-sort="last_name">{{ __('Last Name') }} <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                    <th data-sort="dob">{{ __('Date of Birth') }} <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                    <th data-sort="gender">{{ __('Gender') }} <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                    <th data-sort="nationality">{{ __('Nationality') }} <i class="ti ti-arrows-sort sort-icon"></i></th>
+                                    <th data-sort="registration_date">{{ __('Registration Date') }} <i class="ti ti-arrows-sort sort-icon"></i></th>
                                     <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($workers as $worker)
-                                    <tr data-worker-id="{{ $worker->id }}"
-                                        data-name="{{ strtolower($worker->first_name . ' ' . $worker->last_name) }}"
-                                        data-nationality="{{ strtolower($worker->nationality ?? '') }}"
-                                        data-gender="{{ $worker->gender }}"
-                                        data-hotel-id="{{ $worker->currentAssignment?->hotel_id }}"
-                                        data-workplace-id="{{ $worker->currentWorkAssignment?->work_place_id }}"
-                                        data-registration-date="{{ $worker->registration_date ? \Carbon\Carbon::parse($worker->registration_date)->format('Y-m-d') : '' }}"
-                                        data-dob="{{ $worker->dob ? \Carbon\Carbon::parse($worker->dob)->format('Y-m-d') : '' }}">
-                                        <td>
-                                            <div class="form-check">
-                                                <input type="checkbox" class="form-check-input worker-checkbox" 
-                                                    value="{{ $worker->id }}" 
-                                                    data-name="{{ $worker->first_name }} {{ $worker->last_name }}"
-                                                    data-is-working="{{ $worker->currentWorkAssignment ? '1' : '0' }}"
-                                                    data-work-place="{{ $worker->currentWorkAssignment ? $worker->currentWorkAssignment->workPlace->name : '' }}"
-                                                    data-is-housed="{{ $worker->currentAssignment ? '1' : '0' }}"
-                                                    data-hotel="{{ $worker->currentAssignment ? $worker->currentAssignment->hotel->name : '' }}">
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium worker-first-name">
-                                                {{ $worker->first_name }}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('worker.show', $worker->id) }}" class="text-primary fw-medium worker-last-name">
-                                                {{ $worker->last_name }}
-                                            </a>
-                                        </td>
-                                        <td>{{ \Auth::user()->dateFormat($worker->dob) }}</td>
-                                        <td>{{ $worker->gender == 'male' ? __('Male') : __('Female') }}</td>
-                                        <td class="worker-nationality">{!! NationalityFlagService::getFlagHtml($worker->nationality, 18) !!}{{ $worker->nationality }}</td>
-                                        <td>{{ \Auth::user()->dateFormat($worker->registration_date) }}</td>
-                                        <td class="Action">
-                                            <span>
-                                                @can('edit worker')
-                                                    <div class="action-btn me-2">
-                                                        <a href="#" data-url="{{ route('worker.edit', $worker->id) }}"
-                                                            data-ajax-popup="true"
-                                                            data-title="{{ __('Edit Worker') }}"
-                                                            class="mx-3 btn btn-sm align-items-center bg-info"
-                                                            data-bs-toggle="tooltip" title="{{ __('Edit') }}">
-                                                            <i class="ti ti-pencil text-white"></i>
-                                                        </a>
-                                                    </div>
-                                                @endcan
-                                                @can('delete worker')
-                                                    <div class="action-btn">
-                                                        {!! Form::open([
-                                                            'method' => 'DELETE',
-                                                            'route' => ['worker.destroy', $worker->id],
-                                                            'id' => 'delete-form-' . $worker->id,
-                                                        ]) !!}
-                                                        <a href="#"
-                                                            class="mx-3 btn btn-sm align-items-center bs-pass-para bg-danger"
-                                                            data-bs-toggle="tooltip" title="{{ __('Delete') }}"
-                                                            data-confirm="{{ __('Are you sure?') . '|' . __('This action cannot be undone. Do you want to continue?') }}"
-                                                            data-confirm-yes="document.getElementById('delete-form-{{ $worker->id }}').submit();">
-                                                            <i class="ti ti-trash text-white"></i>
-                                                        </a>
-                                                        {!! Form::close() !!}
-                                                    </div>
-                                                @endcan
-                                                <div class="action-btn ms-2">
-                                                    <a href="{{ route('worker.show', $worker->id) }}"
-                                                        class="mx-3 btn btn-sm align-items-center bg-warning"
-                                                        data-bs-toggle="tooltip" title="{{ __('View') }}">
-                                                        <i class="ti ti-eye text-white"></i>
-                                                    </a>
-                                                </div>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
+                            <tbody id="workers-tbody"></tbody>
                         </table>
+                    </div>
+                    
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info" id="paginationInfo"></div>
+                        <div class="pagination-controls" id="paginationControls"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     {{-- Bulk Assign Modal --}}
     <div class="modal fade" id="bulkAssignModal" tabindex="-1">
@@ -567,24 +294,12 @@
                     @csrf
                     <div class="modal-body">
                         <input type="hidden" name="worker_ids" id="assign-worker-ids">
-                        
-                        <div id="assign-already-working" class="mb-3" style="display: none;">
-                            <label class="form-label text-warning"><i class="ti ti-alert-triangle me-1"></i>{{ __('Already working (will be skipped):') }}</label>
-                            <div id="assign-already-working-list" class="text-muted small"></div>
-                        </div>
-                        
-                        <div id="assign-will-be-assigned" class="mb-3">
-                            <label class="form-label text-success"><i class="ti ti-check me-1"></i>{{ __('Will be assigned:') }}</label>
-                            <div id="assign-workers-list" class="text-muted small"></div>
-                        </div>
-                        
+                        <div id="assign-info" class="mb-3"></div>
                         <div class="form-group">
                             <label class="form-label">{{ __('Work Place') }}</label>
                             <select name="work_place_id" class="form-control" required>
                                 <option value="">{{ __('Select Work Place') }}</option>
-                                @php
-                                    $workPlaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
-                                @endphp
+                                @php $workPlaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get(); @endphp
                                 @foreach($workPlaces as $place)
                                     <option value="{{ $place->id }}">{{ $place->name }}</option>
                                 @endforeach
@@ -600,7 +315,7 @@
         </div>
     </div>
 
-    {{-- Bulk Dismiss Confirm Modal --}}
+    {{-- Bulk Dismiss Modal --}}
     <div class="modal fade" id="bulkDismissModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -612,17 +327,7 @@
                     @csrf
                     <div class="modal-body">
                         <input type="hidden" name="worker_ids" id="dismiss-worker-ids">
-                        
-                        <div id="dismiss-not-working" class="mb-3" style="display: none;">
-                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Not working (will be skipped):') }}</label>
-                            <div id="dismiss-not-working-list" class="text-muted small"></div>
-                        </div>
-                        
-                        <div id="dismiss-will-be-fired" class="mb-3">
-                            <label class="form-label text-warning"><i class="ti ti-user-off me-1"></i>{{ __('Will be dismissed:') }}</label>
-                            <div id="dismiss-workers-list" class="text-muted small"></div>
-                        </div>
-                        
+                        <div id="dismiss-info" class="mb-3"></div>
                         <div class="alert alert-warning">
                             <i class="ti ti-alert-triangle me-1"></i>
                             {{ __('Workers will be dismissed from their current workplace.') }}
@@ -637,7 +342,7 @@
         </div>
     </div>
 
-    {{-- Bulk Checkout Confirm Modal --}}
+    {{-- Bulk Checkout Modal --}}
     <div class="modal fade" id="bulkCheckoutModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -649,20 +354,10 @@
                     @csrf
                     <div class="modal-body">
                         <input type="hidden" name="worker_ids" id="checkout-worker-ids">
-                        
-                        <div id="checkout-not-housed" class="mb-3" style="display: none;">
-                            <label class="form-label text-secondary"><i class="ti ti-info-circle me-1"></i>{{ __('Not housed (will be skipped):') }}</label>
-                            <div id="checkout-not-housed-list" class="text-muted small"></div>
-                        </div>
-                        
-                        <div id="checkout-will-be-evicted" class="mb-3">
-                            <label class="form-label text-danger"><i class="ti ti-door-exit me-1"></i>{{ __('Will be checked out:') }}</label>
-                            <div id="checkout-workers-list" class="text-muted small"></div>
-                        </div>
-                        
+                        <div id="checkout-info" class="mb-3"></div>
                         <div class="alert alert-danger">
                             <i class="ti ti-alert-triangle me-1"></i>
-                            {{ __('Workers will be checked out from their current accommodation.') }}
+                            {{ __('Workers will be checked out from their rooms.') }}
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -674,77 +369,56 @@
         </div>
     </div>
 
-    {{-- Bulk Document Generation Modal --}}
+    {{-- Document Generation Modal --}}
     <div class="modal fade" id="bulkDocumentModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Document Generation') }}</h5>
+                    <h5 class="modal-title">{{ __('Generate Document') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="bulk-document-form" method="POST" action="{{ route('worker.bulk.generate-documents') }}">
                     @csrf
                     <div class="modal-body">
                         <input type="hidden" name="worker_ids" id="doc-worker-ids">
-                        
-                        {{-- Worker selection (shown when no bulk selection) --}}
-                        <div class="form-group mb-3" id="doc-worker-select-group">
+                        <div id="doc-worker-select-group" class="form-group mb-3">
                             <label class="form-label">{{ __('Worker') }} <span class="text-danger">*</span></label>
                             <select name="single_worker_id" id="doc-single-worker" class="form-control">
                                 <option value="">{{ __('Select Worker') }}</option>
-                                @foreach ($workers as $worker)
-                                    <option value="{{ $worker->id }}">{{ $worker->first_name }} {{ $worker->last_name }}</option>
-                                @endforeach
                             </select>
                         </div>
-                        
-                        {{-- Selected workers info (shown when bulk selection) --}}
                         <div class="mb-3" id="doc-selected-workers-info" style="display: none;">
                             <label class="form-label text-info"><i class="ti ti-users me-1"></i>{{ __('Selected Workers:') }}</label>
                             <div id="doc-selected-workers-list" class="text-muted small"></div>
                         </div>
-                        
-                        {{-- Template selection --}}
                         <div class="form-group mb-3">
                             <label class="form-label">{{ __('Document Template') }} <span class="text-danger">*</span></label>
                             <select name="template_id" id="doc-template-select" class="form-control" required>
                                 <option value="">{{ __('Select Template') }}</option>
                                 @php
                                     $templates = \App\Models\DocumentTemplate::where('created_by', Auth::user()->creatorId())
-                                        ->where('is_active', true)
-                                        ->orderBy('name')
-                                        ->get();
+                                        ->where('is_active', true)->orderBy('name')->get();
                                 @endphp
                                 @foreach($templates as $template)
                                     <option value="{{ $template->id }}">{{ $template->name }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        
-                        {{-- Dynamic date fields container --}}
                         <div id="doc-dynamic-fields"></div>
-                        
-                        {{-- Format selection --}}
                         <div class="form-group">
                             <label class="form-label">{{ __('Format') }} <span class="text-danger">*</span></label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="format" id="format-pdf" value="pdf" checked>
-                                    <label class="form-check-label" for="format-pdf">
-                                        <i class="ti ti-file-type-pdf text-danger me-1"></i>PDF
-                                    </label>
+                                    <label class="form-check-label" for="format-pdf"><i class="ti ti-file-type-pdf text-danger me-1"></i>PDF</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="format" id="format-docx" value="docx">
-                                    <label class="form-check-label" for="format-docx">
-                                        <i class="ti ti-file-type-doc text-primary me-1"></i>Word
-                                    </label>
+                                    <label class="form-check-label" for="format-docx"><i class="ti ti-file-type-doc text-primary me-1"></i>Word</label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="format" id="format-xlsx" value="xlsx">
-                                    <label class="form-check-label" for="format-xlsx">
-                                        <i class="ti ti-file-spreadsheet text-success me-1"></i>Excel
-                                    </label>
+                                    <label class="form-check-label" for="format-xlsx"><i class="ti ti-file-spreadsheet text-success me-1"></i>Excel</label>
                                 </div>
                             </div>
                         </div>
@@ -761,552 +435,472 @@
     </div>
 @endsection
 
+
 @push('script-page')
 <script>
-// Filter toggle function
-function toggleFilters() {
-    var panel = document.getElementById('filterPanel');
-    panel.classList.toggle('show');
-}
+const WorkerTable = {
+    searchUrl: '{{ route("worker.search") }}',
+    filteredIdsUrl: '{{ route("worker.filtered.ids") }}',
+    data: [],
+    selectedIds: new Set(),
+    selectAllFiltered: false,
+    currentFilters: {},
+    currentPage: 1,
+    perPage: 50,
+    totalRecords: 0,
+    sortField: 'first_name',
+    sortDir: 'asc',
+    searchTimeout: null,
+    canEdit: {{ Auth::user()->can('edit worker') ? 'true' : 'false' }},
+    canDelete: {{ Auth::user()->can('delete worker') ? 'true' : 'false' }},
 
-// Reset filters
-function resetFilters() {
-    document.getElementById('filterHotel').value = '';
-    document.getElementById('filterWorkplace').value = '';
-    document.getElementById('filterNationality').value = '';
-    document.getElementById('genderMale').classList.remove('active');
-    document.getElementById('genderFemale').classList.remove('active');
-    document.querySelector('#genderMale input').checked = false;
-    document.querySelector('#genderFemale input').checked = false;
-    document.getElementById('filterRegDateFrom').value = '';
-    document.getElementById('filterRegDateTo').value = '';
-    document.getElementById('filterDobFrom').value = '';
-    document.getElementById('filterDobTo').value = '';
-    applyFilters();
-}
+    init() {
+        this.bindEvents();
+        this.loadData();
+    },
 
-// Apply filters
-function applyFilters() {
-    var hotelId = document.getElementById('filterHotel').value;
-    var workplaceId = document.getElementById('filterWorkplace').value;
-    var nationality = document.getElementById('filterNationality').value.toLowerCase();
-    var maleChecked = document.querySelector('#genderMale input').checked;
-    var femaleChecked = document.querySelector('#genderFemale input').checked;
-    var regDateFrom = document.getElementById('filterRegDateFrom').value;
-    var regDateTo = document.getElementById('filterRegDateTo').value;
-    var dobFrom = document.getElementById('filterDobFrom').value;
-    var dobTo = document.getElementById('filterDobTo').value;
-    
-    var rows = document.querySelectorAll('#workers-table tbody tr[data-worker-id]');
-    var visibleCount = 0;
-    var activeFiltersHtml = '';
-    var filterCount = 0;
-    
-    rows.forEach(function(row) {
-        var show = true;
+    bindEvents() {
+        // Search
+        const searchInput = document.getElementById('liveSearchInput');
+        const clearBtn = document.getElementById('clearSearch');
         
-        // Hotel filter
-        if (hotelId && row.dataset.hotelId != hotelId) {
-            show = false;
-        }
-        
-        // Workplace filter
-        if (workplaceId && row.dataset.workplaceId != workplaceId) {
-            show = false;
-        }
-        
-        // Nationality filter
-        if (nationality && row.dataset.nationality !== nationality) {
-            show = false;
-        }
-        
-        // Gender filter
-        if (maleChecked || femaleChecked) {
-            var gender = row.dataset.gender;
-            if (maleChecked && !femaleChecked && gender !== 'male') show = false;
-            if (femaleChecked && !maleChecked && gender !== 'female') show = false;
-        }
-        
-        // Registration date filter
-        var regDate = row.dataset.registrationDate;
-        if (regDateFrom && regDate && regDate < regDateFrom) {
-            show = false;
-        }
-        if (regDateTo && regDate && regDate > regDateTo) {
-            show = false;
-        }
-        
-        // Date of birth filter
-        var dob = row.dataset.dob;
-        if (dobFrom && dob && dob < dobFrom) {
-            show = false;
-        }
-        if (dobTo && dob && dob > dobTo) {
-            show = false;
-        }
-        
-        if (show) {
-            row.classList.remove('hidden-row');
-            visibleCount++;
-        } else {
-            row.classList.add('hidden-row');
-        }
-    });
-    
-    // Update results count
-    document.getElementById('resultsCount').textContent = visibleCount;
-    
-    // Build active filters chips
-    var activeFiltersEl = document.getElementById('activeFilters');
-    var filterToggle = document.getElementById('filterToggle');
-    
-    if (hotelId) {
-        var hotelName = document.querySelector('#filterHotel option[value="' + hotelId + '"]').textContent;
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'hotel\')"><i class="ti ti-home-2"></i>' + hotelName + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (workplaceId) {
-        var wpName = document.querySelector('#filterWorkplace option[value="' + workplaceId + '"]').textContent;
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'workplace\')"><i class="ti ti-building-factory-2"></i>' + wpName + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (nationality) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'nationality\')"><i class="ti ti-flag"></i>' + nationality + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (maleChecked) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'male\')"><i class="ti ti-man"></i>{{ __("Male") }}<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (femaleChecked) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'female\')"><i class="ti ti-woman"></i>{{ __("Female") }}<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (regDateFrom) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'regDateFrom\')"><i class="ti ti-calendar"></i>{{ __("Reg. from") }}: ' + regDateFrom + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (regDateTo) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'regDateTo\')"><i class="ti ti-calendar"></i>{{ __("Reg. to") }}: ' + regDateTo + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (dobFrom) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'dobFrom\')"><i class="ti ti-cake"></i>{{ __("DOB from") }}: ' + dobFrom + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    if (dobTo) {
-        activeFiltersHtml += '<span class="active-filter-chip" onclick="clearFilter(\'dobTo\')"><i class="ti ti-cake"></i>{{ __("DOB to") }}: ' + dobTo + '<i class="ti ti-x chip-remove"></i></span>';
-        filterCount++;
-    }
-    
-    activeFiltersEl.innerHTML = activeFiltersHtml;
-    
-    // Update filter toggle button
-    if (filterCount > 0) {
-        filterToggle.classList.add('has-filters');
-        var countBadge = filterToggle.querySelector('.filter-count');
-        if (!countBadge) {
-            countBadge = document.createElement('span');
-            countBadge.className = 'filter-count';
-            filterToggle.appendChild(countBadge);
-        }
-        countBadge.textContent = filterCount;
-    } else {
-        filterToggle.classList.remove('has-filters');
-        var countBadge = filterToggle.querySelector('.filter-count');
-        if (countBadge) countBadge.remove();
-    }
-}
-
-// Clear specific filter
-function clearFilter(type) {
-    if (type === 'hotel') document.getElementById('filterHotel').value = '';
-    if (type === 'workplace') document.getElementById('filterWorkplace').value = '';
-    if (type === 'nationality') document.getElementById('filterNationality').value = '';
-    if (type === 'male') {
-        document.getElementById('genderMale').classList.remove('active');
-        document.querySelector('#genderMale input').checked = false;
-    }
-    if (type === 'female') {
-        document.getElementById('genderFemale').classList.remove('active');
-        document.querySelector('#genderFemale input').checked = false;
-    }
-    if (type === 'regDateFrom') document.getElementById('filterRegDateFrom').value = '';
-    if (type === 'regDateTo') document.getElementById('filterRegDateTo').value = '';
-    if (type === 'dobFrom') document.getElementById('filterDobFrom').value = '';
-    if (type === 'dobTo') document.getElementById('filterDobTo').value = '';
-    applyFilters();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Filter toggle button
-    document.getElementById('filterToggle').addEventListener('click', toggleFilters);
-    
-    // Gender toggles
-    document.querySelectorAll('.gender-toggle input').forEach(function(checkbox) {
-        checkbox.addEventListener('change', function() {
-            this.closest('.gender-toggle').classList.toggle('active', this.checked);
-        });
-    });
-    
-    // Live search
-    var searchInput = document.getElementById('liveSearchInput');
-    var clearBtn = document.getElementById('clearSearch');
-    var originalNames = {};
-    var rows = document.querySelectorAll('#workers-table tbody tr[data-worker-id]');
-    
-    // Store original names
-    rows.forEach(function(row, index) {
-        var firstName = row.querySelector('.worker-first-name');
-        var lastName = row.querySelector('.worker-last-name');
-        if (firstName && lastName) {
-            originalNames[index] = {
-                first: firstName.innerHTML,
-                last: lastName.innerHTML
-            };
-        }
-    });
-    
-    searchInput.addEventListener('input', function() {
-        var query = this.value.toLowerCase().trim();
-        var visibleCount = 0;
-        
-        clearBtn.style.display = query.length > 0 ? 'block' : 'none';
-        this.classList.toggle('searching', query.length > 0);
-        
-        rows.forEach(function(row, index) {
-            var name = row.dataset.name || '';
-            var nationality = row.dataset.nationality || '';
-            var firstName = row.querySelector('.worker-first-name');
-            var lastName = row.querySelector('.worker-last-name');
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(this.searchTimeout);
+            const val = e.target.value;
+            clearBtn.style.display = val.length > 0 ? 'block' : 'none';
+            searchInput.classList.toggle('searching', val.length > 0);
             
-            if (query.length < 2) {
-                row.classList.remove('search-hidden');
-                if (firstName && originalNames[index]) firstName.innerHTML = originalNames[index].first;
-                if (lastName && originalNames[index]) lastName.innerHTML = originalNames[index].last;
-                visibleCount++;
-            } else if (name.includes(query) || nationality.includes(query)) {
-                row.classList.remove('search-hidden');
-                visibleCount++;
-                
-                // Highlight matching text
-                if (firstName && originalNames[index]) {
-                    var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-                    firstName.innerHTML = originalNames[index].first.replace(regex, '<span class="highlight">$1</span>');
-                }
-                if (lastName && originalNames[index]) {
-                    var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-                    lastName.innerHTML = originalNames[index].last.replace(regex, '<span class="highlight">$1</span>');
-                }
+            this.searchTimeout = setTimeout(() => {
+                this.currentFilters.search = val;
+                this.currentPage = 1;
+                this.loadData();
+            }, 300);
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.classList.remove('searching');
+            clearBtn.style.display = 'none';
+            this.currentFilters.search = '';
+            this.currentPage = 1;
+            this.loadData();
+        });
+
+        // Filter toggle
+        document.getElementById('filterToggle').addEventListener('click', () => this.toggleFilters());
+
+        // Gender toggles
+        document.querySelectorAll('.gender-toggle input').forEach(cb => {
+            cb.addEventListener('change', function() {
+                this.closest('.gender-toggle').classList.toggle('active', this.checked);
+            });
+        });
+
+        // Per page
+        document.getElementById('perPageSelect').addEventListener('change', (e) => {
+            this.perPage = parseInt(e.target.value);
+            this.currentPage = 1;
+            this.loadData();
+        });
+
+        // Select all checkbox
+        document.getElementById('select-all-checkbox').addEventListener('change', (e) => {
+            this.selectAllFiltered = false;
+            if (e.target.checked) {
+                this.data.forEach(w => this.selectedIds.add(w.id));
             } else {
-                row.classList.add('search-hidden');
+                this.selectedIds.clear();
             }
+            this.updateCheckboxes();
+            this.updateBulkPanel();
+        });
+
+        // Select all filtered button
+        document.getElementById('select-all-filtered-btn').addEventListener('click', () => this.selectAllFilteredWorkers());
+
+        // Bulk action buttons
+        document.getElementById('bulk-assign-btn')?.addEventListener('click', () => this.openBulkModal('assign'));
+        document.getElementById('bulk-dismiss-btn')?.addEventListener('click', () => this.openBulkModal('dismiss'));
+        document.getElementById('bulk-checkout-btn')?.addEventListener('click', () => this.openBulkModal('checkout'));
+        document.querySelectorAll('.bulk-generate-doc-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.openBulkModal('document'));
+        });
+        document.getElementById('bulk-generate-doc-btn')?.addEventListener('click', () => this.openDocumentModal());
+        document.getElementById('bulk-clear-btn').addEventListener('click', () => {
+            this.selectedIds.clear();
+            this.selectAllFiltered = false;
+            this.updateCheckboxes();
+            this.updateBulkPanel();
+        });
+
+        // Sorting
+        document.querySelectorAll('#workers-table th[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (this.sortField === field) {
+                    this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortField = field;
+                    this.sortDir = 'asc';
+                }
+                this.loadData();
+            });
+        });
+    },
+
+    toggleFilters() {
+        document.getElementById('filterPanel').classList.toggle('show');
+    },
+
+    applyFilters() {
+        this.currentFilters.hotel_id = document.getElementById('filterHotel').value;
+        this.currentFilters.workplace_id = document.getElementById('filterWorkplace').value;
+        this.currentFilters.nationality = document.getElementById('filterNationality').value;
+        this.currentFilters.dob_from = document.getElementById('filterDobFrom').value;
+        this.currentFilters.dob_to = document.getElementById('filterDobTo').value;
+        this.currentFilters.reg_from = document.getElementById('filterRegDateFrom').value;
+        this.currentFilters.reg_to = document.getElementById('filterRegDateTo').value;
+        
+        const genders = [];
+        if (document.querySelector('#genderMale input').checked) genders.push('male');
+        if (document.querySelector('#genderFemale input').checked) genders.push('female');
+        this.currentFilters.gender = genders;
+        
+        this.currentPage = 1;
+        this.loadData();
+        this.updateActiveFilters();
+        this.toggleFilters();
+    },
+
+    resetFilters() {
+        document.getElementById('filterHotel').value = '';
+        document.getElementById('filterWorkplace').value = '';
+        document.getElementById('filterNationality').value = '';
+        document.getElementById('filterDobFrom').value = '';
+        document.getElementById('filterDobTo').value = '';
+        document.getElementById('filterRegDateFrom').value = '';
+        document.getElementById('filterRegDateTo').value = '';
+        document.querySelectorAll('.gender-toggle').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.gender-toggle input').forEach(cb => cb.checked = false);
+        
+        this.currentFilters = { search: this.currentFilters.search || '' };
+        this.currentPage = 1;
+        this.loadData();
+        this.updateActiveFilters();
+    },
+
+    updateActiveFilters() {
+        const container = document.getElementById('activeFilters');
+        const chips = [];
+        const filterToggle = document.getElementById('filterToggle');
+        let count = 0;
+        
+        // Gender translations
+        const genderLabels = {
+            'male': '{{ __("Male") }}',
+            'female': '{{ __("Female") }}'
+        };
+        
+        if (this.currentFilters.hotel_id) {
+            const name = document.querySelector(`#filterHotel option[value="${this.currentFilters.hotel_id}"]`)?.text;
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('hotel_id')"><i class="ti ti-home-2 me-1"></i>${name} <i class="ti ti-x chip-remove"></i></span>`);
+            count++;
+        }
+        if (this.currentFilters.workplace_id) {
+            const name = document.querySelector(`#filterWorkplace option[value="${this.currentFilters.workplace_id}"]`)?.text;
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('workplace_id')"><i class="ti ti-building-factory-2 me-1"></i>${name} <i class="ti ti-x chip-remove"></i></span>`);
+            count++;
+        }
+        if (this.currentFilters.nationality) {
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('nationality')"><i class="ti ti-flag me-1"></i>${this.currentFilters.nationality} <i class="ti ti-x chip-remove"></i></span>`);
+            count++;
+        }
+        if (this.currentFilters.gender?.length) {
+            const genderText = this.currentFilters.gender.map(g => genderLabels[g] || g).join(', ');
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('gender')"><i class="ti ti-gender-bigender me-1"></i>${genderText} <i class="ti ti-x chip-remove"></i></span>`);
+            count++;
+        }
+        
+        container.innerHTML = chips.join('');
+        
+        // Update filter button
+        const existingCount = filterToggle.querySelector('.filter-count');
+        if (existingCount) existingCount.remove();
+        if (count > 0) {
+            filterToggle.classList.add('has-filters');
+            filterToggle.insertAdjacentHTML('beforeend', `<span class="filter-count">${count}</span>`);
+        } else {
+            filterToggle.classList.remove('has-filters');
+        }
+    },
+
+    removeFilter(key) {
+        if (key === 'hotel_id') document.getElementById('filterHotel').value = '';
+        if (key === 'workplace_id') document.getElementById('filterWorkplace').value = '';
+        if (key === 'nationality') document.getElementById('filterNationality').value = '';
+        if (key === 'gender') {
+            document.querySelectorAll('.gender-toggle').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.gender-toggle input').forEach(cb => cb.checked = false);
+        }
+        delete this.currentFilters[key];
+        this.currentPage = 1;
+        this.loadData();
+        this.updateActiveFilters();
+    },
+
+    async loadData() {
+        const spinner = document.getElementById('loadingSpinner');
+        const tbody = document.getElementById('workers-tbody');
+        spinner.classList.add('show');
+        
+        const params = new URLSearchParams({
+            page: this.currentPage,
+            per_page: this.perPage,
+            sort: this.sortField,
+            dir: this.sortDir,
+            ...this.currentFilters
         });
         
-        document.getElementById('resultsCount').textContent = visibleCount;
-    });
-    
-    clearBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        searchInput.dispatchEvent(new Event('input'));
-    });
-    
-    // Initialize DataTable with first column not sortable - DISABLED for custom filtering
-    // var workersTable = new simpleDatatables.DataTable("#workers-table", {
-    //     columns: [
-    //         { select: 0, sortable: false }
-    //     ],
-    //     perPage: 10,
-    //     perPageSelect: [10, 25, 50, 100]
-    // });
-
-    var selectAllCheckbox = document.getElementById('select-all-checkbox');
-    var bulkActionsPanel = document.getElementById('bulk-actions-panel');
-    var selectedCountEl = document.getElementById('selected-count');
-    
-    function getVisibleCheckboxes() {
-        // Get only visible rows from DataTable
-        var checkboxes = [];
-        var rows = document.querySelectorAll('#workers-table tbody tr');
-        rows.forEach(function(row) {
-            // Check if row is visible (not hidden by DataTable)
-            if (row.style.display !== 'none' && !row.classList.contains('hidden')) {
-                var cb = row.querySelector('.worker-checkbox');
-                if (cb) checkboxes.push(cb);
-            }
-        });
-        return checkboxes;
-    }
-
-    function getAllCheckboxes() {
-        return document.querySelectorAll('.worker-checkbox');
-    }
-
-    function getSelectedWorkers() {
-        var selected = [];
-        getAllCheckboxes().forEach(function(cb) {
-            if (cb.checked) {
-                selected.push({
-                    id: cb.value,
-                    name: cb.dataset.name,
-                    isWorking: cb.dataset.isWorking === '1',
-                    workPlace: cb.dataset.workPlace || '',
-                    isHoused: cb.dataset.isHoused === '1',
-                    hotel: cb.dataset.hotel || ''
-                });
-            }
-        });
-        return selected;
-    }
-
-    function updateBulkPanel() {
-        var selected = getSelectedWorkers();
-        selectedCountEl.textContent = selected.length;
-        bulkActionsPanel.style.display = selected.length > 0 ? 'block' : 'none';
-    }
-
-    // Select all checkbox - use event delegation to handle clicks
-    selectAllCheckbox.addEventListener('click', function(e) {
-        e.stopPropagation(); // Prevent DataTable from capturing the click
-        var checkboxes = getVisibleCheckboxes();
-        checkboxes.forEach(function(cb) {
-            cb.checked = selectAllCheckbox.checked;
-        });
-        updateBulkPanel();
-    });
-
-    // Individual checkboxes
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('worker-checkbox')) {
-            updateBulkPanel();
-            // Update select-all state
-            var allCheckboxes = getVisibleCheckboxes();
-            var allChecked = allCheckboxes.every(function(cb) { return cb.checked; });
-            selectAllCheckbox.checked = allChecked && allCheckboxes.length > 0;
+        if (this.currentFilters.gender?.length) {
+            params.delete('gender');
+            this.currentFilters.gender.forEach(g => params.append('gender[]', g));
         }
-    });
 
-    // Clear selection
-    document.getElementById('bulk-clear-btn').addEventListener('click', function() {
-        getAllCheckboxes().forEach(function(cb) { cb.checked = false; });
-        selectAllCheckbox.checked = false;
-        updateBulkPanel();
-    });
-
-    // Bulk Assign
-    document.getElementById('bulk-assign-btn').addEventListener('click', function() {
-        var selected = getSelectedWorkers();
-        if (selected.length === 0) return;
-        
-        var alreadyWorking = selected.filter(function(w) { return w.isWorking; });
-        var willBeAssigned = selected.filter(function(w) { return !w.isWorking; });
-        
-        document.getElementById('assign-worker-ids').value = willBeAssigned.map(function(w) { return w.id; }).join(',');
-        
-        // Show already working
-        var alreadyWorkingDiv = document.getElementById('assign-already-working');
-        if (alreadyWorking.length > 0) {
-            alreadyWorkingDiv.style.display = 'block';
-            document.getElementById('assign-already-working-list').innerHTML = alreadyWorking.map(function(w) { 
-                return '• ' + w.name + ' <span class="text-warning">(' + w.workPlace + ')</span>'; 
-            }).join('<br>');
-        } else {
-            alreadyWorkingDiv.style.display = 'none';
-        }
-        
-        // Show will be assigned
-        var willBeAssignedDiv = document.getElementById('assign-will-be-assigned');
-        if (willBeAssigned.length > 0) {
-            willBeAssignedDiv.style.display = 'block';
-            document.getElementById('assign-workers-list').innerHTML = willBeAssigned.map(function(w) { return '• ' + w.name; }).join('<br>');
-            document.getElementById('assign-submit-btn').disabled = false;
-        } else {
-            willBeAssignedDiv.style.display = 'none';
-            document.getElementById('assign-workers-list').innerHTML = '<span class="text-muted">{{ __("No workers to assign") }}</span>';
-            document.getElementById('assign-submit-btn').disabled = true;
-        }
-        
-        new bootstrap.Modal(document.getElementById('bulkAssignModal')).show();
-    });
-
-    // Bulk Dismiss
-    document.getElementById('bulk-dismiss-btn').addEventListener('click', function() {
-        var selected = getSelectedWorkers();
-        if (selected.length === 0) return;
-        
-        var notWorking = selected.filter(function(w) { return !w.isWorking; });
-        var willBeFired = selected.filter(function(w) { return w.isWorking; });
-        
-        document.getElementById('dismiss-worker-ids').value = willBeFired.map(function(w) { return w.id; }).join(',');
-        
-        // Show not working
-        var notWorkingDiv = document.getElementById('dismiss-not-working');
-        if (notWorking.length > 0) {
-            notWorkingDiv.style.display = 'block';
-            document.getElementById('dismiss-not-working-list').innerHTML = notWorking.map(function(w) { return '• ' + w.name; }).join('<br>');
-        } else {
-            notWorkingDiv.style.display = 'none';
-        }
-        
-        // Show will be fired
-        var willBeFiredDiv = document.getElementById('dismiss-will-be-fired');
-        if (willBeFired.length > 0) {
-            willBeFiredDiv.style.display = 'block';
-            document.getElementById('dismiss-workers-list').innerHTML = willBeFired.map(function(w) { 
-                return '• ' + w.name + ' <span class="text-warning">(' + w.workPlace + ')</span>'; 
-            }).join('<br>');
-            document.getElementById('dismiss-submit-btn').disabled = false;
-        } else {
-            willBeFiredDiv.style.display = 'none';
-            document.getElementById('dismiss-workers-list').innerHTML = '<span class="text-muted">{{ __("No workers to dismiss") }}</span>';
-            document.getElementById('dismiss-submit-btn').disabled = true;
-        }
-        
-        new bootstrap.Modal(document.getElementById('bulkDismissModal')).show();
-    });
-
-    // Bulk Checkout
-    document.getElementById('bulk-checkout-btn').addEventListener('click', function() {
-        var selected = getSelectedWorkers();
-        if (selected.length === 0) return;
-        
-        var notHoused = selected.filter(function(w) { return !w.isHoused; });
-        var willBeEvicted = selected.filter(function(w) { return w.isHoused; });
-        
-        document.getElementById('checkout-worker-ids').value = willBeEvicted.map(function(w) { return w.id; }).join(',');
-        
-        // Show not housed
-        var notHousedDiv = document.getElementById('checkout-not-housed');
-        if (notHoused.length > 0) {
-            notHousedDiv.style.display = 'block';
-            document.getElementById('checkout-not-housed-list').innerHTML = notHoused.map(function(w) { return '• ' + w.name; }).join('<br>');
-        } else {
-            notHousedDiv.style.display = 'none';
-        }
-        
-        // Show will be evicted
-        var willBeEvictedDiv = document.getElementById('checkout-will-be-evicted');
-        if (willBeEvicted.length > 0) {
-            willBeEvictedDiv.style.display = 'block';
-            document.getElementById('checkout-workers-list').innerHTML = willBeEvicted.map(function(w) { 
-                return '• ' + w.name + ' <span class="text-danger">(' + w.hotel + ')</span>'; 
-            }).join('<br>');
-            document.getElementById('checkout-submit-btn').disabled = false;
-        } else {
-            willBeEvictedDiv.style.display = 'none';
-            document.getElementById('checkout-workers-list').innerHTML = '<span class="text-muted">{{ __("No workers to check out") }}</span>';
-            document.getElementById('checkout-submit-btn').disabled = true;
-        }
-        
-        new bootstrap.Modal(document.getElementById('bulkCheckoutModal')).show();
-    });
-
-    // Update select-all when DataTable redraws (search, pagination, etc.)
-    // DISABLED - DataTable is not used, using custom filtering instead
-    // workersTable.on('datatable.page', function() {
-    //     selectAllCheckbox.checked = false;
-    // });
-    // workersTable.on('datatable.search', function() {
-    //     selectAllCheckbox.checked = false;
-    // });
-    // workersTable.on('datatable.sort', function() {
-    //     selectAllCheckbox.checked = false;
-    // });
-
-    // Bulk Document Generation - function to open modal
-    function openDocumentModal() {
-        var selected = getSelectedWorkers();
-        
-        var workerSelectGroup = document.getElementById('doc-worker-select-group');
-        var selectedWorkersInfo = document.getElementById('doc-selected-workers-info');
-        var singleWorkerSelect = document.getElementById('doc-single-worker');
-        var workerIdsInput = document.getElementById('doc-worker-ids');
-        
-        if (selected.length >= 2) {
-            // Bulk mode - hide worker select, show selected workers
-            workerSelectGroup.style.display = 'none';
-            selectedWorkersInfo.style.display = 'block';
-            singleWorkerSelect.removeAttribute('required');
+        try {
+            const response = await fetch(`${this.searchUrl}?${params}`);
+            const result = await response.json();
             
-            document.getElementById('doc-selected-workers-list').innerHTML = selected.map(function(w) { 
-                return '• ' + w.name; 
-            }).join('<br>');
+            this.data = result.data;
+            this.totalRecords = result.total;
             
-            workerIdsInput.value = selected.map(function(w) { return w.id; }).join(',');
-        } else {
-            // Single mode - show worker select
-            workerSelectGroup.style.display = 'block';
-            selectedWorkersInfo.style.display = 'none';
-            singleWorkerSelect.setAttribute('required', 'required');
-            workerIdsInput.value = '';
+            this.renderTable();
+            this.renderPagination(result);
+            document.getElementById('resultsCount').textContent = result.total;
+            document.getElementById('total-filtered-count').textContent = result.total;
             
-            // If one worker selected, pre-select in dropdown
-            if (selected.length === 1) {
-                singleWorkerSelect.value = selected[0].id;
-            } else {
-                singleWorkerSelect.value = '';
+        } catch (error) {
+            console.error('Error loading workers:', error);
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">{{ __('Error loading data') }}</td></tr>`;
+        } finally {
+            spinner.classList.remove('show');
+        }
+    },
+
+    renderTable() {
+        const tbody = document.getElementById('workers-tbody');
+        const searchTerm = this.currentFilters.search || '';
+        
+        // Update sort icons
+        document.querySelectorAll('#workers-table th[data-sort]').forEach(th => {
+            th.classList.remove('sorted');
+            const icon = th.querySelector('.sort-icon');
+            icon.className = 'ti ti-arrows-sort sort-icon';
+            if (th.dataset.sort === this.sortField) {
+                th.classList.add('sorted');
+                icon.className = `ti ti-arrow-${this.sortDir === 'asc' ? 'up' : 'down'} sort-icon`;
+            }
+        });
+        
+        if (this.data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">{{ __('No workers found') }}</td></tr>`;
+            return;
+        }
+        
+        tbody.innerHTML = this.data.map(worker => {
+            const isSelected = this.selectedIds.has(worker.id);
+            const firstName = this.highlight(worker.first_name, searchTerm);
+            const lastName = this.highlight(worker.last_name, searchTerm);
+            const nationality = this.highlight(worker.nationality || '', searchTerm);
+            
+            return `
+                <tr data-worker-id="${worker.id}">
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input worker-checkbox" 
+                                value="${worker.id}" ${isSelected ? 'checked' : ''}
+                                data-name="${worker.first_name} ${worker.last_name}"
+                                data-is-working="${worker.is_working ? '1' : '0'}"
+                                data-work-place="${worker.work_place}"
+                                data-is-housed="${worker.is_housed ? '1' : '0'}"
+                                data-hotel="${worker.hotel}"
+                                onchange="WorkerTable.toggleSelection(${worker.id}, this.checked)">
+                        </div>
+                    </td>
+                    <td><a href="${worker.show_url}" class="text-primary fw-medium">${firstName}</a></td>
+                    <td><a href="${worker.show_url}" class="text-primary fw-medium">${lastName}</a></td>
+                    <td>${worker.dob}</td>
+                    <td>${worker.gender_label}</td>
+                    <td>${worker.nationality_flag}${nationality}</td>
+                    <td>${worker.registration_date}</td>
+                    <td class="Action">
+                        <span>
+                            ${this.canEdit ? `
+                            <div class="action-btn me-2">
+                                <a href="#" data-url="${worker.edit_url}" data-ajax-popup="true" data-title="{{ __('Edit Worker') }}"
+                                    class="mx-3 btn btn-sm align-items-center bg-info" data-bs-toggle="tooltip" title="{{ __('Edit') }}">
+                                    <i class="ti ti-pencil text-white"></i>
+                                </a>
+                            </div>` : ''}
+                            ${this.canDelete ? `
+                            <div class="action-btn">
+                                <form method="POST" action="${worker.delete_url}" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para bg-danger"
+                                        data-bs-toggle="tooltip" title="{{ __('Delete') }}"
+                                        data-confirm="{{ __('Are you sure?') }}|{{ __('This action cannot be undone. Do you want to continue?') }}"
+                                        data-confirm-yes="this.closest('form').submit();">
+                                        <i class="ti ti-trash text-white"></i>
+                                    </a>
+                                </form>
+                            </div>` : ''}
+                            <div class="action-btn ms-2">
+                                <a href="${worker.show_url}" class="mx-3 btn btn-sm align-items-center bg-warning"
+                                    data-bs-toggle="tooltip" title="{{ __('View') }}">
+                                    <i class="ti ti-eye text-white"></i>
+                                </a>
+                            </div>
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        // Re-init tooltips
+        if (typeof bootstrap !== 'undefined') {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+        }
+    },
+
+    highlight(text, term) {
+        if (!term || !text) return text;
+        const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    },
+
+    renderPagination(result) {
+        const info = document.getElementById('paginationInfo');
+        const controls = document.getElementById('paginationControls');
+        
+        const start = (result.page - 1) * result.per_page + 1;
+        const end = Math.min(result.page * result.per_page, result.total);
+        info.textContent = `${start}-${end} {{ __('of') }} ${result.total}`;
+        
+        let buttons = '';
+        const lastPage = result.last_page;
+        
+        buttons += `<button ${result.page <= 1 ? 'disabled' : ''} onclick="WorkerTable.goToPage(${result.page - 1})"><i class="ti ti-chevron-left"></i></button>`;
+        
+        // Page numbers
+        const range = 2;
+        for (let i = 1; i <= lastPage; i++) {
+            if (i === 1 || i === lastPage || (i >= result.page - range && i <= result.page + range)) {
+                buttons += `<button class="${i === result.page ? 'active' : ''}" onclick="WorkerTable.goToPage(${i})">${i}</button>`;
+            } else if (i === result.page - range - 1 || i === result.page + range + 1) {
+                buttons += `<button disabled>...</button>`;
             }
         }
         
-        // Reset template and format
-        document.getElementById('doc-template-select').value = '';
-        document.getElementById('doc-dynamic-fields').innerHTML = '';
-        document.getElementById('format-pdf').checked = true;
+        buttons += `<button ${result.page >= lastPage ? 'disabled' : ''} onclick="WorkerTable.goToPage(${result.page + 1})"><i class="ti ti-chevron-right"></i></button>`;
+        
+        controls.innerHTML = buttons;
+    },
+
+    goToPage(page) {
+        this.currentPage = page;
+        this.loadData();
+    },
+
+    toggleSelection(id, checked) {
+        if (checked) {
+            this.selectedIds.add(id);
+        } else {
+            this.selectedIds.delete(id);
+            this.selectAllFiltered = false;
+        }
+        this.updateBulkPanel();
+    },
+
+    updateCheckboxes() {
+        document.querySelectorAll('.worker-checkbox').forEach(cb => {
+            cb.checked = this.selectedIds.has(parseInt(cb.value));
+        });
+        document.getElementById('select-all-checkbox').checked = 
+            this.data.length > 0 && this.data.every(w => this.selectedIds.has(w.id));
+    },
+
+    updateBulkPanel() {
+        const panel = document.getElementById('bulk-actions-panel');
+        const count = this.selectAllFiltered ? this.totalRecords : this.selectedIds.size;
+        document.getElementById('selected-count').textContent = count;
+        panel.style.display = count > 0 ? 'block' : 'none';
+    },
+
+    async selectAllFilteredWorkers() {
+        const params = new URLSearchParams(this.currentFilters);
+        if (this.currentFilters.gender?.length) {
+            params.delete('gender');
+            this.currentFilters.gender.forEach(g => params.append('gender[]', g));
+        }
+        
+        try {
+            const response = await fetch(`${this.filteredIdsUrl}?${params}`);
+            const result = await response.json();
+            result.ids.forEach(id => this.selectedIds.add(id));
+            this.selectAllFiltered = true;
+            this.updateCheckboxes();
+            this.updateBulkPanel();
+        } catch (error) {
+            console.error('Error fetching filtered IDs:', error);
+        }
+    },
+
+    getSelectedWorkerIds() {
+        return Array.from(this.selectedIds).join(',');
+    },
+
+    openBulkModal(type) {
+        const ids = this.getSelectedWorkerIds();
+        if (!ids) return;
+        
+        if (type === 'assign') {
+            document.getElementById('assign-worker-ids').value = ids;
+            document.getElementById('assign-info').innerHTML = `<span class="text-info"><i class="ti ti-users me-1"></i>{{ __('Workers selected:') }} ${this.selectedIds.size}</span>`;
+            new bootstrap.Modal(document.getElementById('bulkAssignModal')).show();
+        } else if (type === 'dismiss') {
+            document.getElementById('dismiss-worker-ids').value = ids;
+            document.getElementById('dismiss-info').innerHTML = `<span class="text-warning"><i class="ti ti-users me-1"></i>{{ __('Workers selected:') }} ${this.selectedIds.size}</span>`;
+            new bootstrap.Modal(document.getElementById('bulkDismissModal')).show();
+        } else if (type === 'checkout') {
+            document.getElementById('checkout-worker-ids').value = ids;
+            document.getElementById('checkout-info').innerHTML = `<span class="text-danger"><i class="ti ti-users me-1"></i>{{ __('Workers selected:') }} ${this.selectedIds.size}</span>`;
+            new bootstrap.Modal(document.getElementById('bulkCheckoutModal')).show();
+        } else if (type === 'document') {
+            document.getElementById('doc-worker-ids').value = ids;
+            document.getElementById('doc-worker-select-group').style.display = 'none';
+            document.getElementById('doc-selected-workers-info').style.display = 'block';
+            document.getElementById('doc-selected-workers-list').textContent = `${this.selectedIds.size} {{ __('workers selected') }}`;
+            new bootstrap.Modal(document.getElementById('bulkDocumentModal')).show();
+        }
+    },
+
+    openDocumentModal() {
+        // For single worker selection from header button
+        document.getElementById('doc-worker-ids').value = '';
+        document.getElementById('doc-worker-select-group').style.display = 'block';
+        document.getElementById('doc-selected-workers-info').style.display = 'none';
+        
+        // Populate worker dropdown with current filtered data
+        const select = document.getElementById('doc-single-worker');
+        select.innerHTML = '<option value="">{{ __("Select Worker") }}</option>';
+        this.data.forEach(w => {
+            select.innerHTML += `<option value="${w.id}">${w.first_name} ${w.last_name}</option>`;
+        });
         
         new bootstrap.Modal(document.getElementById('bulkDocumentModal')).show();
     }
-    
-    // Header button (top right)
-    var bulkDocBtn = document.getElementById('bulk-generate-doc-btn');
-    if (bulkDocBtn) {
-        bulkDocBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Document button clicked');
-            openDocumentModal();
-        });
-    }
-    
-    // Bulk panel button (in bulk actions panel)
-    document.querySelectorAll('.bulk-generate-doc-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Bulk document button clicked');
-            openDocumentModal();
-        });
-    });
-    
-    // Load dynamic fields when template changes
-    var templateSelect = document.getElementById('doc-template-select');
-    if (templateSelect) {
-        templateSelect.addEventListener('change', function() {
-            var templateId = this.value;
-            var dynamicFieldsContainer = document.getElementById('doc-dynamic-fields');
-            dynamicFieldsContainer.innerHTML = '';
-            
-            if (!templateId) return;
-            
-            fetch('{{ url("/documents/template-fields") }}/' + templateId)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (data.fields && data.fields.length > 0) {
-                        var html = '<div class="mb-3"><label class="form-label">{{ __("Additional Fields") }}</label>';
-                        data.fields.forEach(function(field) {
-                            html += '<div class="mb-2">';
-                            html += '<label class="form-label small">' + field.label + '</label>';
-                            html += '<input type="date" class="form-control form-control-sm" name="' + field.field_name + '">';
-                            html += '</div>';
-                        });
-                        html += '</div>';
-                        dynamicFieldsContainer.innerHTML = html;
-                    }
-                })
-                .catch(function(err) {
-                    console.error('Error loading template fields:', err);
-                });
-        });
-    }
-});
+};
+
+document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
 </script>
 @endpush

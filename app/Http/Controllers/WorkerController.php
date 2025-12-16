@@ -11,26 +11,208 @@ use Illuminate\Support\Facades\Validator;
 
 class WorkerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (Auth::user()->can('manage worker')) {
-            $workers = Worker::where('created_by', '=', Auth::user()->creatorId())
-                ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel', 'currentAssignment.room'])
-                ->get();
-            
-            // Get filter data
-            $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())->get();
-            $workplaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
-            $nationalities = Worker::where('created_by', Auth::user()->creatorId())
-                ->whereNotNull('nationality')
-                ->distinct()
-                ->pluck('nationality')
-                ->sort();
-            
-            return view('worker.index', compact('workers', 'hotels', 'workplaces', 'nationalities'));
-        } else {
+        if (!Auth::user()->can('manage worker')) {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
+
+        // Get filter data for dropdowns
+        $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())->get();
+        $workplaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
+        $nationalities = Worker::where('created_by', Auth::user()->creatorId())
+            ->whereNotNull('nationality')
+            ->distinct()
+            ->pluck('nationality')
+            ->sort();
+
+        // Get total count for display
+        $totalWorkers = Worker::where('created_by', Auth::user()->creatorId())->count();
+
+        return view('worker.index', compact('hotels', 'workplaces', 'nationalities', 'totalWorkers'));
+    }
+
+    /**
+     * AJAX endpoint for server-side search and filtering
+     */
+    public function search(Request $request)
+    {
+        if (!Auth::user()->can('manage worker')) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        $query = Worker::where('created_by', Auth::user()->creatorId())
+            ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel', 'currentAssignment.room']);
+
+        // Search by name or nationality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")
+                    ->orWhere('last_name', 'LIKE', "%{$search}%")
+                    ->orWhere('nationality', 'LIKE', "%{$search}%")
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"]);
+            });
+        }
+
+        // Filter by hotel
+        if ($request->filled('hotel_id')) {
+            $hotelId = $request->hotel_id;
+            $query->whereHas('currentAssignment', function ($q) use ($hotelId) {
+                $q->where('hotel_id', $hotelId)->whereNull('check_out_date');
+            });
+        }
+
+        // Filter by workplace
+        if ($request->filled('workplace_id')) {
+            $workplaceId = $request->workplace_id;
+            $query->whereHas('currentWorkAssignment', function ($q) use ($workplaceId) {
+                $q->where('work_place_id', $workplaceId)->whereNull('ended_at');
+            });
+        }
+
+        // Filter by nationality
+        if ($request->filled('nationality')) {
+            $query->where('nationality', $request->nationality);
+        }
+
+        // Filter by gender
+        if ($request->filled('gender')) {
+            $genders = is_array($request->gender) ? $request->gender : [$request->gender];
+            $query->whereIn('gender', $genders);
+        }
+
+        // Filter by date of birth range
+        if ($request->filled('dob_from')) {
+            $query->where('dob', '>=', $request->dob_from);
+        }
+        if ($request->filled('dob_to')) {
+            $query->where('dob', '<=', $request->dob_to);
+        }
+
+        // Filter by registration date range
+        if ($request->filled('reg_from')) {
+            $query->where('registration_date', '>=', $request->reg_from);
+        }
+        if ($request->filled('reg_to')) {
+            $query->where('registration_date', '<=', $request->reg_to);
+        }
+
+        // Get total filtered count before pagination
+        $totalFiltered = $query->count();
+
+        // Sorting
+        $sortField = $request->get('sort', 'first_name');
+        $sortDir = $request->get('dir', 'asc');
+        $allowedSorts = ['first_name', 'last_name', 'dob', 'gender', 'nationality', 'registration_date'];
+        if (in_array($sortField, $allowedSorts)) {
+            $query->orderBy($sortField, $sortDir === 'desc' ? 'desc' : 'asc');
+        }
+
+        // Pagination
+        $perPage = min((int) $request->get('per_page', 50), 100);
+        $page = max((int) $request->get('page', 1), 1);
+        $workers = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
+
+        // Format response
+        $data = $workers->map(function ($worker) {
+            return [
+                'id' => $worker->id,
+                'first_name' => $worker->first_name,
+                'last_name' => $worker->last_name,
+                'dob' => $worker->dob ? Auth::user()->dateFormat($worker->dob) : '-',
+                'dob_raw' => $worker->dob ? $worker->dob->format('Y-m-d') : '',
+                'gender' => $worker->gender,
+                'gender_label' => $worker->gender == 'male' ? __('Male') : __('Female'),
+                'nationality' => $worker->nationality,
+                'nationality_flag' => \App\Services\NationalityFlagService::getFlagHtml($worker->nationality, 18),
+                'registration_date' => $worker->registration_date ? Auth::user()->dateFormat($worker->registration_date) : '-',
+                'registration_date_raw' => $worker->registration_date ? $worker->registration_date->format('Y-m-d') : '',
+                'is_working' => $worker->currentWorkAssignment ? true : false,
+                'work_place' => $worker->currentWorkAssignment?->workPlace?->name ?? '',
+                'work_place_id' => $worker->currentWorkAssignment?->work_place_id,
+                'is_housed' => $worker->currentAssignment ? true : false,
+                'hotel' => $worker->currentAssignment?->hotel?->name ?? '',
+                'hotel_id' => $worker->currentAssignment?->hotel_id,
+                'show_url' => route('worker.show', $worker->id),
+                'edit_url' => route('worker.edit', $worker->id),
+                'delete_url' => route('worker.destroy', $worker->id),
+            ];
+        });
+
+        return response()->json([
+            'data' => $data,
+            'total' => $totalFiltered,
+            'page' => $page,
+            'per_page' => $perPage,
+            'last_page' => ceil($totalFiltered / $perPage),
+        ]);
+    }
+
+    /**
+     * Get all worker IDs matching current filters (for bulk operations)
+     */
+    public function getFilteredIds(Request $request)
+    {
+        if (!Auth::user()->can('manage worker')) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        $query = Worker::where('created_by', Auth::user()->creatorId());
+
+        // Apply same filters as search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'LIKE', "%{$search}%")
+                    ->orWhere('last_name', 'LIKE', "%{$search}%")
+                    ->orWhere('nationality', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('hotel_id')) {
+            $hotelId = $request->hotel_id;
+            $query->whereHas('currentAssignment', function ($q) use ($hotelId) {
+                $q->where('hotel_id', $hotelId)->whereNull('check_out_date');
+            });
+        }
+
+        if ($request->filled('workplace_id')) {
+            $workplaceId = $request->workplace_id;
+            $query->whereHas('currentWorkAssignment', function ($q) use ($workplaceId) {
+                $q->where('work_place_id', $workplaceId)->whereNull('ended_at');
+            });
+        }
+
+        if ($request->filled('nationality')) {
+            $query->where('nationality', $request->nationality);
+        }
+
+        if ($request->filled('gender')) {
+            $genders = is_array($request->gender) ? $request->gender : [$request->gender];
+            $query->whereIn('gender', $genders);
+        }
+
+        if ($request->filled('dob_from')) {
+            $query->where('dob', '>=', $request->dob_from);
+        }
+        if ($request->filled('dob_to')) {
+            $query->where('dob', '<=', $request->dob_to);
+        }
+
+        if ($request->filled('reg_from')) {
+            $query->where('registration_date', '>=', $request->reg_from);
+        }
+        if ($request->filled('reg_to')) {
+            $query->where('registration_date', '<=', $request->reg_to);
+        }
+
+        $ids = $query->pluck('id');
+
+        return response()->json([
+            'ids' => $ids,
+            'count' => $ids->count(),
+        ]);
     }
 
     public function show(Worker $worker)
