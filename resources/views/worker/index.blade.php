@@ -2,6 +2,22 @@
 
 @php use App\Services\NationalityFlagService; @endphp
 
+{{-- === ДИАГНОСТИКА: Вывод в консоль браузера === --}}
+@if(isset($diagnostics))
+<script>
+    console.group('%c🔍 Worker Index Diagnostics', 'color: #FF0049; font-weight: bold; font-size: 14px;');
+    console.log('%cTotal Time: ' + {{ $diagnostics['total_time_ms'] }} + 'ms', 'color: #333; font-weight: bold;');
+    console.log('%cWorkers Query: ' + {{ $diagnostics['workers_query_ms'] }} + 'ms', 'color: #666;');
+    console.log('%cFilter Queries: ' + {{ $diagnostics['filter_queries_ms'] }} + 'ms', 'color: #666;');
+    console.log('%cTotal SQL Queries: ' + {{ $diagnostics['total_queries'] }}, 'color: #666;');
+    console.log('%cWorkers Count: ' + {{ $diagnostics['workers_count'] }}, 'color: #666;');
+    console.log('%cAll Queries:', 'color: #0066cc; font-weight: bold;');
+    console.table(@json($diagnostics['queries']));
+    console.groupEnd();
+</script>
+@endif
+{{-- === ДИАГНОСТИКА: Конец === --}}
+
 @section('page-title')
     {{ __('Worker Management') }}
 @endsection

@@ -8,17 +8,26 @@ use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WorkerController extends Controller
 {
     public function index()
     {
         if (Auth::user()->can('manage worker')) {
+            // === ДИАГНОСТИКА: Начало ===
+            $startTime = microtime(true);
+            DB::enableQueryLog();
+            
             $workers = Worker::where('created_by', '=', Auth::user()->creatorId())
                 ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel', 'currentAssignment.room'])
                 ->get();
             
+            $workersTime = microtime(true) - $startTime;
+            
             // Get filter data
+            $filterStart = microtime(true);
             $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())->get();
             $workplaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
             $nationalities = Worker::where('created_by', Auth::user()->creatorId())
@@ -26,8 +35,28 @@ class WorkerController extends Controller
                 ->distinct()
                 ->pluck('nationality')
                 ->sort();
+            $filterTime = microtime(true) - $filterStart;
             
-            return view('worker.index', compact('workers', 'hotels', 'workplaces', 'nationalities'));
+            $queries = DB::getQueryLog();
+            $totalTime = microtime(true) - $startTime;
+            
+            // Выводим в консоль браузера через view
+            $diagnostics = [
+                'total_time_ms' => round($totalTime * 1000, 2),
+                'workers_query_ms' => round($workersTime * 1000, 2),
+                'filter_queries_ms' => round($filterTime * 1000, 2),
+                'total_queries' => count($queries),
+                'workers_count' => $workers->count(),
+                'queries' => collect($queries)->map(fn($q) => [
+                    'sql' => $q['query'],
+                    'time_ms' => $q['time']
+                ])->toArray()
+            ];
+            
+            Log::info('WorkerController::index diagnostics', $diagnostics);
+            // === ДИАГНОСТИКА: Конец ===
+            
+            return view('worker.index', compact('workers', 'hotels', 'workplaces', 'nationalities', 'diagnostics'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
