@@ -43,11 +43,11 @@
                         <label class="form-label">{{ __('Amount') }} <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
-                            <span class="input-group-text">€</span>
+                            <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                         </div>
                         <small class="text-muted">
                             {{ __('Available:') }} 
-                            <span id="availableBalance">{{ number_format($balance['received'] - $balance['sent'], 2, ',', ' ') }}</span> €
+                            <span id="availableBalance">{{ formatCashboxCurrency($balance['received'] - $balance['sent']) }}</span>
                         </small>
                     </div>
                     <div class="form-group mb-3">

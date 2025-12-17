@@ -1318,9 +1318,9 @@
                         ];
                         
                         $agencyModules = [];
-                        foreach ($allAgencyModules as $planModule => $permissions) {
+                        foreach ($allAgencyModules as $planModule => $modulePerms) {
                             if (PlanModuleService::hasModule($planModule)) {
-                                $agencyModules = array_merge($agencyModules, $permissions);
+                                $agencyModules = array_merge($agencyModules, $modulePerms);
                             }
                         }
                     @endphp

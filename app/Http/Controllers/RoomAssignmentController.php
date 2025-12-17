@@ -6,6 +6,7 @@ use App\Models\Worker;
 use App\Models\Hotel;
 use App\Models\Room;
 use App\Models\RoomAssignment;
+use App\Models\RoomAssignmentPaymentHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -36,6 +37,16 @@ class RoomAssignmentController extends Controller
                     return redirect()->back()->with('error', __('Worker is already housed. Check them out first.'));
                 }
 
+                // Check if hotel is visible to user (responsible system)
+                $hotel = Hotel::where('id', $request->hotel_id)
+                    ->where('created_by', Auth::user()->creatorId())
+                    ->visibleToUser(Auth::user())
+                    ->first();
+                
+                if (!$hotel) {
+                    return redirect()->back()->with('error', __('Permission denied.'));
+                }
+
                 // Check if room belongs to selected hotel
                 $room = Room::find($request->room_id);
                 if ($room->hotel_id != $request->hotel_id) {
@@ -47,14 +58,26 @@ class RoomAssignmentController extends Controller
                     return redirect()->back()->with('error', __('Room is fully occupied.'));
                 }
 
-                // Create the assignment
+                // Create the assignment with payment info
                 $assignment = new RoomAssignment();
                 $assignment->worker_id = $worker->id;
                 $assignment->room_id = $request->room_id;
                 $assignment->hotel_id = $request->hotel_id;
                 $assignment->check_in_date = now();
+                $assignment->payment_type = $request->input('worker_pays') ? 'worker' : 'agency';
+                $assignment->payment_amount = $request->input('worker_pays') ? $request->input('payment_amount') : null;
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();
+
+                // Create initial payment history record
+                RoomAssignmentPaymentHistory::create([
+                    'room_assignment_id' => $assignment->id,
+                    'payment_type' => $assignment->payment_type,
+                    'payment_amount' => $assignment->payment_amount,
+                    'changed_by_name' => Auth::user()->name,
+                    'changed_by' => Auth::user()->id,
+                    'comment' => __('Initial check-in'),
+                ]);
 
                 // Check if redirect to mobile
                 if ($request->input('redirect_to') === 'mobile') {
@@ -143,22 +166,44 @@ class RoomAssignmentController extends Controller
 
     /**
      * Get available rooms for a specific hotel (API endpoint).
+     * Sorted by occupancy: empty first, then partially occupied, then full.
      */
     public function getAvailableRooms(Hotel $hotel)
     {
         if (Auth::user()->can('manage hotel')) {
-            if ($hotel->created_by == Auth::user()->creatorId()) {
+            // Check if hotel is visible to user (responsible system)
+            $isVisible = Hotel::where('id', $hotel->id)
+                ->where('created_by', Auth::user()->creatorId())
+                ->visibleToUser(Auth::user())
+                ->exists();
+            
+            if ($hotel->created_by == Auth::user()->creatorId() && $isVisible) {
                 $rooms = $hotel->rooms()->with('currentAssignments')->get()->map(function ($room) {
+                    $occupied = $room->currentAssignments->count();
+                    $capacity = $room->capacity;
+                    
+                    // Calculate sort priority: 0 = empty, 1 = partially occupied, 2 = full
+                    $sortPriority = 2; // full by default
+                    if ($occupied === 0) {
+                        $sortPriority = 0; // empty
+                    } elseif ($occupied < $capacity) {
+                        $sortPriority = 1; // partially occupied
+                    }
+                    
                     return [
                         'id' => $room->id,
                         'room_number' => $room->room_number,
-                        'capacity' => $room->capacity,
-                        'occupied' => $room->currentAssignments->count(),
+                        'capacity' => $capacity,
+                        'occupied' => $occupied,
                         'available' => $room->availableSpots(),
                         'is_full' => $room->isFull(),
                         'occupancy_status' => $room->occupancyStatus(),
+                        'sort_priority' => $sortPriority,
                     ];
-                });
+                })->sortBy([
+                    ['sort_priority', 'asc'],
+                    ['room_number', 'asc'],
+                ])->values();
 
                 return response()->json($rooms);
             } else {
@@ -204,14 +249,26 @@ class RoomAssignmentController extends Controller
                     return redirect()->back()->with('error', __('Room is fully occupied.'));
                 }
 
-                // Create the assignment
+                // Create the assignment with payment info
                 $assignment = new RoomAssignment();
                 $assignment->worker_id = $worker->id;
                 $assignment->room_id = $room->id;
                 $assignment->hotel_id = $room->hotel_id;
                 $assignment->check_in_date = now();
+                $assignment->payment_type = $request->input('worker_pays') ? 'worker' : 'agency';
+                $assignment->payment_amount = $request->input('worker_pays') ? $request->input('payment_amount') : null;
                 $assignment->created_by = Auth::user()->creatorId();
                 $assignment->save();
+
+                // Create initial payment history record
+                RoomAssignmentPaymentHistory::create([
+                    'room_assignment_id' => $assignment->id,
+                    'payment_type' => $assignment->payment_type,
+                    'payment_amount' => $assignment->payment_amount,
+                    'changed_by_name' => Auth::user()->name,
+                    'changed_by' => Auth::user()->id,
+                    'comment' => __('Initial check-in'),
+                ]);
 
                 return redirect()->back()->with('success', __('Worker successfully checked in.'));
             } else {
@@ -220,6 +277,68 @@ class RoomAssignmentController extends Controller
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
+    }
+
+    /**
+     * Update payment settings for an assignment.
+     */
+    public function updatePayment(Request $request, RoomAssignment $assignment)
+    {
+        if (!Auth::user()->can('manage worker')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        if ($assignment->room->created_by != Auth::user()->creatorId()) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'payment_type' => 'required|in:agency,worker',
+            'payment_amount' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        $oldPaymentType = $assignment->payment_type;
+        $oldPaymentAmount = $assignment->payment_amount;
+
+        $assignment->payment_type = $request->payment_type;
+        $assignment->payment_amount = $request->payment_type === 'worker' ? $request->payment_amount : null;
+        $assignment->save();
+
+        // Create history record if changed
+        if ($oldPaymentType !== $assignment->payment_type || $oldPaymentAmount != $assignment->payment_amount) {
+            RoomAssignmentPaymentHistory::create([
+                'room_assignment_id' => $assignment->id,
+                'payment_type' => $assignment->payment_type,
+                'payment_amount' => $assignment->payment_amount,
+                'changed_by_name' => Auth::user()->name,
+                'changed_by' => Auth::user()->id,
+                'comment' => $request->input('comment'),
+            ]);
+        }
+
+        return redirect()->back()->with('success', __('Payment settings updated.'));
+    }
+
+    /**
+     * Show the form for editing payment settings.
+     */
+    public function editPaymentForm(RoomAssignment $assignment)
+    {
+        if (!Auth::user()->can('manage worker')) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        if ($assignment->room->created_by != Auth::user()->creatorId()) {
+            return response()->json(['error' => __('Permission denied.')], 403);
+        }
+
+        $assignment->load(['worker', 'room', 'paymentHistory']);
+        
+        return view('room.edit_payment_form', compact('assignment'));
     }
 
     /**
@@ -257,6 +376,10 @@ class RoomAssignmentController extends Controller
                 $availableSpots = $room->availableSpots();
                 $assigned = 0;
 
+                // Get payment settings from form
+                $paymentType = $request->input('worker_pays') ? 'worker' : 'agency';
+                $paymentAmount = $request->input('worker_pays') ? $request->input('payment_amount') : null;
+
                 foreach ($workerIds as $workerId) {
                     if ($assigned >= $availableSpots) break;
 
@@ -272,9 +395,27 @@ class RoomAssignmentController extends Controller
                     $assignment->room_id = $room->id;
                     $assignment->hotel_id = $room->hotel_id;
                     $assignment->check_in_date = now();
+                    $assignment->payment_type = $paymentType;
+                    $assignment->payment_amount = $paymentAmount;
                     $assignment->created_by = Auth::user()->creatorId();
                     $assignment->save();
+
+                    // Create initial payment history record
+                    RoomAssignmentPaymentHistory::create([
+                        'room_assignment_id' => $assignment->id,
+                        'payment_type' => $assignment->payment_type,
+                        'payment_amount' => $assignment->payment_amount,
+                        'changed_by_name' => Auth::user()->name,
+                        'changed_by' => Auth::user()->id,
+                        'comment' => __('Initial check-in'),
+                    ]);
+
                     $assigned++;
+                }
+
+                // Handle redirect for mobile
+                if ($request->input('redirect_to') === 'mobile') {
+                    return redirect()->route('mobile.rooms.show', $room->id)->with('success', __('Workers checked in: :count', ['count' => $assigned]));
                 }
 
                 return redirect()->back()->with('success', __('Workers checked in: :count', ['count' => $assigned]));

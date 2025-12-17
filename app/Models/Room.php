@@ -9,21 +9,7 @@ class Room extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['hotel_id', 'room_number', 'capacity', 'monthly_price', 'payment_type', 'partial_amount', 'created_by'];
-
-    // Payment types
-    const PAYMENT_WORKER = 'worker';      // Платит сам
-    const PAYMENT_AGENCY = 'agency';      // Платит агенство
-    const PAYMENT_PARTIAL = 'partial';    // Платит частично
-
-    public static function getPaymentTypes(): array
-    {
-        return [
-            self::PAYMENT_WORKER => __('Платит сам'),
-            self::PAYMENT_AGENCY => __('Платит агенство'),
-            self::PAYMENT_PARTIAL => __('Платит частично'),
-        ];
-    }
+    protected $fillable = ['hotel_id', 'room_number', 'capacity', 'monthly_price', 'created_by'];
 
     public function hotel()
     {

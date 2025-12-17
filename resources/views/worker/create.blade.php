@@ -63,7 +63,10 @@
         <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('nationality', __('Nationality'), ['class' => 'form-label']) }}<x-required></x-required>
-                {{ Form::text('nationality', null, ['class' => 'form-control', 'placeholder' => __('Enter nationality'), 'required' => 'required', 'id' => 'nationality']) }}
+                <div class="position-relative">
+                    {{ Form::text('nationality', null, ['class' => 'form-control', 'placeholder' => __('Enter nationality'), 'required' => 'required', 'id' => 'nationality', 'autocomplete' => 'off']) }}
+                    <div id="nationality_dropdown" class="nationality-dropdown" style="display: none;"></div>
+                </div>
             </div>
         </div>
         <div class="col-md-6">
@@ -402,4 +405,125 @@
         }
     }, 100);
 })();
+
+// Nationality Autocomplete
+(function() {
+    setTimeout(function() {
+        var nationalityInput = document.getElementById('nationality');
+        var dropdown = document.getElementById('nationality_dropdown');
+        
+        if (!nationalityInput || !dropdown) return;
+        
+        // Nationalities list with keys and translations
+        var nationalities = {!! json_encode(\App\Services\NationalityService::getWithKeys()) !!};
+        
+        var selectedIndex = -1;
+        
+        nationalityInput.addEventListener('input', function() {
+            var query = this.value.toLowerCase().trim();
+            
+            if (query.length < 2) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            // Search by translated name OR English key
+            var matches = nationalities.filter(function(n) {
+                return n.name.toLowerCase().indexOf(query) !== -1 || 
+                       n.key.toLowerCase().indexOf(query) !== -1;
+            }).slice(0, 8);
+            
+            if (matches.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            selectedIndex = -1;
+            dropdown.innerHTML = matches.map(function(n, i) {
+                // data-key = English key for DB, display = translated name
+                return '<div class="nationality-item" data-key="' + n.key + '" data-value="' + n.name + '" data-index="' + i + '">' + n.name + '</div>';
+            }).join('');
+            dropdown.style.display = 'block';
+            
+            // Click handlers
+            dropdown.querySelectorAll('.nationality-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    // Save English key to input (for DB), but could show translated
+                    nationalityInput.value = this.dataset.key;
+                    dropdown.style.display = 'none';
+                });
+                item.addEventListener('mouseenter', function() {
+                    dropdown.querySelectorAll('.nationality-item').forEach(function(el) {
+                        el.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    selectedIndex = parseInt(this.dataset.index);
+                });
+            });
+        });
+        
+        // Keyboard navigation
+        nationalityInput.addEventListener('keydown', function(e) {
+            var items = dropdown.querySelectorAll('.nationality-item');
+            if (items.length === 0 || dropdown.style.display === 'none') return;
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                updateSelection(items);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                nationalityInput.value = items[selectedIndex].dataset.key;
+                dropdown.style.display = 'none';
+            } else if (e.key === 'Escape') {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        function updateSelection(items) {
+            items.forEach(function(item, i) {
+                item.classList.toggle('active', i === selectedIndex);
+            });
+            if (selectedIndex >= 0) {
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+        
+        // Close on click outside
+        document.addEventListener('click', function(e) {
+            if (!nationalityInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }, 150);
+})();
 </script>
+
+<style>
+.nationality-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1050;
+}
+.nationality-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.nationality-item:hover,
+.nationality-item.active {
+    background: #f0f0f0;
+}
+</style>

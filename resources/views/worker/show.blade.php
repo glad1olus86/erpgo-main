@@ -113,6 +113,12 @@
                                 <p class="mb-0">{{ !empty($worker->email) ? $worker->email : '-' }}</p>
                             </div>
                         </div>
+                        <div class="col-md-6 mt-4">
+                            <div class="info-group">
+                                <h6>{{ __('Responsible') }}</h6>
+                                <p class="mb-0">{{ $worker->responsible ? $worker->responsible->name : '-' }}</p>
+                            </div>
+                        </div>
                         <div class="col-md-12 mt-4">
                             <div class="info-group">
                                 <h6>{{ __('Document Photo') }}</h6>
@@ -361,7 +367,7 @@
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between align-items-start">
                                                 <div>
-                                                    <h6 class="mb-1">{{ $event->description }}</h6>
+                                                    <h6 class="mb-1">{{ $event->translated_description }}</h6>
                                                     <p class="text-muted small mb-0">
                                                         <i class="ti ti-user me-1"></i>{{ $event->user_name }}
                                                         <span class="mx-2">•</span>
@@ -432,6 +438,13 @@
                     <form action="{{ route('worker.assign.room', $worker->id) }}" method="POST">
                         @csrf
                         <div class="modal-body">
+                            @if($hotels->isEmpty())
+                                <div class="text-center py-4">
+                                    <i class="ti ti-building-community" style="font-size: 48px; opacity: 0.3;"></i>
+                                    <h5 class="mt-3">{{ __('No Hotels Available') }}</h5>
+                                    <p class="text-muted">{{ __('You have no assigned hotels. Contact your manager.') }}</p>
+                                </div>
+                            @else
                             <div class="row">
                                 <div class="col-12">
                                     <div class="form-group">
@@ -455,6 +468,25 @@
                                         <small class="form-text text-muted" id="room-capacity-info"></small>
                                     </div>
                                 </div>
+                                <div class="col-12 mt-3">
+                                    <div class="form-group p-3 bg-light rounded">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="worker_pays_checkbox" name="worker_pays" value="1">
+                                            <label class="form-check-label fw-bold" for="worker_pays_checkbox">
+                                                {{ __('Worker pays for accommodation') }}
+                                            </label>
+                                        </div>
+                                        <div id="payment_amount_wrapper" style="display: none;" class="mt-2">
+                                            <label class="form-label">{{ __('Monthly payment amount') }}</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="payment_amount" id="payment_amount_input" 
+                                                       step="0.01" min="0" placeholder="0.00">
+                                                <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
+                                            </div>
+                                            <small class="text-muted" id="room_price_hint"></small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -462,6 +494,7 @@
                                 data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                             <button type="submit" class="btn btn-primary">{{ __('Check In') }}</button>
                         </div>
+                        @endif
                     </form>
                 </div>
             </div>
@@ -479,6 +512,13 @@
                     <form action="{{ route('worker.assign.work', $worker->id) }}" method="POST">
                         @csrf
                         <div class="modal-body">
+                            @if($workPlaces->isEmpty())
+                                <div class="text-center py-4">
+                                    <i class="ti ti-briefcase-off" style="font-size: 48px; opacity: 0.3;"></i>
+                                    <h5 class="mt-3">{{ __('No Work Places Available') }}</h5>
+                                    <p class="text-muted">{{ __('You have no assigned work places. Contact your manager.') }}</p>
+                                </div>
+                            @else
                             <div class="row">
                                 <div class="col-12">
                                     <div class="form-group">
@@ -509,6 +549,7 @@
                                 data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                             <button type="submit" class="btn btn-primary">{{ __('Assign') }}</button>
                         </div>
+                        @endif
                     </form>
                 </div>
             </div>
@@ -547,21 +588,43 @@
                                 roomSelect.append(
                                     '<option value="">{{ __('Select Room') }}</option>');
 
-                                rooms.forEach(function(room) {
-                                    var optionText = '{{ __('Room') }} ' + room
-                                        .room_number +
-                                        ' (' + room.occupancy_status +
-                                        ' {{ __('occupied') }})';
+                                // Group rooms by occupancy status
+                                var emptyRooms = rooms.filter(r => r.occupied === 0);
+                                var partialRooms = rooms.filter(r => r.occupied > 0 && !r.is_full);
+                                var fullRooms = rooms.filter(r => r.is_full);
 
-                                    if (room.is_full) {
-                                        optionText += ' - {{ __('Full') }}';
-                                        roomSelect.append('<option value="' + room.id +
-                                            '" disabled>' + optionText + '</option>');
-                                    } else {
-                                        roomSelect.append('<option value="' + room.id +
-                                            '">' + optionText + '</option>');
-                                    }
-                                });
+                                // Add empty rooms
+                                if (emptyRooms.length > 0) {
+                                    roomSelect.append('<optgroup label="━━━ {{ __('Empty rooms') }} ━━━">');
+                                    emptyRooms.forEach(function(room) {
+                                        var optionText = '{{ __('Room') }} ' + room.room_number +
+                                            ' (0/' + room.capacity + ')';
+                                        roomSelect.append('<option value="' + room.id + '">' + optionText + '</option>');
+                                    });
+                                    roomSelect.append('</optgroup>');
+                                }
+
+                                // Add partially occupied rooms
+                                if (partialRooms.length > 0) {
+                                    roomSelect.append('<optgroup label="━━━ {{ __('Partially occupied') }} ━━━">');
+                                    partialRooms.forEach(function(room) {
+                                        var optionText = '{{ __('Room') }} ' + room.room_number +
+                                            ' (' + room.occupied + '/' + room.capacity + ')';
+                                        roomSelect.append('<option value="' + room.id + '">' + optionText + '</option>');
+                                    });
+                                    roomSelect.append('</optgroup>');
+                                }
+
+                                // Add full rooms (disabled)
+                                if (fullRooms.length > 0) {
+                                    roomSelect.append('<optgroup label="━━━ {{ __('Full') }} ━━━">');
+                                    fullRooms.forEach(function(room) {
+                                        var optionText = '{{ __('Room') }} ' + room.room_number +
+                                            ' (' + room.occupied + '/' + room.capacity + ') - {{ __('Full') }}';
+                                        roomSelect.append('<option value="' + room.id + '" disabled>' + optionText + '</option>');
+                                    });
+                                    roomSelect.append('</optgroup>');
+                                }
                             },
                             error: function() {
                                 roomSelect.empty();
@@ -582,12 +645,39 @@
                 $('#room_id').on('change', function() {
                     var selectedOption = $(this).find('option:selected');
                     var capacityInfo = $('#room-capacity-info');
+                    var roomPriceHint = $('#room_price_hint');
+                    var paymentAmountInput = $('#payment_amount_input');
 
                     if ($(this).val() && !selectedOption.is(':disabled')) {
                         capacityInfo.text('{{ __('Room is available for check-in') }}');
                         capacityInfo.removeClass('text-danger').addClass('text-success');
+                        
+                        // Load room price
+                        var roomId = $(this).val();
+                        $.ajax({
+                            url: '/room/' + roomId,
+                            type: 'GET',
+                            headers: { 'Accept': 'application/json' },
+                            success: function(room) {
+                                if (room && room.monthly_price) {
+                                    roomPriceHint.text('{{ __('Room price') }}: ' + room.monthly_price_formatted);
+                                    paymentAmountInput.val(room.monthly_price);
+                                }
+                            }
+                        });
                     } else {
                         capacityInfo.text('');
+                        roomPriceHint.text('');
+                    }
+                });
+
+                // Worker pays checkbox toggle
+                $('#worker_pays_checkbox').on('change', function() {
+                    var paymentWrapper = $('#payment_amount_wrapper');
+                    if ($(this).is(':checked')) {
+                        paymentWrapper.slideDown();
+                    } else {
+                        paymentWrapper.slideUp();
                     }
                 });
 

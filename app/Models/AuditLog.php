@@ -210,6 +210,132 @@ class AuditLog extends Model
         return $this->description;
     }
 
+    // Переведённое описание события (переводит на текущий язык пользователя)
+    public function getTranslatedDescriptionAttribute()
+    {
+        $description = $this->description;
+        
+        // Словарь замен: все варианты на всех языках -> ключ перевода
+        $translations = [
+            // Заселение
+            'Заселён:' => __('Checked in') . ':',
+            'Заселен:' => __('Checked in') . ':',
+            'Ubytován:' => __('Checked in') . ':',
+            'Заселено:' => __('Checked in') . ':',
+            'Checked in:' => __('Checked in') . ':',
+            
+            // Выселение
+            'Выселен:' => __('Checked out') . ':',
+            'Odhlášen:' => __('Checked out') . ':',
+            'Виселено:' => __('Checked out') . ':',
+            'Checked out:' => __('Checked out') . ':',
+            
+            // Создание работника
+            'Создан работник:' => __('Worker created') . ':',
+            'Worker created:' => __('Worker created') . ':',
+            'Pracovník vytvořen:' => __('Worker created') . ':',
+            'Створено працівника:' => __('Worker created') . ':',
+            
+            // Обновление работника
+            'Обновлены данные работника:' => __('Worker updated') . ':',
+            'Обновлён работник:' => __('Worker updated') . ':',
+            'Worker updated:' => __('Worker updated') . ':',
+            'Pracovník aktualizován:' => __('Worker updated') . ':',
+            'Оновлено працівника:' => __('Worker updated') . ':',
+            
+            // Удаление работника
+            'Удален работник:' => __('Worker deleted') . ':',
+            'Удалён работник:' => __('Worker deleted') . ':',
+            'Worker deleted:' => __('Worker deleted') . ':',
+            'Pracovník smazán:' => __('Worker deleted') . ':',
+            'Видалено працівника:' => __('Worker deleted') . ':',
+            
+            // Трудоустройство
+            'Устроен на работу:' => __('Hired') . ':',
+            'Hired:' => __('Hired') . ':',
+            'Zaměstnán:' => __('Hired') . ':',
+            'Працевлаштовано:' => __('Hired') . ':',
+            
+            // Увольнение
+            'Уволен:' => __('Dismissed') . ':',
+            'Dismissed:' => __('Dismissed') . ':',
+            'Propuštěn:' => __('Dismissed') . ':',
+            'Звільнено:' => __('Dismissed') . ':',
+            
+            // Комнаты
+            'Создана комната:' => __('Room created') . ':',
+            'Room created:' => __('Room created') . ':',
+            'Pokoj vytvořen:' => __('Room created') . ':',
+            'Створено кімнату:' => __('Room created') . ':',
+            
+            'Обновлена комната:' => __('Room updated') . ':',
+            'Room updated:' => __('Room updated') . ':',
+            'Pokoj aktualizován:' => __('Room updated') . ':',
+            'Оновлено кімнату:' => __('Room updated') . ':',
+            
+            'Удалена комната:' => __('Room deleted') . ':',
+            'Room deleted:' => __('Room deleted') . ':',
+            'Pokoj smazán:' => __('Room deleted') . ':',
+            'Видалено кімнату:' => __('Room deleted') . ':',
+            
+            // Рабочие места
+            'Создано рабочее место:' => __('Work place created') . ':',
+            'Work place created:' => __('Work place created') . ':',
+            'Pracoviště vytvořeno:' => __('Work place created') . ':',
+            'Створено робоче місце:' => __('Work place created') . ':',
+            
+            'Обновлено рабочее место:' => __('Work place updated') . ':',
+            'Work place updated:' => __('Work place updated') . ':',
+            'Pracoviště aktualizováno:' => __('Work place updated') . ':',
+            'Оновлено робоче місце:' => __('Work place updated') . ':',
+            
+            'Удалено рабочее место:' => __('Work place deleted') . ':',
+            'Work place deleted:' => __('Work place deleted') . ':',
+            'Pracoviště smazáno:' => __('Work place deleted') . ':',
+            'Видалено робоче місце:' => __('Work place deleted') . ':',
+            
+            // Отели
+            'Создан отель:' => __('Hotel created') . ':',
+            'Hotel created:' => __('Hotel created') . ':',
+            'Hotel vytvořen:' => __('Hotel created') . ':',
+            'Створено готель:' => __('Hotel created') . ':',
+            
+            'Обновлен отель:' => __('Hotel updated') . ':',
+            'Обновлён отель:' => __('Hotel updated') . ':',
+            'Hotel updated:' => __('Hotel updated') . ':',
+            'Hotel aktualizován:' => __('Hotel updated') . ':',
+            'Оновлено готель:' => __('Hotel updated') . ':',
+            
+            'Удален отель:' => __('Hotel deleted') . ':',
+            'Удалён отель:' => __('Hotel deleted') . ':',
+            'Hotel deleted:' => __('Hotel deleted') . ':',
+            'Hotel smazán:' => __('Hotel deleted') . ':',
+            'Видалено готель:' => __('Hotel deleted') . ':',
+            
+            // Дополнительные слова в тексте
+            '→ Отель' => '→ ' . __('Hotel'),
+            '← Отель' => '← ' . __('Hotel'),
+            '→ Hotel' => '→ ' . __('Hotel'),
+            '← Hotel' => '← ' . __('Hotel'),
+            '→ Готель' => '→ ' . __('Hotel'),
+            '← Готель' => '← ' . __('Hotel'),
+            ', Комната ' => ', ' . __('Room') . ' ',
+            ', Room ' => ', ' . __('Room') . ' ',
+            ', Кімната ' => ', ' . __('Room') . ' ',
+            ', Pokoj ' => ', ' . __('Room') . ' ',
+            ' в отеле ' => ' ' . __('in hotel') . ' ',
+            ' in hotel ' => ' ' . __('in hotel') . ' ',
+            ' v hotelu ' => ' ' . __('in hotel') . ' ',
+            ' в готелі ' => ' ' . __('in hotel') . ' ',
+        ];
+        
+        foreach ($translations as $search => $replace) {
+            $description = str_replace($search, $replace, $description);
+        }
+        
+        return $description;
+    }
+
     // Получить имя пользователя
     public function getUserNameAttribute()
     {

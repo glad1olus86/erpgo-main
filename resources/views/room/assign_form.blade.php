@@ -6,6 +6,9 @@
 @endphp
 
 {{ Form::open(['route' => ['room.assign.workers.bulk', $room->id], 'method' => 'POST', 'id' => 'assign-workers-form']) }}
+@if(request('redirect_to'))
+    <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
+@endif
 <div class="modal-body">
     <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center">
@@ -14,6 +17,25 @@
                 {{ __('Available spots') }}: <strong id="available-spots">{{ $availableSpots }}</strong> {{ __('of') }} {{ $room->capacity }}
             </span>
             <span class="badge bg-primary" id="selected-count-badge">{{ __('Selected') }}: 0</span>
+        </div>
+    </div>
+
+    {{-- Payment Settings --}}
+    <div class="mb-3 p-3 bg-light rounded">
+        <div class="form-check mb-2">
+            <input type="checkbox" class="form-check-input" id="worker-pays-checkbox" name="worker_pays" value="1">
+            <label class="form-check-label" for="worker-pays-checkbox">
+                <strong>{{ __('Worker pays for accommodation') }}</strong>
+            </label>
+        </div>
+        <div id="payment-amount-wrapper" style="display: none;">
+            <label class="form-label">{{ __('Monthly payment amount') }}</label>
+            <div class="input-group">
+                <input type="number" class="form-control" name="payment_amount" id="payment-amount-input" 
+                       step="0.01" min="0" placeholder="0.00" value="{{ $room->monthly_price }}">
+                <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
+            </div>
+            <small class="text-muted">{{ __('Room price') }}: {{ formatCashboxCurrency($room->monthly_price) }}</small>
         </div>
     </div>
     
@@ -162,5 +184,13 @@
     });
 
     updateUI();
+
+    // Payment checkbox toggle
+    var workerPaysCheckbox = document.getElementById('worker-pays-checkbox');
+    var paymentAmountWrapper = document.getElementById('payment-amount-wrapper');
+    
+    workerPaysCheckbox.addEventListener('change', function() {
+        paymentAmountWrapper.style.display = this.checked ? 'block' : 'none';
+    });
 })();
 </script>

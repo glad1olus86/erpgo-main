@@ -147,6 +147,9 @@
                                         @endif
                                     </div>
                                     <span class="mobile-occupant-name">{{ $assignment->worker->first_name }}</span>
+                                    @if($assignment->payment_type === 'worker')
+                                        <span class="badge ms-1" style="background-color: #FF0049; font-size: 9px; padding: 2px 4px;">{{ formatCashboxCurrency($assignment->payment_amount ?? 0) }}</span>
+                                    @endif
                                 </div>
                             @endforeach
                             @if($room->currentAssignments->count() > 3)

@@ -118,6 +118,13 @@
                                 {{ __('Found') }}: <strong id="resultsCount">{{ count($hotels) }}</strong> {{ __('hotels') }}
                             </div>
                             
+                            @if($hotels->isEmpty() && Auth::user()->isCurator())
+                                <div class="text-center py-5">
+                                    <i class="ti ti-building-community" style="font-size: 48px; opacity: 0.3;"></i>
+                                    <h5 class="mt-3">{{ __('No Assigned Hotels') }}</h5>
+                                    <p class="text-muted">{{ __('You have no assigned hotels. Contact your manager.') }}</p>
+                                </div>
+                            @else
                             <div class="table-responsive">
                                 <table class="table" id="hotels-table">
                                     <thead>
@@ -225,6 +232,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>

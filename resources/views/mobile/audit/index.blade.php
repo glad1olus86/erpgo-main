@@ -75,7 +75,7 @@
                                     @if($log->subject_type === 'App\Models\Worker' && $log->subject)
                                         {{ $log->subject->first_name ?? '' }} {{ $log->subject->last_name ?? '' }}
                                     @elseif($log->description)
-                                        {{ Str::limit($log->description, 40) }}
+                                        {{ Str::limit($log->translated_description, 40) }}
                                     @endif
                                 </small>
                                 <div class="d-flex justify-content-between align-items-center mt-1">

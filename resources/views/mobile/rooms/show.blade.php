@@ -105,9 +105,16 @@
                     </div>
                     <div class="flex-grow-1">
                         <h6 class="mb-0">{{ $assignment->worker->first_name }} {{ $assignment->worker->last_name }}</h6>
-                        <small class="text-muted">
-                            {{ __('Since') }}: {{ \Auth::user()->dateFormat($assignment->check_in_date) }}
-                        </small>
+                        <div class="d-flex align-items-center gap-2">
+                            <small class="text-muted">
+                                {{ __('Since') }}: {{ \Auth::user()->dateFormat($assignment->check_in_date) }}
+                            </small>
+                            @if($assignment->payment_type === 'worker')
+                                <span class="badge" style="background-color: #FF0049; font-size: 10px;">{{ formatCashboxCurrency($assignment->payment_amount ?? 0) }}</span>
+                            @else
+                                <span class="badge bg-success" style="font-size: 10px;">{{ __('Agency') }}</span>
+                            @endif
+                        </div>
                     </div>
                     @can('manage worker')
                         <form action="{{ route('worker.unassign.room', $assignment->worker->id) }}" method="POST" 

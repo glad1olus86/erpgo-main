@@ -161,7 +161,7 @@
                                 <select id="filterNationality">
                                     <option value="">{{ __('All nationalities') }}</option>
                                     @foreach($nationalities ?? [] as $nat)
-                                        <option value="{{ $nat }}">{{ $nat }}</option>
+                                        <option value="{{ $nat }}">{{ __($nat) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -179,7 +179,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="filter-grid mt-3" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="filter-grid mt-3" style="grid-template-columns: 1fr 1fr 1fr 1fr 2fr;">
                             <div class="filter-group">
                                 <label><i class="ti ti-calendar me-1"></i>{{ __('Date of Birth From') }}</label>
                                 <input type="date" id="filterDobFrom">
@@ -195,6 +195,15 @@
                             <div class="filter-group">
                                 <label><i class="ti ti-calendar me-1"></i>{{ __('Registration To') }}</label>
                                 <input type="date" id="filterRegDateTo">
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="ti ti-wallet me-1"></i>{{ __('Accommodation Payment') }}</label>
+                                <select id="filterAccommodationPayment">
+                                    <option value="">{{ __('All') }}</option>
+                                    <option value="agency">{{ __('Agency pays') }}</option>
+                                    <option value="worker">{{ __('Worker pays') }}</option>
+                                    <option value="not_housed">{{ __('Not housed') }}</option>
+                                </select>
                             </div>
                         </div>
                         <div class="filter-actions">
@@ -239,6 +248,11 @@
                                     <i class="ti ti-file-text me-1"></i>{{ __('Document') }}
                                 </button>
                             @endcan
+                            @if(Auth::user()->isManager())
+                                <button type="button" class="btn btn-sm btn-purple" id="bulk-responsible-btn" style="background-color: #6f42c1; border-color: #6f42c1; color: white;">
+                                    <i class="ti ti-user-check me-1"></i>{{ __('Assign Responsible') }}
+                                </button>
+                            @endif
                             <button type="button" class="btn btn-sm btn-secondary" id="bulk-clear-btn">
                                 <i class="ti ti-x me-1"></i>{{ __('Clear') }}
                             </button>
@@ -446,6 +460,54 @@
             </div>
         </div>
     </div>
+
+    {{-- Bulk Assign Responsible Modal --}}
+    @if(Auth::user()->isManager())
+    <div class="modal fade" id="bulkResponsibleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('Assign Responsible') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="bulk-responsible-form" method="POST" action="{{ route('worker.bulk.assign-responsible') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="worker_ids" id="responsible-worker-ids">
+                        <div class="mb-3">
+                            <p class="text-muted">
+                                <i class="ti ti-info-circle me-1"></i>
+                                {{ __('Select a coordinator to assign as responsible for the selected workers.') }}
+                            </p>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label">{{ __('Responsible Person') }} <span class="text-danger">*</span></label>
+                            <select name="responsible_id" id="responsible-select" class="form-control" required>
+                                <option value="">{{ __('Select Coordinator') }}</option>
+                                @php
+                                    $curators = Auth::user()->assignedCurators ?? collect();
+                                @endphp
+                                @foreach($curators as $curator)
+                                    <option value="{{ $curator->id }}">{{ $curator->name }} ({{ $curator->email }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div id="responsible-selected-info" class="mb-3" style="display: none;">
+                            <label class="form-label text-info"><i class="ti ti-users me-1"></i>{{ __('Selected Workers:') }}</label>
+                            <div id="responsible-selected-list" class="text-muted small"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-primary" id="responsible-submit-btn" style="background-color: #6f42c1; border-color: #6f42c1;">
+                            <i class="ti ti-user-check me-1"></i>{{ __('Assign') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 @endsection
 
 
@@ -535,6 +597,7 @@ const WorkerTable = {
         document.getElementById('bulk-assign-btn')?.addEventListener('click', () => this.openBulkModal('assign'));
         document.getElementById('bulk-dismiss-btn')?.addEventListener('click', () => this.openBulkModal('dismiss'));
         document.getElementById('bulk-checkout-btn')?.addEventListener('click', () => this.openBulkModal('checkout'));
+        document.getElementById('bulk-responsible-btn')?.addEventListener('click', () => this.openBulkModal('responsible'));
         document.querySelectorAll('.bulk-generate-doc-btn').forEach(btn => {
             btn.addEventListener('click', () => this.openBulkModal('document'));
         });
@@ -573,6 +636,7 @@ const WorkerTable = {
         this.currentFilters.dob_to = document.getElementById('filterDobTo').value;
         this.currentFilters.reg_from = document.getElementById('filterRegDateFrom').value;
         this.currentFilters.reg_to = document.getElementById('filterRegDateTo').value;
+        this.currentFilters.accommodation_payment = document.getElementById('filterAccommodationPayment').value;
         
         const genders = [];
         if (document.querySelector('#genderMale input').checked) genders.push('male');
@@ -593,6 +657,7 @@ const WorkerTable = {
         document.getElementById('filterDobTo').value = '';
         document.getElementById('filterRegDateFrom').value = '';
         document.getElementById('filterRegDateTo').value = '';
+        document.getElementById('filterAccommodationPayment').value = '';
         document.querySelectorAll('.gender-toggle').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.gender-toggle input').forEach(cb => cb.checked = false);
         
@@ -633,6 +698,16 @@ const WorkerTable = {
             chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('gender')"><i class="ti ti-man me-1"></i>${genderText} <i class="ti ti-x chip-remove"></i></span>`);
             count++;
         }
+        if (this.currentFilters.accommodation_payment) {
+            const paymentLabels = {
+                'agency': '{{ __("Agency pays") }}',
+                'worker': '{{ __("Worker pays") }}',
+                'not_housed': '{{ __("Not housed") }}'
+            };
+            const paymentText = paymentLabels[this.currentFilters.accommodation_payment] || this.currentFilters.accommodation_payment;
+            chips.push(`<span class="active-filter-chip" onclick="WorkerTable.removeFilter('accommodation_payment')"><i class="ti ti-wallet me-1"></i>${paymentText} <i class="ti ti-x chip-remove"></i></span>`);
+            count++;
+        }
         
         container.innerHTML = chips.join('');
         
@@ -655,6 +730,7 @@ const WorkerTable = {
             document.querySelectorAll('.gender-toggle').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.gender-toggle input').forEach(cb => cb.checked = false);
         }
+        if (key === 'accommodation_payment') document.getElementById('filterAccommodationPayment').value = '';
         delete this.currentFilters[key];
         this.currentPage = 1;
         this.loadData();
@@ -721,7 +797,15 @@ const WorkerTable = {
         });
         
         if (this.data.length === 0) {
+            @if(Auth::user()->isCurator())
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5">
+                <i class="ti ti-users-group" style="font-size: 48px; opacity: 0.3;"></i>
+                <h5 class="mt-3">{{ __('No Assigned Workers') }}</h5>
+                <p class="text-muted">{{ __('You have no assigned workers. Contact your manager.') }}</p>
+            </td></tr>`;
+            @else
             tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">{{ __('No workers found') }}</td></tr>`;
+            @endif
             return;
         }
         
@@ -906,6 +990,11 @@ const WorkerTable = {
             document.getElementById('doc-selected-workers-info').style.display = 'block';
             document.getElementById('doc-selected-workers-list').textContent = `${this.selectedIds.size} {{ __('workers selected') }}`;
             new bootstrap.Modal(document.getElementById('bulkDocumentModal')).show();
+        } else if (type === 'responsible') {
+            document.getElementById('responsible-worker-ids').value = ids;
+            document.getElementById('responsible-selected-info').style.display = 'block';
+            document.getElementById('responsible-selected-list').textContent = `${this.selectedIds.size} {{ __('workers selected') }}`;
+            new bootstrap.Modal(document.getElementById('bulkResponsibleModal')).show();
         }
     },
 
@@ -943,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
     
     let isGenerating = false;
     let progressInterval = null;
+    let downloadDetected = false;
     
     form.addEventListener('submit', function(e) {
         if (isGenerating) {
@@ -961,6 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
         
         // Start progress animation
         isGenerating = true;
+        downloadDetected = false;
         btn.disabled = true;
         cancelBtn.disabled = true;
         closeBtn.style.display = 'none';
@@ -968,34 +1059,46 @@ document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
         btnIcon.className = 'ti ti-loader ti-spin me-1';
         progressContainer.style.display = 'block';
         
-        // Estimate time based on worker count (roughly 0.1-0.15 sec per document)
-        const estimatedTime = Math.max(3000, workerCount * 120); // min 3 sec
+        // Estimate time: ~300ms per PDF document for bulk generation
+        const estimatedTime = Math.max(5000, workerCount * 300);
         let progress = 0;
         const startTime = Date.now();
         
         progressInterval = setInterval(() => {
+            if (downloadDetected) return;
+            
             const elapsed = Date.now() - startTime;
-            // Use easing function for more realistic progress
-            progress = Math.min(95, (elapsed / estimatedTime) * 100 * (1 - Math.exp(-elapsed / (estimatedTime * 0.5))));
+            // Slow logarithmic progress that approaches but never reaches 95%
+            progress = Math.min(94, 94 * (1 - Math.exp(-elapsed / (estimatedTime * 0.7))));
             
             progressBar.style.width = progress + '%';
             progressPercent.textContent = Math.round(progress) + '%';
             
             // Update text based on progress
-            if (progress < 30) {
+            if (progress < 20) {
                 progressText.textContent = '{{ __("Preparing documents...") }}';
-            } else if (progress < 70) {
+            } else if (progress < 60) {
                 progressText.textContent = '{{ __("Generating documents...") }}';
-            } else {
+            } else if (progress < 90) {
                 progressText.textContent = '{{ __("Finalizing...") }}';
+            } else {
+                progressText.textContent = '{{ __("Almost done...") }}';
             }
-        }, 100);
+        }, 200);
         
-        // Form will submit normally, but we need to detect when download starts
-        // Use a cookie-based approach or just reset after timeout
+        // Maximum wait time: 10 minutes - after that assume something went wrong
         setTimeout(() => {
-            resetProgress();
-        }, estimatedTime + 5000);
+            if (isGenerating && !downloadDetected) {
+                progressText.textContent = '{{ __("Taking longer than expected...") }}';
+            }
+        }, 120000); // 2 minutes warning
+        
+        setTimeout(() => {
+            if (isGenerating && !downloadDetected) {
+                resetProgress();
+                alert('{{ __("Generation timeout. Please try with fewer workers or contact support.") }}');
+            }
+        }, 600000); // 10 minutes max
     });
     
     // Reset when modal is hidden
@@ -1009,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
             progressInterval = null;
         }
         isGenerating = false;
+        downloadDetected = false;
         btn.disabled = false;
         cancelBtn.disabled = false;
         closeBtn.style.display = '';
@@ -1019,16 +1123,34 @@ document.addEventListener('DOMContentLoaded', () => WorkerTable.init());
         progressPercent.textContent = '0%';
     }
     
-    // Detect when file download starts (browser will trigger this)
-    window.addEventListener('focus', function() {
+    function completeProgress() {
+        downloadDetected = true;
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+        progressBar.style.width = '100%';
+        progressPercent.textContent = '100%';
+        progressText.textContent = '{{ __("Complete!") }}';
+        setTimeout(resetProgress, 2000);
+    }
+    
+    // Detect download via blur/focus (when browser shows save dialog)
+    let blurTime = 0;
+    window.addEventListener('blur', function() {
         if (isGenerating) {
-            // Small delay to ensure download has started
-            setTimeout(() => {
-                progressBar.style.width = '100%';
-                progressPercent.textContent = '100%';
-                progressText.textContent = '{{ __("Complete!") }}';
-                setTimeout(resetProgress, 1000);
-            }, 500);
+            blurTime = Date.now();
+        }
+    });
+    
+    window.addEventListener('focus', function() {
+        if (isGenerating && !downloadDetected && blurTime > 0) {
+            const blurDuration = Date.now() - blurTime;
+            // If window was blurred for more than 300ms, likely a download dialog
+            if (blurDuration > 300) {
+                completeProgress();
+            }
+            blurTime = 0;
         }
     });
 })();

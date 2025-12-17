@@ -477,6 +477,12 @@ class DocumentGeneratorService
     {
         // Increase limits for bulk generation
         set_time_limit(0);
+        ini_set('max_execution_time', 0);
+        
+        // Disable output buffering to prevent nginx timeout
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
         
         $zipFilename = $this->transliterate($template->name) . '_' . date('Y-m-d') . '.zip';
         $zipFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $zipFilename);
@@ -492,11 +498,14 @@ class DocumentGeneratorService
         
         try {
             // Generate all documents to temp files first (outside of streamDownload)
-            $batchSize = 25; // Smaller batches for better memory management
+            $batchSize = 10; // Smaller batches for better memory management
             $workerChunks = $workers->chunk($batchSize);
             $fileIndex = 0;
+            $totalWorkers = $workers->count();
             
-            foreach ($workerChunks as $chunk) {
+            \Log::info('Bulk generation started', ['total' => $totalWorkers, 'format' => $format]);
+            
+            foreach ($workerChunks as $chunkIndex => $chunk) {
                 foreach ($chunk as $worker) {
                     $content = $this->replaceVariables($template->content, $worker, $dynamicData);
                     $filename = $this->generateFilename($template, $worker, $format);
@@ -548,7 +557,16 @@ class DocumentGeneratorService
                 
                 // Force garbage collection after each batch
                 gc_collect_cycles();
+                
+                // Log progress every batch
+                \Log::info('Bulk generation progress', [
+                    'processed' => $fileIndex,
+                    'total' => $totalWorkers,
+                    'percent' => round(($fileIndex / $totalWorkers) * 100)
+                ]);
             }
+            
+            \Log::info('All documents generated, creating ZIP', ['files' => count($tempFiles)]);
             
             // Now create ZIP from temp files
             $zip = new \ZipArchive();
@@ -562,11 +580,13 @@ class DocumentGeneratorService
             
             $zip->close();
             
+            \Log::info('ZIP created successfully', ['size' => filesize($zipTempFile)]);
+            
             // Stream the ZIP file
             return response()->streamDownload(function () use ($zipTempFile, $tempDir, $tempFiles) {
                 readfile($zipTempFile);
                 
-                // Cleanup
+                // Cleanup after streaming
                 foreach ($tempFiles as $file) {
                     @unlink($file['path']);
                 }
@@ -577,6 +597,11 @@ class DocumentGeneratorService
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Bulk generation failed', [
+                'error' => $e->getMessage(),
+                'processed' => $fileIndex ?? 0,
+            ]);
+            
             // Cleanup on error
             foreach ($tempFiles as $file) {
                 @unlink($file['path']);

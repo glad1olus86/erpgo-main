@@ -24,7 +24,7 @@
                         <label class="form-label">{{ __('Refund Amount') }} <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" name="amount" class="form-control" step="0.01" min="0.01" required placeholder="0.00">
-                            <span class="input-group-text">€</span>
+                            <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                         </div>
                         <small class="text-muted" id="refundMaxAmount"></small>
                     </div>

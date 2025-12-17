@@ -426,6 +426,14 @@ Route::group(['middleware' => ['verified']], function () {
 
     Route::resource('users', UserController::class)->middleware(['auth', 'XSS', 'revalidate']);
 
+    // Manager-Curator assignment routes (for Director only)
+    Route::group(['prefix' => 'managers/{manager}/curators', 'middleware' => ['auth', 'XSS', 'revalidate']], function () {
+        Route::get('/', [\App\Http\Controllers\ManagerCuratorController::class, 'index'])->name('manager.curators.index');
+        Route::post('/', [\App\Http\Controllers\ManagerCuratorController::class, 'store'])->name('manager.curators.store');
+        Route::delete('/{curator}', [\App\Http\Controllers\ManagerCuratorController::class, 'destroy'])->name('manager.curators.destroy');
+        Route::get('/available', [\App\Http\Controllers\ManagerCuratorController::class, 'available'])->name('manager.curators.available');
+    });
+
     // Billing routes
     Route::group(['prefix' => 'billing', 'middleware' => ['auth', 'XSS', 'revalidate']], function () {
         Route::get('/', [\App\Http\Controllers\BillingController::class, 'index'])->name('billing.index');
@@ -917,6 +925,8 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('worker.bulk.checkout')->middleware(['auth', 'XSS', 'plan.module:workers']);
     Route::post('/worker/bulk-generate-documents', [App\Http\Controllers\DocumentGeneratorController::class, 'bulkGenerate'])
         ->name('worker.bulk.generate-documents')->middleware(['auth', 'XSS', 'plan.module:documents']);
+    Route::post('/worker/bulk-assign-responsible', [WorkerController::class, 'bulkAssignResponsible'])
+        ->name('worker.bulk.assign-responsible')->middleware(['auth', 'XSS', 'plan.module:workers']);
 
     Route::resource('worker', WorkerController::class)->middleware(['auth', 'XSS', 'revalidate', 'plan.module:workers']);
 
@@ -933,6 +943,10 @@ Route::group(['middleware' => ['verified']], function () {
         ->name('room.checkout.bulk')->middleware(['auth', 'XSS', 'plan.module:hotels']);
     Route::get('/room/{room}/assign-form', [RoomAssignmentController::class, 'assignForm'])
         ->name('room.assign.form')->middleware(['auth', 'XSS', 'plan.module:hotels']);
+    Route::post('/room-assignment/{assignment}/update-payment', [RoomAssignmentController::class, 'updatePayment'])
+        ->name('room.assignment.update-payment')->middleware(['auth', 'XSS', 'plan.module:hotels']);
+    Route::get('/room-assignment/{assignment}/edit-payment', [RoomAssignmentController::class, 'editPaymentForm'])
+        ->name('room.assignment.edit-payment')->middleware(['auth', 'XSS', 'plan.module:hotels']);
 
     // Hotel export routes (must be before resource route)
     Route::get('/hotel/export', [HotelExportController::class, 'showExportModal'])

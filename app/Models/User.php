@@ -4378,4 +4378,102 @@ class User extends Authenticatable implements MustVerifyEmail
             ]);
         }
     }
+
+    // ==========================================
+    // RESPONSIBLE SYSTEM METHODS
+    // ==========================================
+
+    /**
+     * Get curators assigned to this manager.
+     */
+    public function assignedCurators()
+    {
+        return $this->belongsToMany(User::class, 'manager_curators', 'manager_id', 'curator_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get managers this curator is assigned to.
+     */
+    public function assignedManagers()
+    {
+        return $this->belongsToMany(User::class, 'manager_curators', 'curator_id', 'manager_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user is a director (company owner).
+     */
+    public function isDirector(): bool
+    {
+        return $this->type === 'company';
+    }
+
+    /**
+     * Check if user is a manager.
+     */
+    public function isManager(): bool
+    {
+        return $this->hasRole('manager');
+    }
+
+    /**
+     * Check if user is a curator.
+     */
+    public function isCurator(): bool
+    {
+        return $this->hasRole('curator');
+    }
+
+    /**
+     * Get curators available for assignment by this user.
+     * Directors can assign any curator, Managers can only assign their curators.
+     */
+    public function getAvailableCuratorsForAssignment()
+    {
+        if ($this->isDirector()) {
+            return User::where('created_by', $this->creatorId())
+                ->whereHas('roles', fn($q) => $q->where('name', 'curator'))
+                ->get();
+        }
+
+        if ($this->isManager()) {
+            return $this->assignedCurators;
+        }
+
+        return collect();
+    }
+
+    /**
+     * Get users that can be assigned as responsible by this user.
+     * Directors: all managers and curators
+     * Managers: themselves + their assigned curators
+     * Curators: empty (cannot assign)
+     */
+    public function getAssignableResponsibleUsers()
+    {
+        if ($this->isDirector()) {
+            return User::where('created_by', $this->creatorId())
+                ->where(function ($q) {
+                    $q->whereHas('roles', fn($r) => $r->whereIn('name', ['manager', 'curator']))
+                      ->orWhere('id', $this->id);
+                })
+                ->get();
+        }
+
+        if ($this->isManager()) {
+            $curators = $this->assignedCurators;
+            return $curators->push($this);
+        }
+
+        return collect();
+    }
+
+    /**
+     * Check if this user can assign responsible persons.
+     */
+    public function canAssignResponsible(): bool
+    {
+        return $this->isDirector() || $this->isManager();
+    }
 }

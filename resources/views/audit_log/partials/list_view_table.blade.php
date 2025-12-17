@@ -33,7 +33,7 @@
                         </span>
                     </td>
                     <td>
-                        {{ $log->description }}
+                        {{ $log->translated_description }}
                     </td>
                     <td>
                         @if (!empty($log->old_values) || !empty($log->new_values))

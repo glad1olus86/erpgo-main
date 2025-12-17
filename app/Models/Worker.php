@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasResponsible;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Worker extends Model
 {
-    use HasFactory;
+    use HasFactory, HasResponsible;
 
     protected $fillable = [
         'first_name',
@@ -21,6 +22,7 @@ class Worker extends Model
         'document_photo',
         'photo',
         'created_by',
+        'responsible_id',
     ];
 
     protected $casts = [

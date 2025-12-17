@@ -37,29 +37,19 @@
                                             <th>{{ __('Hotel') }}</th>
                                             <th>{{ __('Capacity') }}</th>
                                             <th>{{ __('Price/month') }}</th>
-                                            <th>{{ __('Who Pays') }}</th>
+                                            <th>{{ __('Residents') }}</th>
                                             <th width="200px">{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody class="font-style">
-                                        @php
-                                            $paymentLabels = [
-                                                'worker' => __('Worker pays'),
-                                                'agency' => __('Agency pays'),
-                                                'partial' => __('Partial payment'),
-                                            ];
-                                        @endphp
                                         @foreach ($rooms as $room)
                                             <tr>
                                                 <td>{{ $room->room_number }}</td>
                                                 <td>{{ !empty($room->hotel) ? $room->hotel->name : '-' }}</td>
                                                 <td>{{ $room->capacity }}</td>
-                                                <td>{{ number_format($room->monthly_price, 2) }} €</td>
+                                                <td>{{ formatCashboxCurrency($room->monthly_price) }}</td>
                                                 <td>
-                                                    {{ $paymentLabels[$room->payment_type] ?? $room->payment_type }}
-                                                    @if($room->payment_type == 'partial' && $room->partial_amount)
-                                                        <br><small class="text-muted">({{ number_format($room->partial_amount, 2) }} €)</small>
-                                                    @endif
+                                                    {{ $room->currentAssignments->count() }} / {{ $room->capacity }}
                                                 </td>
 
                                                 <td class="Action">

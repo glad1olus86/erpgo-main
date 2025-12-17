@@ -17,17 +17,24 @@ class WorkerController extends Controller
             return redirect()->back()->with('error', __('Permission denied.'));
         }
 
-        // Get filter data for dropdowns
-        $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())->get();
-        $workplaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())->get();
+        // Get filter data for dropdowns (filtered by visibility)
+        $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())
+            ->visibleToUser(Auth::user())
+            ->get();
+        $workplaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())
+            ->visibleToUser(Auth::user())
+            ->get();
         $nationalities = Worker::where('created_by', Auth::user()->creatorId())
+            ->visibleToUser(Auth::user())
             ->whereNotNull('nationality')
             ->distinct()
             ->pluck('nationality')
             ->sort();
 
-        // Get total count for display
-        $totalWorkers = Worker::where('created_by', Auth::user()->creatorId())->count();
+        // Get total count for display (filtered by visibility)
+        $totalWorkers = Worker::where('created_by', Auth::user()->creatorId())
+            ->visibleToUser(Auth::user())
+            ->count();
 
         return view('worker.index', compact('hotels', 'workplaces', 'nationalities', 'totalWorkers'));
     }
@@ -42,6 +49,7 @@ class WorkerController extends Controller
         }
 
         $query = Worker::where('created_by', Auth::user()->creatorId())
+            ->visibleToUser(Auth::user())
             ->with(['currentWorkAssignment.workPlace', 'currentAssignment.hotel', 'currentAssignment.room']);
 
         // Search by name or nationality
@@ -98,6 +106,25 @@ class WorkerController extends Controller
             $query->where('registration_date', '<=', $request->reg_to);
         }
 
+        // Filter by accommodation payment type
+        if ($request->filled('accommodation_payment')) {
+            $paymentType = $request->accommodation_payment;
+            if ($paymentType === 'not_housed') {
+                // Workers without active room assignment
+                $query->whereDoesntHave('currentAssignment');
+            } elseif ($paymentType === 'agency') {
+                // Workers where agency pays
+                $query->whereHas('currentAssignment', function ($q) {
+                    $q->whereNull('check_out_date')->where('payment_type', 'agency');
+                });
+            } elseif ($paymentType === 'worker') {
+                // Workers who pay themselves
+                $query->whereHas('currentAssignment', function ($q) {
+                    $q->whereNull('check_out_date')->where('payment_type', 'worker');
+                });
+            }
+        }
+
         // Get total filtered count before pagination
         $totalFiltered = $query->count();
 
@@ -124,7 +151,8 @@ class WorkerController extends Controller
                 'dob_raw' => $worker->dob ? $worker->dob->format('Y-m-d') : '',
                 'gender' => $worker->gender,
                 'gender_label' => $worker->gender == 'male' ? __('Male') : __('Female'),
-                'nationality' => $worker->nationality,
+                'nationality' => $worker->nationality ? __($worker->nationality) : '',
+                'nationality_raw' => $worker->nationality,
                 'nationality_flag' => \App\Services\NationalityFlagService::getFlagHtml($worker->nationality, 18),
                 'registration_date' => $worker->registration_date ? Auth::user()->dateFormat($worker->registration_date) : '-',
                 'registration_date_raw' => $worker->registration_date ? $worker->registration_date->format('Y-m-d') : '',
@@ -219,13 +247,17 @@ class WorkerController extends Controller
     {
         if (Auth::user()->can('manage worker')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
-                $worker->load('currentAssignment', 'currentWorkAssignment.workPlace');
+                $worker->load('currentAssignment', 'currentWorkAssignment.workPlace', 'responsible');
+                
+                // Filter hotels by visibility (coordinators see only their assigned hotels)
                 $hotels = \App\Models\Hotel::where('created_by', Auth::user()->creatorId())
+                    ->visibleToUser(Auth::user())
                     ->get()
                     ->pluck('name', 'id');
 
-                // Load work places for assignment modal
+                // Load work places for assignment modal (filtered by visibility)
                 $workPlaces = \App\Models\WorkPlace::where('created_by', Auth::user()->creatorId())
+                    ->visibleToUser(Auth::user())
                     ->get()
                     ->pluck('name', 'id');
 
@@ -292,6 +324,7 @@ class WorkerController extends Controller
             $worker->phone = $request->phone;
             $worker->email = $request->email;
             $worker->created_by = Auth::user()->creatorId();
+            $worker->responsible_id = Auth::id(); // Auto-assign creator as responsible
 
             // Check if we have a pre-scanned document from the scanner
             if ($request->filled('scanned_document_path')) {
@@ -331,7 +364,11 @@ class WorkerController extends Controller
     {
         if (Auth::user()->can('edit worker')) {
             if ($worker->created_by == Auth::user()->creatorId()) {
-                return view('worker.edit', compact('worker'));
+                $responsibleService = new \App\Services\ResponsibleService();
+                $canAssignResponsible = $responsibleService->canAssignResponsible();
+                $assignableUsers = $canAssignResponsible ? $responsibleService->getAssignableUsers() : collect();
+                
+                return view('worker.edit', compact('worker', 'canAssignResponsible', 'assignableUsers'));
             } else {
                 return response()->json(['error' => __('Permission denied.')], 401);
             }
@@ -384,7 +421,19 @@ class WorkerController extends Controller
                     $worker->photo = $fileName;
                 }
 
-                $worker->save();
+                // Handle responsible assignment
+                if ($request->filled('responsible_id')) {
+                    $responsibleService = new \App\Services\ResponsibleService();
+                    if ($responsibleService->canAssignResponsible()) {
+                        try {
+                            $responsibleService->assignResponsible($worker, $request->responsible_id);
+                        } catch (\Exception $e) {
+                            return redirect()->back()->with('error', $e->getMessage());
+                        }
+                    }
+                } else {
+                    $worker->save();
+                }
 
                 if ($request->input('redirect_to') === 'mobile') {
                     return redirect()->route('mobile.workers.show', $worker->id)->with('success', __('Worker successfully updated.'));
@@ -641,5 +690,52 @@ class WorkerController extends Controller
         }
 
         return redirect()->back()->with('success', __('Workers checked out: :count', ['count' => $checkedOut]));
+    }
+
+    /**
+     * Bulk assign responsible person to workers
+     */
+    public function bulkAssignResponsible(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Only managers can assign responsible
+        if (!$user->isManager()) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        $validator = Validator::make($request->all(), [
+            'worker_ids' => 'required|string',
+            'responsible_id' => 'required|exists:users,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', $validator->errors()->first());
+        }
+
+        // Verify the responsible person is one of manager's curators
+        $responsibleId = $request->responsible_id;
+        $curatorIds = $user->assignedCurators->pluck('id')->toArray();
+        
+        if (!in_array($responsibleId, $curatorIds)) {
+            return redirect()->back()->with('error', __('Invalid responsible person selected.'));
+        }
+
+        $workerIds = explode(',', $request->worker_ids);
+        $updated = 0;
+
+        foreach ($workerIds as $workerId) {
+            $worker = Worker::where('id', $workerId)
+                ->where('created_by', $user->creatorId())
+                ->first();
+
+            if (!$worker) continue;
+
+            $worker->responsible_id = $responsibleId;
+            $worker->save();
+            $updated++;
+        }
+
+        return redirect()->back()->with('success', __('Responsible assigned to :count workers', ['count' => $updated]));
     }
 }

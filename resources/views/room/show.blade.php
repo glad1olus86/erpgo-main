@@ -15,25 +15,7 @@
     </div>
     <div class="d-flex gap-3 flex-wrap">
         <span class="badge bg-secondary">
-            <i class="ti ti-currency-euro me-1"></i>{{ __('Price/month') }}: {{ number_format($room->monthly_price, 2) }} €
-        </span>
-        @php
-            $paymentLabels = [
-                'worker' => __('Worker pays'),
-                'agency' => __('Agency pays'),
-                'partial' => __('Partial payment'),
-            ];
-            $paymentColors = [
-                'worker' => 'info',
-                'agency' => 'success',
-                'partial' => 'warning',
-            ];
-        @endphp
-        <span class="badge bg-{{ $paymentColors[$room->payment_type] ?? 'secondary' }}">
-            <i class="ti ti-wallet me-1"></i>{{ $paymentLabels[$room->payment_type] ?? $room->payment_type }}
-            @if($room->payment_type == 'partial' && $room->partial_amount)
-                ({{ number_format($room->partial_amount, 2) }} €)
-            @endif
+            <i class="ti ti-coin me-1"></i>{{ __('Room price') }}: {{ formatCashboxCurrency($room->monthly_price) }}
         </span>
     </div>
 </div>
@@ -67,6 +49,7 @@
                 @endif
                 <th>{{ __('Full Name') }}</th>
                 <th>{{ __('Gender') }}</th>
+                <th>{{ __('Payment') }}</th>
                 <th>{{ __('Check-in Date') }}</th>
                 <th>{{ __('Action') }}</th>
             </tr>
@@ -92,6 +75,24 @@
                         @else
                             <span class="badge bg-danger">{{ __('Female') }}</span>
                         @endif
+                    </td>
+                    <td>
+                        @if($assignment->payment_type === 'worker')
+                            <span class="badge" style="background-color: #FF0049;" data-bs-toggle="tooltip" title="{{ __('Worker pays for accommodation') }}">
+                                {{ formatCashboxCurrency($assignment->payment_amount ?? 0) }}
+                            </span>
+                        @else
+                            <span class="badge bg-success" data-bs-toggle="tooltip" title="{{ __('Agency pays for accommodation') }}">
+                                {{ __('Agency') }}
+                            </span>
+                        @endif
+                        <a href="#" class="btn btn-sm btn-link p-0 ms-1" 
+                           data-url="{{ route('room.assignment.edit-payment', $assignment->id) }}"
+                           data-ajax-popup="true" 
+                           data-title="{{ __('Edit Payment') }}"
+                           data-size="md">
+                            <i class="ti ti-pencil"></i>
+                        </a>
                     </td>
                     <td>{{ \Auth::user()->dateFormat($assignment->check_in_date) }}</td>
                     <td>

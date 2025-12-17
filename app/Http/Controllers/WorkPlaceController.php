@@ -17,6 +17,7 @@ class WorkPlaceController extends Controller
     {
         if (Auth::user()->can('manage work place')) {
             $workPlaces = WorkPlace::where('created_by', '=', Auth::user()->creatorId())
+                ->visibleToUser(Auth::user())
                 ->with(['currentAssignments.worker', 'positions'])
                 ->withCount('positions')
                 ->get();
@@ -69,6 +70,7 @@ class WorkPlaceController extends Controller
             $workPlace->phone = $request->phone;
             $workPlace->email = $request->email;
             $workPlace->created_by = Auth::user()->creatorId();
+            $workPlace->responsible_id = Auth::id(); // Auto-assign creator as responsible
             $workPlace->save();
 
             // Handle mobile redirect
@@ -89,7 +91,11 @@ class WorkPlaceController extends Controller
     {
         if (Auth::user()->can('edit work place')) {
             if ($workPlace->created_by == Auth::user()->creatorId()) {
-                return view('work_place.edit', compact('workPlace'));
+                $responsibleService = new \App\Services\ResponsibleService();
+                $canAssignResponsible = $responsibleService->canAssignResponsible();
+                $assignableUsers = $canAssignResponsible ? $responsibleService->getAssignableUsers() : collect();
+                
+                return view('work_place.edit', compact('workPlace', 'canAssignResponsible', 'assignableUsers'));
             } else {
                 return response()->json(['error' => __('Permission denied.')], 401);
             }
@@ -122,7 +128,20 @@ class WorkPlaceController extends Controller
                 $workPlace->address = $request->address;
                 $workPlace->phone = $request->phone;
                 $workPlace->email = $request->email;
-                $workPlace->save();
+                
+                // Handle responsible assignment
+                if ($request->filled('responsible_id')) {
+                    $responsibleService = new \App\Services\ResponsibleService();
+                    if ($responsibleService->canAssignResponsible()) {
+                        try {
+                            $responsibleService->assignResponsible($workPlace, $request->responsible_id);
+                        } catch (\Exception $e) {
+                            return redirect()->back()->with('error', $e->getMessage());
+                        }
+                    }
+                } else {
+                    $workPlace->save();
+                }
 
                 // Handle mobile redirect
                 if ($request->has('redirect_to') && $request->redirect_to === 'mobile') {
@@ -168,7 +187,7 @@ class WorkPlaceController extends Controller
     {
         if (Auth::user()->can('manage work place')) {
             if ($workPlace->created_by == Auth::user()->creatorId()) {
-                $workPlace->load(['currentAssignments.worker']);
+                $workPlace->load(['currentAssignments.worker', 'responsible']);
                 return view('work_place.show', compact('workPlace'));
             } else {
                 return response()->json(['error' => __('Permission denied.')], 403);

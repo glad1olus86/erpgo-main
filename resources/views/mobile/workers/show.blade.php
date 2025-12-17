@@ -287,11 +287,28 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label class="form-label">{{ __('Room') }} <span class="text-danger">*</span></label>
                             <select name="room_id" id="mobileRoomSelect" class="form-control" required disabled>
                                 <option value="">{{ __('First select a hotel') }}</option>
                             </select>
+                        </div>
+                        <div class="form-group p-3 bg-light rounded">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="mobileWorkerPaysCheckbox" name="worker_pays" value="1">
+                                <label class="form-check-label fw-bold" for="mobileWorkerPaysCheckbox">
+                                    {{ __('Worker pays for accommodation') }}
+                                </label>
+                            </div>
+                            <div id="mobilePaymentAmountWrapper" style="display: none;" class="mt-2">
+                                <label class="form-label">{{ __('Monthly payment amount') }}</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="payment_amount" id="mobilePaymentAmountInput" 
+                                           step="0.01" min="0" placeholder="0.00">
+                                    <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
+                                </div>
+                                <small class="text-muted" id="mobileRoomPriceHint"></small>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -527,14 +544,33 @@
                     $.get('/hotel/' + hotelId + '/available-rooms', function(data) {
                         roomSelect.html('<option value="">{{ __('Select Room') }}</option>');
                         if (data && data.length > 0) {
-                            $.each(data, function(index, room) {
-                                if (!room.is_full) {
-                                    var label = '{{ __('Room') }} ' + room.room_number + ' (' + room
-                                        .available + '/' + room.capacity + ' {{ __('free') }})';
-                                    roomSelect.append('<option value="' + room.id + '">' + label +
-                                        '</option>');
-                                }
-                            });
+                            // Group rooms by occupancy status
+                            var emptyRooms = data.filter(r => r.occupied === 0);
+                            var partialRooms = data.filter(r => r.occupied > 0 && !r.is_full);
+
+                            // Add empty rooms
+                            if (emptyRooms.length > 0) {
+                                roomSelect.append('<optgroup label="━━━ {{ __('Empty rooms') }} ━━━">');
+                                $.each(emptyRooms, function(index, room) {
+                                    var label = '{{ __('Room') }} ' + room.room_number + ' (0/' + room.capacity + ')';
+                                    roomSelect.append('<option value="' + room.id + '">' + label + '</option>');
+                                });
+                                roomSelect.append('</optgroup>');
+                            }
+
+                            // Add partially occupied rooms
+                            if (partialRooms.length > 0) {
+                                roomSelect.append('<optgroup label="━━━ {{ __('Partially occupied') }} ━━━">');
+                                $.each(partialRooms, function(index, room) {
+                                    var label = '{{ __('Room') }} ' + room.room_number + ' (' + room.occupied + '/' + room.capacity + ')';
+                                    roomSelect.append('<option value="' + room.id + '">' + label + '</option>');
+                                });
+                                roomSelect.append('</optgroup>');
+                            }
+
+                            if (emptyRooms.length === 0 && partialRooms.length === 0) {
+                                roomSelect.html('<option value="">{{ __('No rooms available') }}</option>');
+                            }
                         } else {
                             roomSelect.html('<option value="">{{ __('No rooms available') }}</option>');
                         }
@@ -544,6 +580,39 @@
                 } else {
                     roomSelect.prop('disabled', true).html(
                         '<option value="">{{ __('First select a hotel') }}</option>');
+                }
+            });
+
+            // Room selection - load price
+            $('#mobileRoomSelect').on('change', function() {
+                var roomId = $(this).val();
+                var priceHint = $('#mobileRoomPriceHint');
+                var paymentInput = $('#mobilePaymentAmountInput');
+
+                if (roomId) {
+                    $.ajax({
+                        url: '/room/' + roomId,
+                        type: 'GET',
+                        headers: { 'Accept': 'application/json' },
+                        success: function(room) {
+                            if (room && room.monthly_price) {
+                                priceHint.text('{{ __('Room price') }}: ' + room.monthly_price_formatted);
+                                paymentInput.val(room.monthly_price);
+                            }
+                        }
+                    });
+                } else {
+                    priceHint.text('');
+                }
+            });
+
+            // Worker pays checkbox toggle
+            $('#mobileWorkerPaysCheckbox').on('change', function() {
+                var paymentWrapper = $('#mobilePaymentAmountWrapper');
+                if ($(this).is(':checked')) {
+                    paymentWrapper.slideDown();
+                } else {
+                    paymentWrapper.slideUp();
                 }
             });
 

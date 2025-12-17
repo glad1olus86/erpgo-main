@@ -15,7 +15,10 @@ class HotelController extends Controller
     public function index()
     {
         if (Auth::user()->can('manage hotel')) {
-            $hotels = Hotel::where('created_by', '=', Auth::user()->creatorId())->with(['rooms.currentAssignments'])->get();
+            $hotels = Hotel::where('created_by', '=', Auth::user()->creatorId())
+                ->visibleToUser(Auth::user())
+                ->with(['rooms.currentAssignments'])
+                ->get();
 
             return view('hotel.index', compact('hotels'));
         } else {
@@ -65,6 +68,7 @@ class HotelController extends Controller
             $hotel->phone      = $request->phone;
             $hotel->email      = $request->email;
             $hotel->created_by = Auth::user()->creatorId();
+            $hotel->responsible_id = Auth::id(); // Auto-assign creator as responsible
             $hotel->save();
 
             if ($request->input('redirect_to') === 'mobile') {
@@ -84,6 +88,7 @@ class HotelController extends Controller
     {
         if (Auth::user()->can('manage hotel')) {
             if ($hotel->created_by == Auth::user()->creatorId()) {
+                $hotel->load('responsible');
                 $rooms = $hotel->rooms()->with('currentAssignments')->get();
                 $hotels = Hotel::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
 
@@ -103,7 +108,11 @@ class HotelController extends Controller
     {
         if (Auth::user()->can('edit hotel')) {
             if ($hotel->created_by == Auth::user()->creatorId()) {
-                return view('hotel.edit', compact('hotel'));
+                $responsibleService = new \App\Services\ResponsibleService();
+                $canAssignResponsible = $responsibleService->canAssignResponsible();
+                $assignableUsers = $canAssignResponsible ? $responsibleService->getAssignableUsers() : collect();
+                
+                return view('hotel.edit', compact('hotel', 'canAssignResponsible', 'assignableUsers'));
             } else {
                 return response()->json(['error' => __('Permission denied.')], 401);
             }
@@ -138,7 +147,20 @@ class HotelController extends Controller
                 $hotel->address = $request->address;
                 $hotel->phone   = $request->phone;
                 $hotel->email   = $request->email;
-                $hotel->save();
+                
+                // Handle responsible assignment
+                if ($request->filled('responsible_id')) {
+                    $responsibleService = new \App\Services\ResponsibleService();
+                    if ($responsibleService->canAssignResponsible()) {
+                        try {
+                            $responsibleService->assignResponsible($hotel, $request->responsible_id);
+                        } catch (\Exception $e) {
+                            return redirect()->back()->with('error', $e->getMessage());
+                        }
+                    }
+                } else {
+                    $hotel->save();
+                }
 
                 if ($request->input('redirect_to') === 'mobile') {
                     return redirect()->route('mobile.hotels.index')->with('success', __('Hotel successfully updated.'));

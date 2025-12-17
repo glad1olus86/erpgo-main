@@ -13,6 +13,36 @@
 @section('content')
     <div class="row">
         <div class="col-12">
+            {{-- Hotel Info Card --}}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-2">{{ $hotel->name }}</h5>
+                            <p class="text-muted mb-1"><i class="ti ti-map-pin"></i> {{ $hotel->address }}</p>
+                            @if($hotel->phone)
+                                <p class="text-muted mb-1"><i class="ti ti-phone"></i> {{ $hotel->phone }}</p>
+                            @endif
+                            @if($hotel->email)
+                                <p class="text-muted mb-0"><i class="ti ti-mail"></i> {{ $hotel->email }}</p>
+                            @endif
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            @if($hotel->responsible)
+                                <p class="mb-1">
+                                    <span class="text-muted">{{ __('Responsible') }}:</span>
+                                    <strong>{{ $hotel->responsible->name }}</strong>
+                                </p>
+                            @endif
+                            <p class="mb-0">
+                                <span class="text-muted">{{ __('Total Rooms') }}:</span>
+                                <strong>{{ $rooms->count() }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="my-3 d-flex justify-content-end">
                 @can('create hotel')
                     <a href="#" data-url="{{ route('room.create', ['hotel_id' => $hotel->id]) }}" data-ajax-popup="true"
@@ -34,18 +64,11 @@
                                                 <th>{{ __('Room Number') }}</th>
                                                 <th>{{ __('Capacity') }}</th>
                                                 <th>{{ __('Price/month') }}</th>
-                                                <th>{{ __('Who Pays') }}</th>
+                                                <th>{{ __('Residents Payment') }}</th>
                                                 <th width="200px">{{ __('Action') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody class="font-style">
-                                            @php
-                                                $paymentLabels = [
-                                                    'worker' => __('Worker pays'),
-                                                    'agency' => __('Agency pays'),
-                                                    'partial' => __('Partial payment'),
-                                                ];
-                                            @endphp
                                             @foreach ($rooms as $room)
                                                 <tr>
                                                     <td>
@@ -60,11 +83,21 @@
                                                     </td>
                                                     <td>{{ $room->currentAssignments->count() }} / {{ $room->capacity }}
                                                     </td>
-                                                    <td>{{ number_format($room->monthly_price, 2) }} €</td>
+                                                    <td>{{ formatCashboxCurrency($room->monthly_price) }}</td>
                                                     <td>
-                                                        {{ $paymentLabels[$room->payment_type] ?? $room->payment_type }}
-                                                        @if($room->payment_type == 'partial' && $room->partial_amount)
-                                                            <br><small class="text-muted">({{ number_format($room->partial_amount, 2) }} €)</small>
+                                                        @if($room->currentAssignments->count() > 0)
+                                                            @foreach($room->currentAssignments as $assignment)
+                                                                <div class="mb-1">
+                                                                    <small>{{ $assignment->worker->first_name }}:</small>
+                                                                    @if($assignment->payment_type === 'worker')
+                                                                        <span class="badge" style="background-color: #FF0049;">{{ formatCashboxCurrency($assignment->payment_amount ?? 0) }}</span>
+                                                                    @else
+                                                                        <span class="badge bg-success">{{ __('Agency') }}</span>
+                                                                    @endif
+                                                                </div>
+                                                            @endforeach
+                                                        @else
+                                                            <span class="text-muted">-</span>
                                                         @endif
                                                     </td>
 

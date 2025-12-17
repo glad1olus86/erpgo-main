@@ -16,7 +16,12 @@ class RoomController extends Controller
     {
         if (Auth::user()->can('manage hotel')) // Using 'manage hotel' for simplicity as discussed, or we can use 'manage room' if created
         {
-            $rooms = Room::where('created_by', '=', Auth::user()->creatorId())->with('hotel')->get();
+            $rooms = Room::where('created_by', '=', Auth::user()->creatorId())
+                ->whereHas('hotel', function($q) {
+                    $q->visibleToUser(Auth::user());
+                })
+                ->with('hotel')
+                ->get();
             return view('room.index', compact('rooms'));
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
@@ -30,7 +35,10 @@ class RoomController extends Controller
     {
         if (Auth::user()->can('create hotel')) // Assuming same permission for now
         {
-            $hotels = Hotel::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $hotels = Hotel::where('created_by', Auth::user()->creatorId())
+                ->visibleToUser(Auth::user())
+                ->get()
+                ->pluck('name', 'id');
             $selectedHotelId = $request->query('hotel_id'); // Get hotel_id from query parameter
             return view('room.create', compact('hotels', 'selectedHotelId'));
         } else {
@@ -49,13 +57,7 @@ class RoomController extends Controller
                 'room_number' => 'required|max:20',
                 'capacity' => 'required|integer|min:1',
                 'monthly_price' => 'required|numeric|min:0',
-                'payment_type' => 'required|in:worker,agency,partial',
             ];
-            
-            // If partial payment is selected, require amount
-            if ($request->payment_type === 'partial') {
-                $rules['partial_amount'] = 'required|numeric|min:0';
-            }
             
             $validator = \Validator::make($request->all(), $rules);
             if ($validator->fails()) {
@@ -68,8 +70,6 @@ class RoomController extends Controller
             $room->room_number   = $request->room_number;
             $room->capacity      = $request->capacity;
             $room->monthly_price = $request->monthly_price;
-            $room->payment_type  = $request->payment_type;
-            $room->partial_amount = $request->payment_type === 'partial' ? $request->partial_amount : null;
             $room->created_by    = Auth::user()->creatorId();
             $room->save();
 
@@ -90,6 +90,17 @@ class RoomController extends Controller
     {
         if (Auth::user()->can('manage hotel')) {
             if ($room->created_by == Auth::user()->creatorId()) {
+                // Return JSON only if explicitly requested via Accept header
+                if (request()->wantsJson() && request()->header('Accept') === 'application/json') {
+                    return response()->json([
+                        'id' => $room->id,
+                        'room_number' => $room->room_number,
+                        'capacity' => $room->capacity,
+                        'monthly_price' => $room->monthly_price,
+                        'monthly_price_formatted' => formatCashboxCurrency($room->monthly_price),
+                    ]);
+                }
+                
                 $room->load(['currentAssignments.worker']);
                 return view('room.show', compact('room'));
             } else {
@@ -107,7 +118,10 @@ class RoomController extends Controller
     {
         if (Auth::user()->can('edit hotel')) {
             if ($room->created_by == Auth::user()->creatorId()) {
-                $hotels = Hotel::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $hotels = Hotel::where('created_by', Auth::user()->creatorId())
+                    ->visibleToUser(Auth::user())
+                    ->get()
+                    ->pluck('name', 'id');
                 return view('room.edit', compact('room', 'hotels'));
             } else {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -129,12 +143,7 @@ class RoomController extends Controller
                     'room_number' => 'required|max:20',
                     'capacity' => 'required|integer|min:1',
                     'monthly_price' => 'required|numeric|min:0',
-                    'payment_type' => 'required|in:worker,agency,partial',
                 ];
-                
-                if ($request->payment_type === 'partial') {
-                    $rules['partial_amount'] = 'required|numeric|min:0';
-                }
                 
                 $validator = \Validator::make($request->all(), $rules);
                 if ($validator->fails()) {
@@ -146,8 +155,6 @@ class RoomController extends Controller
                 $room->room_number   = $request->room_number;
                 $room->capacity      = $request->capacity;
                 $room->monthly_price = $request->monthly_price;
-                $room->payment_type  = $request->payment_type;
-                $room->partial_amount = $request->payment_type === 'partial' ? $request->partial_amount : null;
                 $room->save();
 
                 if ($request->input('redirect_to') === 'mobile') {

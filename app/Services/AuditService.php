@@ -33,7 +33,7 @@ class AuditService
     {
         return self::log(
             'worker.created',
-            "Создан работник: {$worker->first_name} {$worker->last_name}",
+            __('Worker created') . ": {$worker->first_name} {$worker->last_name}",
             $worker,
             null,
             [
@@ -63,7 +63,7 @@ class AuditService
         if (!empty($changes)) {
             return self::log(
                 'worker.updated',
-                "Обновлены данные работника: {$worker->first_name} {$worker->last_name}",
+                __('Worker updated') . ": {$worker->first_name} {$worker->last_name}",
                 $worker,
                 $oldValues,
                 $worker->only(array_keys($oldValues))
@@ -78,7 +78,7 @@ class AuditService
     {
         return self::log(
             'worker.deleted',
-            "Удален работник: {$worker->first_name} {$worker->last_name}",
+            __('Worker deleted') . ": {$worker->first_name} {$worker->last_name}",
             $worker,
             [
                 'name' => "{$worker->first_name} {$worker->last_name}",
@@ -99,7 +99,7 @@ class AuditService
 
         return self::log(
             'worker.checked_in',
-            "Заселен: {$worker->first_name} {$worker->last_name} → Отель \"{$hotel->name}\", Комната {$room->room_number}",
+            __('Checked in') . ": {$worker->first_name} {$worker->last_name} → " . __('Hotel') . " \"{$hotel->name}\", " . __('Room') . " {$room->room_number}",
             $worker,
             null,
             [
@@ -121,7 +121,7 @@ class AuditService
 
         return self::log(
             'worker.checked_out',
-            "Выселен: {$worker->first_name} {$worker->last_name} ← Отель \"{$hotel->name}\", Комната {$room->room_number}",
+            __('Checked out') . ": {$worker->first_name} {$worker->last_name} ← " . __('Hotel') . " \"{$hotel->name}\", " . __('Room') . " {$room->room_number}",
             $worker,
             [
                 'hotel' => $hotel->name,
@@ -144,7 +144,7 @@ class AuditService
 
         return self::log(
             'worker.hired',
-            "Устроен на работу: {$worker->first_name} {$worker->last_name} → {$workPlace->name}",
+            __('Hired') . ": {$worker->first_name} {$worker->last_name} → {$workPlace->name}",
             $worker,
             null,
             [
@@ -164,7 +164,7 @@ class AuditService
 
         return self::log(
             'worker.dismissed',
-            "Уволен: {$worker->first_name} {$worker->last_name} ← {$workPlace->name}",
+            __('Dismissed') . ": {$worker->first_name} {$worker->last_name} ← {$workPlace->name}",
             $worker,
             [
                 'work_place' => $workPlace->name,
@@ -185,7 +185,7 @@ class AuditService
 
         return self::log(
             'room.created',
-            "Создана комната: {$room->room_number} в отеле \"{$hotel->name}\"",
+            __('Room created') . ": {$room->room_number} " . __('in hotel') . " \"{$hotel->name}\"",
             $room,
             null,
             [
@@ -205,7 +205,7 @@ class AuditService
 
         return self::log(
             'room.updated',
-            "Обновлена комната: {$room->room_number} в отеле \"{$hotel->name}\"",
+            __('Room updated') . ": {$room->room_number} " . __('in hotel') . " \"{$hotel->name}\"",
             $room,
             $oldValues,
             $room->only(array_keys($oldValues))
@@ -219,7 +219,7 @@ class AuditService
     {
         return self::log(
             'room.deleted',
-            "Удалена комната: {$room->room_number}",
+            __('Room deleted') . ": {$room->room_number}",
             $room,
             ['room_number' => $room->room_number, 'capacity' => $room->capacity],
             null
@@ -233,7 +233,7 @@ class AuditService
     {
         return self::log(
             'work_place.created',
-            "Создано рабочее место: {$workPlace->name}",
+            __('Work place created') . ": {$workPlace->name}",
             $workPlace,
             null,
             [
@@ -250,7 +250,7 @@ class AuditService
     {
         return self::log(
             'work_place.updated',
-            "Обновлено рабочее место: {$workPlace->name}",
+            __('Work place updated') . ": {$workPlace->name}",
             $workPlace,
             $oldValues,
             $workPlace->only(array_keys($oldValues))
@@ -264,7 +264,7 @@ class AuditService
     {
         return self::log(
             'work_place.deleted',
-            "Удалено рабочее место: {$workPlace->name}",
+            __('Work place deleted') . ": {$workPlace->name}",
             $workPlace,
             ['name' => $workPlace->name, 'address' => $workPlace->address],
             null
@@ -278,7 +278,7 @@ class AuditService
     {
         return self::log(
             'hotel.created',
-            "Создан отель: {$hotel->name}",
+            __('Hotel created') . ": {$hotel->name}",
             $hotel,
             null,
             [
@@ -295,7 +295,7 @@ class AuditService
     {
         return self::log(
             'hotel.updated',
-            "Обновлен отель: {$hotel->name}",
+            __('Hotel updated') . ": {$hotel->name}",
             $hotel,
             $oldValues,
             $hotel->only(array_keys($oldValues))
@@ -309,9 +309,57 @@ class AuditService
     {
         return self::log(
             'hotel.deleted',
-            "Удален отель: {$hotel->name}",
+            __('Hotel deleted') . ": {$hotel->name}",
             $hotel,
             ['name' => $hotel->name, 'address' => $hotel->address],
+            null
+        );
+    }
+
+    /**
+     * Логирование изменения ответственного
+     */
+    public static function logResponsibleChanged($entity, $oldResponsibleId, $newResponsibleId)
+    {
+        $oldUser = $oldResponsibleId ? \App\Models\User::find($oldResponsibleId) : null;
+        $newUser = \App\Models\User::find($newResponsibleId);
+        
+        $entityType = class_basename($entity);
+        $entityName = $entity->name ?? $entity->first_name ?? $entity->id;
+        
+        return self::log(
+            'responsible.changed',
+            __('Responsible changed') . ": {$entityType} \"{$entityName}\"",
+            $entity,
+            ['responsible' => $oldUser ? $oldUser->name : null],
+            ['responsible' => $newUser ? $newUser->name : null]
+        );
+    }
+
+    /**
+     * Логирование назначения координатора на менеджера
+     */
+    public static function logCuratorAssigned($manager, $curator)
+    {
+        return self::log(
+            'curator.assigned',
+            __('Curator assigned') . ": {$curator->name} → {$manager->name}",
+            $curator,
+            null,
+            ['manager' => $manager->name, 'curator' => $curator->name]
+        );
+    }
+
+    /**
+     * Логирование удаления координатора от менеджера
+     */
+    public static function logCuratorRemoved($manager, $curator)
+    {
+        return self::log(
+            'curator.removed',
+            __('Curator removed') . ": {$curator->name} ← {$manager->name}",
+            $curator,
+            ['manager' => $manager->name, 'curator' => $curator->name],
             null
         );
     }

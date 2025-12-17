@@ -3,6 +3,9 @@
         <span class="text-muted">
             {{ __('Work Place') }}: <strong>{{ $workPlace->name }}</strong> | 
             {{ __('Employees') }}: <strong>{{ $workPlace->currentAssignments->count() }}</strong>
+            @if($workPlace->responsible)
+                | {{ __('Responsible') }}: <strong>{{ $workPlace->responsible->name }}</strong>
+            @endif
         </span>
     </div>
     <a href="#" data-url="{{ route('work-place.assign.form', $workPlace->id) }}" data-ajax-popup="true"

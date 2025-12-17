@@ -30,7 +30,7 @@ class JobsiDashboardService
             $roomsQuery->where('hotel_id', $hotelId);
         }
         
-        $rooms = $roomsQuery->get();
+        $rooms = $roomsQuery->with('currentAssignments')->get();
         
         $totalCapacity = $rooms->sum('capacity');
         $occupiedSpots = 0;
@@ -38,14 +38,12 @@ class JobsiDashboardService
         $paysFree = 0;
         
         foreach ($rooms as $room) {
-            $currentOccupants = $room->currentAssignments()->count();
-            $occupiedSpots += $currentOccupants;
-            
-            if ($currentOccupants > 0) {
-                if ($room->payment_type === Room::PAYMENT_WORKER) {
-                    $paysSelf += $currentOccupants;
+            foreach ($room->currentAssignments as $assignment) {
+                $occupiedSpots++;
+                if ($assignment->payment_type === RoomAssignment::PAYMENT_WORKER) {
+                    $paysSelf++;
                 } else {
-                    $paysFree += $currentOccupants;
+                    $paysFree++;
                 }
             }
         }

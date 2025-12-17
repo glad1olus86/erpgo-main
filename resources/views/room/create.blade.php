@@ -25,37 +25,9 @@
                 {{ Form::label('monthly_price', __('Monthly Price'), ['class' => 'form-label']) }}<x-required></x-required>
                 <div class="input-group">
                     {{ Form::number('monthly_price', null, ['class' => 'form-control', 'placeholder' => __('Enter price'), 'step' => '0.01', 'required' => 'required', 'min' => 0]) }}
-                    <span class="input-group-text">€</span>
+                    <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                 </div>
-            </div>
-        </div>
-        <div class="col-12">
-            <div class="form-group">
-                {{ Form::label('payment_type', __('Who Pays'), ['class' => 'form-label']) }}<x-required></x-required>
-                <div class="d-flex flex-column gap-2">
-                    <div class="form-check">
-                        <input type="radio" name="payment_type" value="worker" class="form-check-input" id="payment-worker" checked>
-                        <label class="form-check-label" for="payment-worker">{{ __('Worker pays') }}</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="radio" name="payment_type" value="agency" class="form-check-input" id="payment-agency">
-                        <label class="form-check-label" for="payment-agency">{{ __('Agency pays') }}</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="radio" name="payment_type" value="partial" class="form-check-input" id="payment-partial">
-                        <label class="form-check-label" for="payment-partial">{{ __('Partial payment') }}</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12" id="partial-amount-container" style="display: none;">
-            <div class="form-group">
-                {{ Form::label('partial_amount', __('Amount worker pays'), ['class' => 'form-label']) }}<x-required></x-required>
-                <div class="input-group">
-                    {{ Form::number('partial_amount', null, ['class' => 'form-control', 'placeholder' => __('Amount'), 'step' => '0.01', 'min' => 0, 'id' => 'partial-amount-input']) }}
-                    <span class="input-group-text">€</span>
-                </div>
-                <small class="text-muted">{{ __('The rest is paid by the agency') }}</small>
+                <small class="text-muted">{{ __('Reference price for the room. Payment settings are configured per resident.') }}</small>
             </div>
         </div>
     </div>
@@ -77,26 +49,5 @@
             }
         }
     }, 100);
-
-    var partialRadio = document.getElementById('payment-partial');
-    var partialContainer = document.getElementById('partial-amount-container');
-    var partialInput = document.getElementById('partial-amount-input');
-    var radios = document.querySelectorAll('input[name="payment_type"]');
-
-    function togglePartialAmount() {
-        if (partialRadio.checked) {
-            partialContainer.style.display = 'block';
-            partialInput.required = true;
-        } else {
-            partialContainer.style.display = 'none';
-            partialInput.required = false;
-        }
-    }
-
-    radios.forEach(function(radio) {
-        radio.addEventListener('change', togglePartialAmount);
-    });
-
-    togglePartialAmount();
 })();
 </script>

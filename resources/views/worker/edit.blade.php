@@ -74,6 +74,16 @@
                 </div>
             </div>
         </div>
+        
+        @if(isset($canAssignResponsible) && $canAssignResponsible && isset($assignableUsers) && $assignableUsers->count() > 0)
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ Form::label('responsible_id', __('Responsible'), ['class' => 'form-label']) }}
+                {{ Form::select('responsible_id', $assignableUsers->pluck('name', 'id'), $worker->responsible_id, ['class' => 'form-control']) }}
+                <small class="text-muted">{{ __('Person responsible for this worker') }}</small>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 <div class="modal-footer">

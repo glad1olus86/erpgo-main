@@ -19,7 +19,7 @@
                         <div class="input-group">
                             <input type="number" name="amount" class="form-control" step="0.01" min="0.01"
                                 required placeholder="0.00">
-                            <span class="input-group-text">€</span>
+                            <span class="input-group-text">{{ getCashboxCurrencySymbol() }}</span>
                         </div>
                     </div>
                     <div class="form-group">

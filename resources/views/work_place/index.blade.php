@@ -113,6 +113,13 @@
                                 {{ __('Found') }}: <strong id="resultsCount">{{ count($workPlaces) }}</strong> {{ __('work places') }}
                             </div>
 
+                            @if($workPlaces->isEmpty() && Auth::user()->isCurator())
+                                <div class="text-center py-5">
+                                    <i class="ti ti-briefcase-off" style="font-size: 48px; opacity: 0.3;"></i>
+                                    <h5 class="mt-3">{{ __('No Assigned Work Places') }}</h5>
+                                    <p class="text-muted">{{ __('You have no assigned work places. Contact your manager.') }}</p>
+                                </div>
+                            @else
                             <div class="table-responsive">
                                 <table class="table" id="workplaces-table">
                                     <thead>
@@ -201,6 +208,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>

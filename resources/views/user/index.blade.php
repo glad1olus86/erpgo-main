@@ -52,23 +52,23 @@
                     @endif
                     @if (Gate::check('edit user') || Gate::check('delete user'))
                         <div class="btn-group card-option">
-                            @if ($user->is_active == 1 && $user->is_disable == 1)
-                                <button type="button" class="btn p-0 border-0" data-bs-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="false">
-                                    <i class="ti ti-dots-vertical"></i>
-                                </button>
+                            <button type="button" class="btn p-0 border-0" data-bs-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                <i class="ti ti-dots-vertical"></i>
+                            </button>
 
-                                <div class="dropdown-menu icon-dropdown dropdown-menu-end">
-                                    @can('edit user')
-                                        <a href="#!" data-size="lg" data-url="{{ route('users.edit', $user->id) }}"
-                                            data-ajax-popup="true" class="dropdown-item"
-                                            data-bs-original-title="{{ \Auth::user()->type == 'super admin' ? __('Edit Company') : __('Edit User') }}">
-                                            <i class="ti ti-pencil"></i>
-                                            <span>{{ __('Edit') }}</span>
-                                        </a>
-                                    @endcan
+                            <div class="dropdown-menu icon-dropdown dropdown-menu-end">
+                                @can('edit user')
+                                    <a href="#!" data-size="lg" data-url="{{ route('users.edit', $user->id) }}"
+                                        data-ajax-popup="true" class="dropdown-item"
+                                        data-bs-original-title="{{ \Auth::user()->type == 'super admin' ? __('Edit Company') : __('Edit User') }}">
+                                        <i class="ti ti-pencil"></i>
+                                        <span>{{ __('Edit') }}</span>
+                                    </a>
+                                @endcan
 
-                                    @can('delete user')
+                                @can('delete user')
+                                    @if ($user->is_disable == 1)
                                         {!! Form::open([
                                             'method' => 'DELETE',
                                             'route' => ['users.destroy', $user['id']],
@@ -85,49 +85,56 @@
                                             </span>
                                         </a>
                                         {!! Form::close() !!}
-                                    @endcan
-
-                                    @if (Auth::user()->type == 'super admin')
-                                        <a href="{{ route('login.with.company', $user->id) }}" class="dropdown-item"
-                                            data-bs-original-title="{{ __('Login As Company') }}">
-                                            <i class="ti ti-replace"></i>
-                                            <span> {{ __('Login As Company') }}</span>
-                                        </a>
                                     @endif
+                                @endcan
 
-                                    <a href="#!" data-url="{{ route('users.reset', \Crypt::encrypt($user->id)) }}"
-                                        data-ajax-popup="true" data-size="md" class="dropdown-item"
-                                        data-bs-original-title="{{ __('Reset Password') }}">
-                                        <i class="ti ti-adjustments"></i>
-                                        <span> {{ __('Reset Password') }}</span>
+                                @if (Auth::user()->type == 'super admin')
+                                    <a href="{{ route('login.with.company', $user->id) }}" class="dropdown-item"
+                                        data-bs-original-title="{{ __('Login As Company') }}">
+                                        <i class="ti ti-replace"></i>
+                                        <span> {{ __('Login As Company') }}</span>
                                     </a>
+                                @endif
 
-                                    @if ($user->is_enable_login == 1)
-                                        <a href="{{ route('users.login', \Crypt::encrypt($user->id)) }}"
-                                            class="dropdown-item">
-                                            <i class="ti ti-road-sign"></i>
-                                            <span class="text-danger"> {{ __('Login Disable') }}</span>
-                                        </a>
-                                    @elseif ($user->is_enable_login == 0 && $user->password == null)
-                                        <a href="#"
-                                            data-url="{{ route('users.reset', \Crypt::encrypt($user->id)) }}"
-                                            data-ajax-popup="true" data-size="md" class="dropdown-item login_enable"
-                                            data-title="{{ __('New Password') }}" class="dropdown-item">
-                                            <i class="ti ti-road-sign"></i>
-                                            <span class="text-success"> {{ __('Login Enable') }}</span>
-                                        </a>
-                                    @else
-                                        <a href="{{ route('users.login', \Crypt::encrypt($user->id)) }}"
-                                            class="dropdown-item">
-                                            <i class="ti ti-road-sign"></i>
-                                            <span class="text-success"> {{ __('Login Enable') }}</span>
-                                        </a>
-                                    @endif
+                                <a href="#!" data-url="{{ route('users.reset', \Crypt::encrypt($user->id)) }}"
+                                    data-ajax-popup="true" data-size="md" class="dropdown-item"
+                                    data-bs-original-title="{{ __('Reset Password') }}">
+                                    <i class="ti ti-adjustments"></i>
+                                    <span> {{ __('Reset Password') }}</span>
+                                </a>
 
-                                </div>
-                            @else
-                                <a href="#" class="action-item text-lg"><i class="ti ti-lock"></i></a>
-                            @endif
+                                @if(\Auth::user()->isDirector() && $user->isManager())
+                                    <a href="#!" data-url="{{ route('manager.curators.index', $user->id) }}"
+                                        data-ajax-popup="true" data-size="lg" class="dropdown-item"
+                                        data-title="{{ __('Manage Curators') }}">
+                                        <i class="ti ti-users-group"></i>
+                                        <span> {{ __('Manage Curators') }}</span>
+                                    </a>
+                                @endif
+
+                                @if ($user->is_enable_login == 1)
+                                    <a href="{{ route('users.login', \Crypt::encrypt($user->id)) }}"
+                                        class="dropdown-item">
+                                        <i class="ti ti-road-sign"></i>
+                                        <span class="text-danger"> {{ __('Login Disable') }}</span>
+                                    </a>
+                                @elseif ($user->is_enable_login == 0 && $user->password == null)
+                                    <a href="#"
+                                        data-url="{{ route('users.reset', \Crypt::encrypt($user->id)) }}"
+                                        data-ajax-popup="true" data-size="md" class="dropdown-item login_enable"
+                                        data-title="{{ __('New Password') }}" class="dropdown-item">
+                                        <i class="ti ti-road-sign"></i>
+                                        <span class="text-success"> {{ __('Login Enable') }}</span>
+                                    </a>
+                                @else
+                                    <a href="{{ route('users.login', \Crypt::encrypt($user->id)) }}"
+                                        class="dropdown-item">
+                                        <i class="ti ti-road-sign"></i>
+                                        <span class="text-success"> {{ __('Login Enable') }}</span>
+                                    </a>
+                                @endif
+
+                            </div>
                         </div>
                     @endif
                 </div>

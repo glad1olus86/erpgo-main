@@ -5,7 +5,7 @@
     </div>
     <div class="flex-grow-1">
         <div class="d-flex justify-content-between align-items-center">
-            <h6 class="mb-1">{{ $log->description }}</h6>
+            <h6 class="mb-1">{{ $log->translated_description }}</h6>
             <small class="text-muted">{{ \Auth::user()->timeFormat($log->created_at) }}</small>
         </div>
         <p class="mb-1 text-muted small">
