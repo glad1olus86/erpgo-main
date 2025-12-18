@@ -174,7 +174,7 @@
                 <div class="mobile-widget-header">
                     <div class="dropdown">
                         <span class="mobile-filter-dropdown" data-bs-toggle="dropdown">
-                            {{ $workplaceId ? $workplaces->find($workplaceId)?->name ?? __('все рабочие места') : __('все рабочие места') }}
+                            {{ $workplaceId ? ($workplaces->firstWhere('id', $workplaceId)?->name ?? __('все рабочие места')) : __('все рабочие места') }}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="#000">
                                 <path d="M7 10l5 5 5-5z" />
                             </svg>
@@ -240,7 +240,7 @@
                 <div class="mobile-widget-header">
                     <div class="dropdown">
                         <span class="mobile-filter-dropdown" data-bs-toggle="dropdown">
-                            {{ $hotelId ? $hotels->find($hotelId)?->name ?? __('все отели') : __('все отели') }}
+                            {{ $hotelId ? ($hotels->firstWhere('id', $hotelId)?->name ?? __('все отели')) : __('все отели') }}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="#000">
                                 <path d="M7 10l5 5 5-5z" />
                             </svg>
