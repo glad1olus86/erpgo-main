@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="JOBSI - Personal & Job Agency Performance Management" />
     <title>JOBSI Mobile</title>
     <link rel="icon" href="{{ asset('fromfigma/jobsi_mobile.png') }}" type="image/png" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">

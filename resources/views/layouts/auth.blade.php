@@ -71,9 +71,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="description" content="Dashboard Template Description" />
-    <meta name="keywords" content="Dashboard Template" />
-    <meta name="author" content="WorkDo" />
+    <meta name="description" content="JOBSI - Personal & Job Agency Performance Management" />
+    <meta name="keywords" content="JOBSI, Job Agency, Personnel Management, HR" />
+    <meta name="author" content="JOBSI" />
 
     <!-- Favicon icon -->
     <link rel="icon" href="{{ asset('fromfigma/jobsi_mobile.png') }}" type="image/png" />
