@@ -76,9 +76,7 @@
     <meta name="author" content="WorkDo" />
 
     <!-- Favicon icon -->
-    <link rel="icon"
-        href="{{ $logo . '/' . (isset($company_favicon) && !empty($company_favicon) ? $company_favicon : 'favicon.png')  . '?' . time() }}"
-        type="image/x-icon" />
+    <link rel="icon" href="{{ asset('fromfigma/jobsi_mobile.png') }}" type="image/png" />
 
     <!-- font css -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/tabler-icons.min.css') }}">

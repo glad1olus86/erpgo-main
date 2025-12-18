@@ -62,7 +62,7 @@
     <meta name="author" content="WorkDo" />
 
     <!-- Favicon icon -->
-    <link rel="icon" href="{{asset('assets/images/favicon.png')}}" type="image/x-icon" />
+    <link rel="icon" href="{{ asset('fromfigma/jobsi_mobile.png') }}" type="image/png" />
 
     <link rel="stylesheet" href="{{asset('assets/css/plugins/animate.min.css')}}" />
     <!-- font css -->
