@@ -154,6 +154,13 @@
             font-weight: 700;
             font-size: 20px;
             color: #000000;
+            white-space: nowrap;
+        }
+
+        /* Smaller font for Russian and Ukrainian languages */
+        html[lang="ru"] .btn-title,
+        html[lang="uk"] .btn-title {
+            font-size: 16px;
         }
 
         .btn-subtitle {

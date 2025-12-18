@@ -175,6 +175,7 @@
             cursor: pointer;
             transition: all 0.2s ease;
             border: 1px solid #f0f0f0;
+            overflow: visible;
         }
         .mobile-card:active {
             transform: scale(0.98);
@@ -184,20 +185,24 @@
             display: flex;
             justify-content: space-between;
             gap: 10px;
+            width: 100%;
+            overflow: visible;
         }
         .mobile-stat-item {
             text-align: center;
             flex: 1;
+            min-width: 0;
         }
         .mobile-stat-label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
             margin-bottom: 2px;
+            white-space: nowrap;
         }
         .mobile-stat-value {
             display: block;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: #000;
         }

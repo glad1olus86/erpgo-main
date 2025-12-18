@@ -281,21 +281,15 @@ class NationalityFlagService
     }
 
     /**
-     * Get flag image path by country code
+     * Get flag image URL by country code
+     * Uses flagcdn.com for SVG flags (works in all browsers including Chrome on Windows)
      */
-    public static function getFlagImage(string $countryCode): ?string
+    public static function getFlagImageUrl(string $countryCode): string
     {
         $countryCode = strtolower($countryCode);
         
-        // Map of available flag images
-        $flagImages = [
-            'ua' => 'fromfigma/ukraine_flag.png',
-            'cz' => 'fromfigma/czech_flag.svg',
-            'gb' => 'fromfigma/uk_flag.png',
-            'ru' => null, // No image, use emoji
-        ];
-        
-        return $flagImages[$countryCode] ?? null;
+        // Use flagcdn.com for SVG flags - works everywhere
+        return "https://flagcdn.com/{$countryCode}.svg";
     }
 
     /**
@@ -309,14 +303,9 @@ class NationalityFlagService
             return '';
         }
         
-        $flagImage = self::getFlagImage($countryCode);
+        $flagUrl = self::getFlagImageUrl($countryCode);
+        $height = round($size * 0.75); // Flags are typically 4:3 ratio
         
-        if ($flagImage) {
-            return '<img src="' . asset($flagImage) . '" alt="' . $countryCode . '" style="width: ' . $size . 'px; height: auto; vertical-align: middle; margin-right: 5px; border-radius: 2px;">';
-        }
-        
-        // Use emoji as fallback
-        $emoji = self::getFlagEmoji($countryCode);
-        return '<span style="font-size: ' . $size . 'px; margin-right: 5px; vertical-align: middle;">' . $emoji . '</span>';
+        return '<img src="' . $flagUrl . '" alt="' . strtoupper($countryCode) . '" style="width: ' . $size . 'px; height: ' . $height . 'px; object-fit: cover; vertical-align: middle; margin-right: 5px; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" loading="lazy">';
     }
 }

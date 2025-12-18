@@ -238,7 +238,7 @@
         
         {{-- Results Count --}}
         <div class="results-count mb-2">
-            <span>{{ __('Found') }}: <strong>{{ $workers->total() ?? $workers->count() }}</strong> {{ __('workers') }}</span>
+            <span>{{ __('Found') }}: <strong id="resultsCountNumber">{{ $workers->total() ?? $workers->count() }}</strong> {{ __('workers') }}</span>
         </div>
 
         {{-- Workers List --}}
@@ -916,12 +916,21 @@
             var workerCards = document.querySelectorAll('.worker-card');
             var noResults = document.getElementById('noSearchResults');
             var resultsCount = document.querySelector('.results-count');
+            var resultsCountNumber = document.getElementById('resultsCountNumber');
             var originalNames = {};
+            var totalWorkers = {{ $workers->total() ?? $workers->count() }};
             
             // Store original names for restoring after search
             workerCards.forEach(function(card, index) {
                 originalNames[index] = card.querySelector('.worker-name').innerHTML;
             });
+            
+            // Function to update results count
+            function updateResultsCount(count) {
+                if (resultsCountNumber) {
+                    resultsCountNumber.textContent = count;
+                }
+            }
             
             searchInput.addEventListener('input', function() {
                 var query = this.value.toLowerCase().trim();
@@ -948,6 +957,7 @@
                     });
                     noResults.style.display = 'none';
                     if (resultsCount) resultsCount.style.display = '';
+                    updateResultsCount(totalWorkers);
                     return;
                 }
                 
@@ -971,6 +981,9 @@
                     }
                 });
                 
+                // Update results count with filtered number
+                updateResultsCount(visibleCount);
+                
                 // Show/hide no results message
                 noResults.style.display = visibleCount === 0 ? 'block' : 'none';
                 if (resultsCount) resultsCount.style.display = visibleCount === 0 ? 'none' : '';
@@ -990,6 +1003,7 @@
                 
                 noResults.style.display = 'none';
                 if (resultsCount) resultsCount.style.display = '';
+                updateResultsCount(totalWorkers);
                 searchInput.focus();
             });
             

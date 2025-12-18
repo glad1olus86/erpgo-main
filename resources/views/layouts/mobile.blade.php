@@ -511,13 +511,6 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF0049" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 {{ __('Profile') }}
             </a>
-            <a href="{{ url('chatify') }}" class="mobile-sidebar-item">
-                <img src="{{ asset('fromfigma/message.svg') }}" alt=""> {{ __('Messages') }}
-            </a>
-        </div>
-        <div class="mobile-sidebar-google">
-            <small>{{ __('Leave your review') }}</small>
-            <a href="#"><img src="{{ asset('fromfigma/otzivi.png') }}" alt="Google"></a>
         </div>
     </div>
 

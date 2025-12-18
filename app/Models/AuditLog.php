@@ -156,6 +156,12 @@ class AuditLog extends Model
             'cashbox.refund' => '#fd7e14',          // Оранжевый - возврат
             'cashbox.self_salary' => '#6f42c1',     // Фиолетовый - ЗП себе
             'cashbox.status_change' => '#17a2b8',   // Голубой - смена статуса
+
+            // Документы
+            'document.generated' => '#e83e8c',      // Розовый - генерация документа
+            'document_template.created' => '#20c997', // Бирюзовый - создание шаблона
+            'document_template.updated' => '#17a2b8', // Голубой - обновление шаблона
+            'document_template.deleted' => '#6c757d', // Серый - удаление шаблона
         ];
 
         return $colors[$this->event_type] ?? '#6c757d';
@@ -199,6 +205,12 @@ class AuditLog extends Model
             'cashbox.refund' => 'ti-arrow-back',
             'cashbox.self_salary' => 'ti-wallet',
             'cashbox.status_change' => 'ti-refresh',
+
+            // Документы
+            'document.generated' => 'ti-file-text',
+            'document_template.created' => 'ti-file-plus',
+            'document_template.updated' => 'ti-file-pencil',
+            'document_template.deleted' => 'ti-file-x',
         ];
 
         return $icons[$this->event_type] ?? 'ti-info-circle';
@@ -327,6 +339,44 @@ class AuditLog extends Model
             ' in hotel ' => ' ' . __('in hotel') . ' ',
             ' v hotelu ' => ' ' . __('in hotel') . ' ',
             ' в готелі ' => ' ' . __('in hotel') . ' ',
+            
+            // Касса - внесение
+            ' внёс ' => ' ' . __('deposited') . ' ',
+            ' внес ' => ' ' . __('deposited') . ' ',
+            ' в кассу' => ' ' . __('to cashbox'),
+            
+            // Касса - выдача
+            ' выдал ' => ' ' . __('issued') . ' ',
+            ' пользователю ' => ' ' . __('to user') . ' ',
+            
+            // Касса - возврат
+            ' вернул ' => ' ' . __('returned') . ' ',
+            
+            // Касса - зарплата себе
+            ' взял себе зарплату ' => ' ' . __('took salary') . ' ',
+            
+            // Касса - смена статуса
+            ' изменил статус транзакции ' => ' ' . __('changed transaction status') . ' ',
+            ' с "' => ' ' . __('from') . ' "',
+            '" на "' => '" ' . __('to') . ' "',
+            'Ожидает' => __('Pending'),
+            'В работе' => __('In progress'),
+            'Выполнено' => __('Completed'),
+            'Просрочено' => __('Overdue'),
+            
+            // Касса - задача
+            '(задача: ' => '(' . __('task') . ': ',
+            '(причина: ' => '(' . __('reason') . ': ',
+            
+            // Документы - генерация
+            'Сгенерирован документ "' => __('Document generated') . ' "',
+            '" для работника ' => '" ' . __('for worker') . ' ',
+            ' в формате ' => ' ' . __('in format') . ' ',
+            
+            // Документы - шаблоны
+            'Создан шаблон документа: ' => __('Document template created') . ': ',
+            'Обновлен шаблон документа: ' => __('Document template updated') . ': ',
+            'Удален шаблон документа: ' => __('Document template deleted') . ': ',
         ];
         
         foreach ($translations as $search => $replace) {

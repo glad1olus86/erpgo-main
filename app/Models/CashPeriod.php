@@ -55,15 +55,15 @@ class CashPeriod extends Model
     }
 
     /**
-     * Get formatted period name (e.g., "Декабрь 2025").
+     * Get formatted period name (e.g., "December 2025").
      */
     public function getNameAttribute(): string
     {
         $months = [
-            1 => 'Январь', 2 => 'Февраль', 3 => 'Март',
-            4 => 'Апрель', 5 => 'Май', 6 => 'Июнь',
-            7 => 'Июль', 8 => 'Август', 9 => 'Сентябрь',
-            10 => 'Октябрь', 11 => 'Ноябрь', 12 => 'Декабрь',
+            1 => __('January'), 2 => __('February'), 3 => __('March'),
+            4 => __('April'), 5 => __('May'), 6 => __('June'),
+            7 => __('July'), 8 => __('August'), 9 => __('September'),
+            10 => __('October'), 11 => __('November'), 12 => __('December'),
         ];
 
         return ($months[$this->month] ?? $this->month) . ' ' . $this->year;

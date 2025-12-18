@@ -68,6 +68,17 @@ class AuditLogController extends Controller
                 'hotel.created' => __('Hotel created'),
                 'hotel.updated' => __('Hotel updated'),
                 'hotel.deleted' => __('Hotel deleted'),
+                // Cashbox events
+                'cashbox.deposit' => __('Cashbox deposit'),
+                'cashbox.distribution' => __('Cashbox distribution'),
+                'cashbox.refund' => __('Cashbox refund'),
+                'cashbox.self_salary' => __('Cashbox self salary'),
+                'cashbox.status_change' => __('Cashbox status change'),
+                // Document events
+                'document.generated' => __('Document generated'),
+                'document_template.created' => __('Document template created'),
+                'document_template.updated' => __('Document template updated'),
+                'document_template.deleted' => __('Document template deleted'),
             ];
 
             return view('audit_log.index', compact('auditLogs', 'users', 'workers', 'eventTypes'));
