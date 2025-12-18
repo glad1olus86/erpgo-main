@@ -361,7 +361,7 @@
         {{-- Mobile Withdraw/Distribute Modal --}}
         @php
             $canDistribute = Auth::user()->can('cashbox_distribute');
-            $recipients = [];
+            $recipients = collect([]);
             $cashboxBalance = ['available' => 0];
             if ($canDistribute && $currentPeriod) {
                 $creatorId = Auth::user()->creatorId();
@@ -376,7 +376,8 @@
                             'type' => 'App\\Models\\User',
                             'role' => $user->type,
                         ];
-                    });
+                    })
+                    ->values();
                 // Get workers
                 $workers = \App\Models\Worker::where('created_by', $creatorId)
                     ->get()
@@ -387,8 +388,9 @@
                             'type' => 'App\\Models\\Worker',
                             'role' => 'worker',
                         ];
-                    });
-                $recipients = $users->merge($workers);
+                    })
+                    ->values();
+                $recipients = collect($users)->merge($workers);
 
                 // Calculate available balance
                 $received = \App\Models\CashTransaction::where('cash_period_id', $currentPeriod->id)
