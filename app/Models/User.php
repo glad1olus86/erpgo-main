@@ -4072,6 +4072,158 @@ class User extends Authenticatable implements MustVerifyEmail
         
         // Create default notification rules for new company
         self::createDefaultNotificationRules($user_id);
+        
+        // Create default roles (manager and curator) for new company
+        self::createDefaultRoles($user_id);
+    }
+
+    /**
+     * Create default roles (manager and curator) for a new company
+     */
+    public static function createDefaultRoles($user_id)
+    {
+        $managerPermissions = [
+            // Dashboard permissions
+            'show pos dashboard',
+            'show crm dashboard',
+            'show hrm dashboard',
+            'show project dashboard',
+            'show account dashboard',
+            // User management
+            'manage user',
+            'create user',
+            'edit user',
+            'delete user',
+            // Role management
+            'manage role',
+            'create role',
+            'edit role',
+            'delete role',
+            // Hotel management
+            'manage hotel',
+            'create hotel',
+            'edit hotel',
+            'delete hotel',
+            'show hotel',
+            'export hotel',
+            // Worker management
+            'manage worker',
+            'create worker',
+            'edit worker',
+            'delete worker',
+            'show worker',
+            'export worker',
+            // Work place management
+            'manage work place',
+            'create work place',
+            'edit work place',
+            'delete work place',
+            'show work place',
+            'export work place',
+            // Room management
+            'manage room',
+            'create room',
+            'edit room',
+            'delete room',
+            'show room',
+            // Room assignment
+            'manage room assignment',
+            'create room assignment',
+            'delete room assignment',
+            // Work assignment
+            'manage work assignment',
+            'create work assignment',
+            'delete work assignment',
+            // Cashbox
+            'cashbox_access',
+            'cashbox_deposit',
+            'cashbox_distribute',
+            'cashbox_refund',
+            'cashbox_view_audit',
+            // Audit log
+            'view audit log',
+            'export audit log',
+        ];
+
+        $curatorPermissions = [
+            // Dashboard permissions
+            'show pos dashboard',
+            'show crm dashboard',
+            'show hrm dashboard',
+            'show project dashboard',
+            'show account dashboard',
+            // Hotel management
+            'manage hotel',
+            'create hotel',
+            'edit hotel',
+            'delete hotel',
+            'show hotel',
+            'export hotel',
+            // Worker management
+            'manage worker',
+            'create worker',
+            'edit worker',
+            'delete worker',
+            'show worker',
+            'export worker',
+            // Work place management
+            'manage work place',
+            'create work place',
+            'edit work place',
+            'delete work place',
+            'show work place',
+            'export work place',
+            // Room management
+            'manage room',
+            'create room',
+            'edit room',
+            'delete room',
+            'show room',
+            // Room assignment
+            'manage room assignment',
+            'create room assignment',
+            'delete room assignment',
+            // Work assignment
+            'manage work assignment',
+            'create work assignment',
+            'delete work assignment',
+            // Notification rules
+            'manage notification rule',
+            'create notification rule',
+            'edit notification rule',
+            'delete notification rule',
+            // Cashbox
+            'cashbox_access',
+            'cashbox_distribute',
+            'cashbox_refund',
+            // Audit log
+            'view audit log',
+            'export audit log',
+        ];
+
+        // Create manager role (or get existing one for this company)
+        $managerRole = \Spatie\Permission\Models\Role::firstOrCreate(
+            ['name' => 'manager', 'created_by' => $user_id],
+            ['guard_name' => 'web']
+        );
+        
+        // Filter permissions that exist in the system and assign them
+        $existingPermissions = \Spatie\Permission\Models\Permission::whereIn('name', $managerPermissions)->pluck('name')->toArray();
+        if (!empty($existingPermissions)) {
+            $managerRole->syncPermissions($existingPermissions);
+        }
+
+        // Create curator role (or get existing one for this company)
+        $curatorRole = \Spatie\Permission\Models\Role::firstOrCreate(
+            ['name' => 'curator', 'created_by' => $user_id],
+            ['guard_name' => 'web']
+        );
+        
+        // Filter permissions that exist in the system and assign them
+        $existingCuratorPermissions = \Spatie\Permission\Models\Permission::whereIn('name', $curatorPermissions)->pluck('name')->toArray();
+        if (!empty($existingCuratorPermissions)) {
+            $curatorRole->syncPermissions($existingCuratorPermissions);
+        }
     }
 
     public static function userDefaultWarehouse()

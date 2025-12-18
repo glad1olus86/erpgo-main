@@ -155,21 +155,26 @@
                         </a>
                         <ul class="dash-submenu">
                             @if (Gate::check('manage company settings') && Auth::user()->type == 'super admin')
-                                <li class="dash-item {{ Request::segment(1) == 'settings' ? 'active' : '' }}">
+                                <li class="{{ Request::segment(1) == 'settings' ? 'active' : '' }}">
                                     <a href="{{ route('settings') }}" class="dash-link">{{ __('System Settings') }}</a>
                                 </li>
                             @endif
                             @if (Gate::check('manage company plan'))
-                                <li class="dash-item {{ Request::routeIs('plans.index') || Request::routeIs('stripe') ? 'active' : '' }}">
+                                <li class="{{ Request::routeIs('plans.index') || Request::routeIs('stripe') ? 'active' : '' }}">
                                     <a href="{{ route('plans.index') }}" class="dash-link">{{ __('Setup Subscription Plan') }}</a>
                                 </li>
                             @endif
-                            <li class="dash-item {{ Request::routeIs('notification-rules.index') ? 'active' : '' }}">
+                            <li class="{{ Request::routeIs('notification-rules.index') ? 'active' : '' }}">
                                 <a href="{{ route('notification-rules.index') }}" class="dash-link">{{ __('Notification Builder') }}</a>
                             </li>
                             @can('cashbox_access')
-                                <li class="dash-item {{ Request::routeIs('cashbox.settings') ? 'active' : '' }}">
+                                <li class="{{ Request::routeIs('cashbox.settings') ? 'active' : '' }}">
                                     <a href="{{ route('cashbox.settings') }}" class="dash-link">{{ __('Cashbox Settings') }}</a>
+                                </li>
+                            @endcan
+                            @can('manage user')
+                                <li class="{{ Request::routeIs('users.*') ? 'active' : '' }}">
+                                    <a href="{{ route('users.index') }}" class="dash-link">{{ __('User Settings') }}</a>
                                 </li>
                             @endcan
                         </ul>
