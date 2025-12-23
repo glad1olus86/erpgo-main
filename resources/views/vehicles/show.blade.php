@@ -113,7 +113,7 @@
         </div>
 
         <div class="col-lg-8">
-            @can('vehicle_tracking_view')
+            @can('vehicle_read')
                 @include('vehicles.partials.tracking_map')
             @endcan
 

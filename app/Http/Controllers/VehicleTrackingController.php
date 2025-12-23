@@ -20,8 +20,8 @@ class VehicleTrackingController extends Controller
      */
     public function trips(Request $request, Vehicle $vehicle): JsonResponse
     {
-        // Check permission
-        if (!$request->user()->can('vehicle_tracking_view')) {
+        // Check permission - anyone who can view vehicles can see tracking
+        if (!$request->user()->can('vehicle_read')) {
             return response()->json([
                 'error' => __('You do not have permission to view tracking data'),
                 'code' => 'ACCESS_DENIED',
@@ -66,8 +66,8 @@ class VehicleTrackingController extends Controller
      */
     public function track(Request $request, Vehicle $vehicle): JsonResponse
     {
-        // Check permission
-        if (!$request->user()->can('vehicle_tracking_view')) {
+        // Check permission - anyone who can view vehicles can see tracking
+        if (!$request->user()->can('vehicle_read')) {
             return response()->json([
                 'error' => __('You do not have permission to view tracking data'),
                 'code' => 'ACCESS_DENIED',
