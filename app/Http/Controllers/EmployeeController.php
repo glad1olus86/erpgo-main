@@ -8,7 +8,6 @@ use App\Imports\EmployeesImport;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Designation;
-use App\Models\Document;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
 use App\Models\ExperienceCertificate;
@@ -62,7 +61,7 @@ class EmployeeController extends Controller
         if(\Auth::user()->can('create employee'))
         {
             $company_settings = Utility::settings();
-            $documents        = Document::where('created_by', \Auth::user()->creatorId())->get();
+            $documents        = collect(); // Document types removed - not used in Jobsi
             $branches         = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $departments      = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $designations     = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
@@ -238,7 +237,7 @@ class EmployeeController extends Controller
         }
         if(\Auth::user()->can('edit employee'))
         {
-            $documents    = Document::where('created_by', \Auth::user()->creatorId())->get();
+            $documents    = collect(); // Document types removed - not used in Jobsi
             $branches     = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $branches->prepend('Select Branch','');
             $departments  = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
@@ -414,7 +413,7 @@ class EmployeeController extends Controller
                 return redirect()->back()->with('error', __('Employee Not Found.'));
             }
 
-            $documents    = Document::where('created_by', \Auth::user()->creatorId())->get();
+            $documents    = collect(); // Document types removed - not used in Jobsi
             $branches     = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $departments  = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $designations = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
@@ -491,7 +490,7 @@ class EmployeeController extends Controller
         if(\Auth::user()->can('show employee profile'))
         {
             $empId        = Crypt::decrypt($id);
-            $documents    = Document::where('created_by', \Auth::user()->creatorId())->get();
+            $documents    = collect(); // Document types removed - not used in Jobsi
             $branches     = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $departments  = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $designations = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');

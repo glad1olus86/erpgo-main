@@ -435,8 +435,6 @@
                             Request::segment(1) == 'account-assets' ||
                             Request::segment(1) == 'leavetype' ||
                             Request::segment(1) == 'meeting-calender' ||
-                            Request::segment(1) == 'document-upload' ||
-                            Request::segment(1) == 'document' ||
                             Request::segment(1) == 'performanceType' ||
                             Request::segment(1) == 'branch' ||
                             Request::segment(1) == 'department' ||
@@ -799,12 +797,6 @@
                                     <li class="dash-item {{ request()->is('account-assets*') ? 'active' : '' }}">
                                         <a class="dash-link"
                                             href="{{ route('account-assets.index') }}">{{ __('Employees Asset Setup ') }}</a>
-                                    </li>
-                                @endcan
-                                @can('manage document')
-                                    <li class="dash-item {{ request()->is('document-upload*') ? 'active' : '' }}">
-                                        <a class="dash-link"
-                                            href="{{ route('document-upload.index') }}">{{ __('Document Setup') }}</a>
                                     </li>
                                 @endcan
                                 @can('manage company policy')

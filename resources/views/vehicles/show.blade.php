@@ -113,6 +113,10 @@
         </div>
 
         <div class="col-lg-8">
+            @can('vehicle_tracking_view')
+                @include('vehicles.partials.tracking_map')
+            @endcan
+
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Inspection History') }}</h5>

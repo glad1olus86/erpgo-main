@@ -5118,5 +5118,10 @@
     "Cashbox distribution": "Видача з каси",
     "Cashbox refund": "Повернення в касу",
     "Cashbox self salary": "Зарплата собі",
-    "Cashbox status change": "Зміна статусу"
+    "Cashbox status change": "Зміна статусу",
+    "Route Map": "Карта маршруту",
+    "Distance": "Відстань",
+    "No tracking data for this day": "Немає даних про маршрут за цей день",
+    "Current position": "Поточна позиція",
+    "Active": "Активно"
 }

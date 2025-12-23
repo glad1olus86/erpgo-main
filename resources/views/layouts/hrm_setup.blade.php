@@ -36,15 +36,6 @@
             </a>
         </li>
     @endcan
-    @can('manage document type')
-        <li class="nav-item" role="presentation">
-            <a href="{{ route('document.index') }}" class="list-group-item list-group-item-action border-0">
-                <button class="nav-link {{ Request::route()->getName() == 'document.index' ? 'active' : '' }}"
-                    id="document-setting-tab" data-bs-toggle="pill" data-bs-target="#document-setting"
-                    type="button">{{ __('Document Type') }}</button>
-            </a>
-        </li>
-    @endcan
     @can('manage payslip type')
         <li class="nav-item" role="presentation">
             <a href="{{ route('paysliptype.index') }}" class="list-group-item list-group-item-action border-0">

@@ -1,5 +1,6 @@
 /.idea
 /.vscode
+/.kiro
 .env
 /node_modules
 /public/hot

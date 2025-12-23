@@ -6,7 +6,6 @@ use App\Models\Branch;
 use App\Models\CustomQuestion;
 use App\Models\Department;
 use App\Models\Designation;
-use App\Models\Document;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
 use App\Models\GenerateOfferLetter;
@@ -510,7 +509,7 @@ class JobApplicationController extends Controller
     {
         $jobOnBoard       = JobOnBoard::find($id);
         $company_settings = Utility::settings();
-        $documents        = Document::where('created_by', \Auth::user()->creatorId())->get();
+        $documents        = collect(); // Document types removed - not used in Jobsi
         $branches         = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         $departments      = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         $designations     = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');

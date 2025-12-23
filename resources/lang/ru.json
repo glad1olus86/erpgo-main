@@ -2896,7 +2896,7 @@
     "Stage Name": "Название стадии",
     "Star": "Звезда",
     "Starred": "Звездочка",
-    "Start": "Начинаем .",
+    "Start": "Старт",
     "Start Date": "Дата начала",
     "Start Date   :": "Дата начала:",
     "Start Date  :": "Дата начала:",
@@ -5061,5 +5061,10 @@
     "Cashbox distribution": "Выдача из кассы",
     "Cashbox refund": "Возврат в кассу",
     "Cashbox self salary": "Зарплата себе",
-    "Cashbox status change": "Изменение статуса"
+    "Cashbox status change": "Изменение статуса",
+    "Route Map": "Карта маршрута",
+    "Distance": "Расстояние",
+    "No tracking data for this day": "Нет данных о маршруте за этот день",
+    "Current position": "Текущая позиция",
+    "Active": "Активно"
 }

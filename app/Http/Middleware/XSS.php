@@ -10,8 +10,6 @@ use Config;
 
 class XSS
 {
-    use \RachidLaasri\LaravelInstaller\Helpers\MigrationsHelper;
-
     /**
      * Handle an incoming request.
      *
@@ -33,29 +31,11 @@ class XSS
 
             \App::setLocale(\Auth::user()->lang);
 
-            if(\Auth::user()->type == 'super admin')
-            {
-                $migrations             = $this->getMigrations();
-                // $messengerMigration     = Utility::get_messenger_packages_migration();
-                $dbMigrations           = $this->getExecutedMigrations();
-                $Modulemigrations = glob(base_path().'/Modules/LandingPage/Database'.DIRECTORY_SEPARATOR.'Migrations'.DIRECTORY_SEPARATOR.'*.php');
-                $numberOfUpdatesPending = (count($migrations)  + count($Modulemigrations)) - count($dbMigrations);
-
-                if($numberOfUpdatesPending > 0)
-                {
-
-                    Utility::addNewData();
-                    User::defaultEmail();
-                    Utility::addNewAccountData();
-
-                    $users = User::where('type', 'company')->get();
-                    foreach($users as $user)
-                    {
-                        $user->userDefaultDataRegister($user->id);
-                    }
-                    return redirect()->route('LaravelUpdater::welcome');
-                }
-            }
+            // Auto-updater disabled - migrations should be run manually via artisan
+            // if(\Auth::user()->type == 'super admin')
+            // {
+            //     ... old updater code removed ...
+            // }
         }
 
         $input = $request->all();

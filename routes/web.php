@@ -54,9 +54,7 @@ use App\Http\Controllers\DebitNoteController;
 use App\Http\Controllers\DeductionOptionController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DesignationController;
-use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DoubleEntryReportController;
-use App\Http\Controllers\DucumentUploadController;
 use App\Http\Controllers\EasebuzzController;
 use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\EmployeeController;
@@ -1165,7 +1163,6 @@ Route::group(['middleware' => ['verified']], function () {
 
     Route::resource('department', DepartmentController::class)->middleware(['auth', 'XSS']);
     Route::resource('designation', DesignationController::class)->middleware(['auth', 'XSS']);
-    Route::resource('document', DocumentController::class)->middleware(['auth', 'XSS']);
     Route::resource('branch', BranchController::class)->middleware(['auth', 'XSS']);
 
     // Hrm EmployeeController
@@ -1291,7 +1288,6 @@ Route::group(['middleware' => ['verified']], function () {
     Route::get('taskboard/{view?}', [ProjectTaskController::class, 'taskBoard'])->name('taskBoard.view')->middleware(['auth', 'XSS']);
     Route::get('taskboard-view', [ProjectTaskController::class, 'taskboardView'])->name('project.taskboard.view')->middleware(['auth', 'XSS']);
 
-    Route::resource('document-upload', DucumentUploadController::class)->middleware(['auth', 'XSS']);
     Route::resource('transfer', TransferController::class)->middleware(['auth', 'XSS']);
     Route::get('attendanceemployee/bulkattendance', [AttendanceEmployeeController::class, 'bulkAttendance'])->name('attendanceemployee.bulkattendance')->middleware(['auth', 'XSS']);
     Route::post('attendanceemployee/bulkattendances', [AttendanceEmployeeController::class, 'bulkAttendanceData'])->name('attendanceemployee.bulkattendances')->middleware(['auth', 'XSS']);
@@ -2130,6 +2126,14 @@ Route::post('/vehicles/scan-document', [App\Http\Controllers\VehicleController::
     ->name('vehicles.scan.document')
     ->middleware(['auth', 'XSS', 'plan.module:vehicles']);
 Route::resource('vehicles', App\Http\Controllers\VehicleController::class)->middleware(['auth', 'XSS', 'plan.module:vehicles']);
+
+// Vehicle GPS Tracking routes (web)
+Route::get('/vehicles/{vehicle}/trips', [App\Http\Controllers\VehicleTrackingController::class, 'trips'])
+    ->name('vehicles.trips')
+    ->middleware(['auth', 'XSS', 'plan.module:vehicles']);
+Route::get('/vehicles/{vehicle}/track', [App\Http\Controllers\VehicleTrackingController::class, 'track'])
+    ->name('vehicles.track')
+    ->middleware(['auth', 'XSS', 'plan.module:vehicles']);
 
 // Technical Inspection routes
 Route::post('/vehicles/{vehicle}/inspections', [App\Http\Controllers\TechnicalInspectionController::class, 'store'])
