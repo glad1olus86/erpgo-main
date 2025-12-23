@@ -30,13 +30,21 @@
         z-index: 1;
         background: #f0f0f0;
     }
+    #trip-selector {
+        min-width: 180px;
+        padding-right: 30px;
+    }
 </style>
 
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="mb-0">{{ __('Route Map') }}</h5>
-        <input type="date" id="track-date" class="form-control w-auto" 
-               value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}">
+        <div class="d-flex align-items-center gap-2">
+            <select id="trip-selector" class="form-select form-select-sm" style="display: none;">
+            </select>
+            <input type="date" id="track-date" class="form-control form-control-sm w-auto" 
+                   value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}">
+        </div>
     </div>
     <div class="card-body p-0">
         <div id="tracking-map" style="height: 400px;"></div>
@@ -71,6 +79,8 @@
     let map = null;
     let trackLayers = [];
     let markers = [];
+    let currentTrips = [];
+    let selectedTripId = null;
 
     function initMap() {
         const mapEl = document.getElementById('tracking-map');
@@ -175,6 +185,35 @@
         map.fitBounds(bounds, { padding: [30, 30] });
     }
 
+    function updateTripSelector(trips, currentTripId) {
+        const selector = document.getElementById('trip-selector');
+        currentTrips = trips;
+        
+        if (!trips || trips.length <= 1) {
+            selector.style.display = 'none';
+            return;
+        }
+        
+        selector.innerHTML = '';
+        trips.forEach((trip, index) => {
+            const option = document.createElement('option');
+            option.value = trip.id;
+            const time = new Date(trip.started_at).toLocaleTimeString('uk-UA', {hour: '2-digit', minute: '2-digit'});
+            option.textContent = trip.label + ' (' + time + ')';
+            if (trip.is_active) {
+                option.textContent += ' 🟢';
+            }
+            selector.appendChild(option);
+        });
+        
+        selector.style.display = 'block';
+        
+        // Set selected value after populating options
+        if (currentTripId) {
+            selector.value = currentTripId;
+        }
+    }
+
     function updateTripInfo(trip) {
         const infoEl = document.getElementById('track-info');
         
@@ -206,6 +245,7 @@
         document.getElementById('tracking-map').classList.add('d-none');
         document.getElementById('no-track-data').classList.remove('d-none');
         document.getElementById('track-info').style.display = 'none';
+        document.getElementById('trip-selector').style.display = 'none';
     }
 
     function showMap() {
@@ -214,10 +254,15 @@
         if (map) map.invalidateSize();
     }
 
-    async function loadTrack(date) {
+    async function loadTrack(date, tripId = null) {
         try {
-            console.log('Loading track for date:', date);
-            const response = await fetch(`/vehicles/${vehicleId}/track?date=${date}`);
+            let url = `/vehicles/${vehicleId}/track?date=${date}`;
+            if (tripId) {
+                url += `&trip_id=${tripId}`;
+            }
+            
+            console.log('Loading track:', url);
+            const response = await fetch(url);
             
             if (!response.ok) {
                 console.error('Response not ok:', response.status);
@@ -235,6 +280,11 @@
                 showNoData();
                 return;
             }
+            
+            selectedTripId = data.trip.id;
+            
+            // Update trip selector with current trip ID
+            updateTripSelector(data.trips, selectedTripId);
             
             showMap();
             drawTrack(data.points, data.trip);
@@ -262,8 +312,16 @@
         }
         
         const dateInput = document.getElementById('track-date');
+        const tripSelector = document.getElementById('trip-selector');
+        
         dateInput.addEventListener('change', function() {
+            selectedTripId = null; // Reset trip selection on date change
             loadTrack(this.value);
+        });
+        
+        tripSelector.addEventListener('change', function() {
+            const date = dateInput.value;
+            loadTrack(date, this.value);
         });
         
         // Load today's track

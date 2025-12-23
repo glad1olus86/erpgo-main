@@ -5123,5 +5123,6 @@
     "Distance": "Відстань",
     "No tracking data for this day": "Немає даних про маршрут за цей день",
     "Current position": "Поточна позиція",
-    "Active": "Активно"
+    "Active": "Активно",
+    "Trip": "Маршрут"
 }

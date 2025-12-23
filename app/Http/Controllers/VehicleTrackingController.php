@@ -84,18 +84,28 @@ class VehicleTrackingController extends Controller
 
         $request->validate([
             'date' => 'nullable|date',
+            'trip_id' => 'nullable|integer',
         ]);
 
         $date = $request->input('date')
             ? Carbon::parse($request->input('date'))
             : Carbon::today();
 
-        // Get the latest trip for the date (or first if multiple)
-        $trip = $this->trackingService->getLatestTripForDate($vehicle, $date);
+        // Get all trips for the date
+        $allTrips = $this->trackingService->getTripsForDate($vehicle, $date);
+
+        // If specific trip requested, use it; otherwise use first trip
+        $tripId = $request->input('trip_id');
+        if ($tripId) {
+            $trip = $allTrips->firstWhere('id', $tripId);
+        } else {
+            $trip = $allTrips->first();
+        }
 
         if (!$trip) {
             return response()->json([
                 'date' => $date->toDateString(),
+                'trips' => [],
                 'trip' => null,
                 'points' => [],
             ]);
@@ -105,6 +115,15 @@ class VehicleTrackingController extends Controller
 
         return response()->json([
             'date' => $date->toDateString(),
+            'trips' => $allTrips->map(function ($t, $index) {
+                return [
+                    'id' => $t->id,
+                    'label' => __('Trip') . ' ' . ($index + 1),
+                    'started_at' => $t->started_at->toIso8601String(),
+                    'ended_at' => $t->ended_at?->toIso8601String(),
+                    'is_active' => $t->isActive(),
+                ];
+            })->values(),
             'trip' => [
                 'id' => $trip->id,
                 'started_at' => $trip->started_at->toIso8601String(),
