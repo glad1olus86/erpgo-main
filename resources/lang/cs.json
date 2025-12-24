@@ -5068,5 +5068,18 @@
     "No tracking data for this day": "Žádná data o trase pro tento den",
     "Current position": "Aktuální pozice",
     "Active": "Aktivní",
-    "Trip": "Trasa"
+    "Trip": "Trasa",
+    "Total Distance": "Celková vzdálenost",
+    "Total Fuel": "Celková spotřeba",
+    "Trips": "Trasy",
+    "Select date on map to see fuel consumption": "Vyberte datum na mapě pro zobrazení spotřeby paliva",
+    "No trips for this day": "Žádné trasy pro tento den",
+    "Time": "Čas",
+    "Fuel": "Palivo",
+    "Enter your email to receive a password reset link": "Zadejte email pro obdržení odkazu na obnovení hesla",
+    "Send Reset Link": "Odeslat odkaz",
+    "Back to Login": "Zpět na přihlášení",
+    "km": "km",
+    "l": "l",
+    "with data": "s daty"
 }

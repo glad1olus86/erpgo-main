@@ -299,16 +299,19 @@ class AuthenticatedSessionController extends Controller
     {
         if($lang == '')
         {
-            $lang = Utility::getValByName('default_language');
+            // Check cookie first, then session, then default
+            $lang = request()->cookie('selected_lang') ?? session('selected_lang', Utility::getValByName('default_language'));
         }
 
         $langList = Utility::languages()->toArray();
-        $lang = array_key_exists($lang, $langList) ? $lang : 'en';
-
+        $allowedLangs = ['en', 'ru', 'uk', 'cs'];
+        $lang = (array_key_exists($lang, $langList) && in_array($lang, $allowedLangs)) ? $lang : 'en';
 
         \App::setLocale($lang);
 
-        return view('auth.forgot-password', compact('lang'));
+        $settings = Utility::settings();
+
+        return view('auth.forgot-password', compact('lang', 'settings'));
     }
 
     public function showResetForm(Request $request, $token = null)

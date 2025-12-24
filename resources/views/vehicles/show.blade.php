@@ -44,10 +44,10 @@
             </div>
 
             <div class="card">
-                <div class="card-header">
+                <div class="card-header"">
                     <h5>{{ __('Information') }}</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="min-height: 602px;">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
                             <span class="text-muted">{{ __('Color') }}</span>
@@ -80,8 +80,20 @@
                     </ul>
                 </div>
             </div>
+        </div>
 
-            @if ($vehicle->tech_passport_front || $vehicle->tech_passport_back)
+        <div class="col-lg-8">
+            @can('vehicle_read')
+                @include('vehicles.partials.tracking_map')
+                @include('vehicles.partials.fuel_consumption')
+            @endcan
+        </div>
+    </div>
+
+    {{-- Second row: Tech Passport and Inspection History side by side --}}
+    <div class="row">
+        @if ($vehicle->tech_passport_front || $vehicle->tech_passport_back)
+        <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
                     <h5>{{ __('Tech Passport Photos') }}</h5>
@@ -109,16 +121,13 @@
                     </div>
                 </div>
             </div>
-            @endif
         </div>
-
         <div class="col-lg-8">
-            @can('vehicle_read')
-                @include('vehicles.partials.tracking_map')
-            @endcan
-
+        @else
+        <div class="col-12">
+        @endif
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-between align-items-center"  style="min-height: 135px;>
                     <h5 class="mb-0">{{ __('Inspection History') }}</h5>
                     @can('technical_inspection_manage')
                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"

@@ -5124,5 +5124,18 @@
     "No tracking data for this day": "Немає даних про маршрут за цей день",
     "Current position": "Поточна позиція",
     "Active": "Активно",
-    "Trip": "Маршрут"
+    "Trip": "Маршрут",
+    "Total Distance": "Загальна відстань",
+    "Total Fuel": "Загальне паливо",
+    "Trips": "Маршрути",
+    "Select date on map to see fuel consumption": "Виберіть дату на карті для перегляду витрат палива",
+    "No trips for this day": "Немає маршрутів за цей день",
+    "Time": "Час",
+    "Fuel": "Паливо",
+    "Enter your email to receive a password reset link": "Введіть email для отримання посилання скидання пароля",
+    "Send Reset Link": "Надіслати посилання",
+    "Back to Login": "Повернутися до входу",
+    "km": "км",
+    "l": "л",
+    "with data": "з даними"
 }

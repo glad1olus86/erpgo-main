@@ -46,7 +46,7 @@
                    value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}">
         </div>
     </div>
-    <div class="card-body p-0">
+    <div class="card-body p-0"  style="min-height: 165px;">
         <div id="tracking-map" style="height: 400px;"></div>
         <div id="no-track-data" class="text-center py-5 d-none">
             <i class="ti ti-map-off" style="font-size: 48px; color: #6c757d;"></i>
@@ -246,6 +246,11 @@
         document.getElementById('no-track-data').classList.remove('d-none');
         document.getElementById('track-info').style.display = 'none';
         document.getElementById('trip-selector').style.display = 'none';
+        
+        // Dispatch event with empty trips for fuel consumption
+        window.dispatchEvent(new CustomEvent('tripsDataLoaded', {
+            detail: { trips: [], date: document.getElementById('track-date').value }
+        }));
     }
 
     function showMap() {
@@ -289,6 +294,11 @@
             showMap();
             drawTrack(data.points, data.trip);
             updateTripInfo(data.trip);
+            
+            // Dispatch event for fuel consumption component
+            window.dispatchEvent(new CustomEvent('tripsDataLoaded', {
+                detail: { trips: data.trips, date: date }
+            }));
             
         } catch (error) {
             console.error('Error loading track:', error);

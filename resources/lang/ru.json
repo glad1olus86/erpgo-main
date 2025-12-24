@@ -5067,5 +5067,18 @@
     "No tracking data for this day": "Нет данных о маршруте за этот день",
     "Current position": "Текущая позиция",
     "Active": "Активно",
-    "Trip": "Маршрут"
+    "Trip": "Маршрут",
+    "Total Distance": "Общее расстояние",
+    "Total Fuel": "Общий расход",
+    "Trips": "Маршруты",
+    "Select date on map to see fuel consumption": "Выберите дату на карте для просмотра расхода топлива",
+    "No trips for this day": "Нет маршрутов за этот день",
+    "Time": "Время",
+    "Fuel": "Топливо",
+    "Enter your email to receive a password reset link": "Введите email для получения ссылки сброса пароля",
+    "Send Reset Link": "Отправить ссылку",
+    "Back to Login": "Вернуться к входу",
+    "km": "км",
+    "l": "л",
+    "with data": "с данными"
 }

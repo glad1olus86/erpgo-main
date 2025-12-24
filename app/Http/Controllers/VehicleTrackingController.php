@@ -113,14 +113,27 @@ class VehicleTrackingController extends Controller
 
         $points = $this->trackingService->getTrackWithGaps($trip);
 
+        // Calculate distance for current trip if not stored
+        $tripDistance = $trip->total_distance_km;
+        if (!$tripDistance || $tripDistance == 0) {
+            $tripDistance = $trip->calculateDistance();
+        }
+
         return response()->json([
             'date' => $date->toDateString(),
             'trips' => $allTrips->map(function ($t, $index) {
+                // Calculate distance if not stored
+                $distance = $t->total_distance_km;
+                if (!$distance || $distance == 0) {
+                    $distance = $t->calculateDistance();
+                }
+                
                 return [
                     'id' => $t->id,
                     'label' => __('Trip') . ' ' . ($index + 1),
                     'started_at' => $t->started_at->toIso8601String(),
                     'ended_at' => $t->ended_at?->toIso8601String(),
+                    'total_distance_km' => round($distance, 2),
                     'is_active' => $t->isActive(),
                 ];
             })->values(),
@@ -128,7 +141,7 @@ class VehicleTrackingController extends Controller
                 'id' => $trip->id,
                 'started_at' => $trip->started_at->toIso8601String(),
                 'ended_at' => $trip->ended_at?->toIso8601String(),
-                'total_distance_km' => $trip->total_distance_km,
+                'total_distance_km' => round($tripDistance, 2),
                 'is_active' => $trip->isActive(),
             ],
             'points' => $points,
