@@ -90,7 +90,16 @@
             <div class="footer-links">
                 <a href="/#">{{ __('terms of service') }}</a>
                 <span>|</span>
-                <a href="/#">{{ __('privacy policy (GDPR)') }}</a>
+                @php
+                    $gdprFiles = [
+                        'ru' => 'jobsi_gdpr_ru.pdf',
+                        'uk' => 'jobsi_gdpr_uk.pdf',
+                        'cs' => 'jobsi_gdpr_cz.pdf',
+                        'en' => 'jobsi_gdpr_en.pdf',
+                    ];
+                    $gdprFile = $gdprFiles[$currentLang] ?? $gdprFiles['en'];
+                @endphp
+                <a href="{{ asset('gdpr/' . $gdprFile) }}" target="_blank">{{ __('privacy policy (GDPR)') }}</a>
                 <span>|</span>
                 <a href="/#">{{ __('back to homepage') }}</a>
                 <span>|</span>
