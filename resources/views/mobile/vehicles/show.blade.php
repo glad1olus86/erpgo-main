@@ -145,6 +145,11 @@
             @endif
         </div>
 
+        {{-- GPS Tracking Map --}}
+        <div class="mb-3">
+            @include('mobile.vehicles.partials.tracking_map', ['vehicle' => $vehicle])
+        </div>
+
         {{-- Action Buttons --}}
         <div class="mobile-actions mt-4">
             @can('vehicle_edit')
