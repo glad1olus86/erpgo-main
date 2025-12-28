@@ -150,6 +150,9 @@
             @include('mobile.vehicles.partials.tracking_map', ['vehicle' => $vehicle])
         </div>
 
+        {{-- Fuel Consumption --}}
+        @include('mobile.vehicles.partials.fuel_consumption', ['vehicle' => $vehicle])
+
         {{-- Action Buttons --}}
         <div class="mobile-actions mt-4">
             @can('vehicle_edit')

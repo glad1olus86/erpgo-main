@@ -5196,5 +5196,12 @@
     "No Scheduled Workers": "Нет запланированных работников",
     "No workers are scheduled for this date.": "На эту дату нет запланированных работников.",
     "Shifts": "Смены",
-    "Посещаемость": "Посещаемость"
+    "Посещаемость": "Посещаемость",
+    "Fuel Consumption": "Расход топлива",
+    "Distance": "Дистанция",
+    "Fuel": "Топливо",
+    "Trips": "Поездки",
+    "with data": "с данными",
+    "No trips for this day": "Нет поездок за этот день",
+    "Select date on map to see fuel consumption": "Выберите дату на карте для просмотра расхода топлива"
 }

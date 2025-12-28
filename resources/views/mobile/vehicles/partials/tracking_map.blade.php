@@ -383,11 +383,13 @@
         }
     }
 
-    function showNoData() {
+    function showNoData(keepSelector = false) {
         document.getElementById('mobile-tracking-map').style.display = 'none';
         document.getElementById('mobile-no-track-data').classList.add('show');
         document.getElementById('mobile-track-info').classList.remove('show');
-        document.getElementById('mobile-trip-selector').style.display = 'none';
+        if (!keepSelector) {
+            document.getElementById('mobile-trip-selector').style.display = 'none';
+        }
     }
 
     function showMap() {
@@ -414,8 +416,18 @@
             
             clearTrack();
             
+            // Update trip selector first (even if no points)
+            if (data.trips && data.trips.length > 1) {
+                updateTripSelector(data.trips, data.trip ? data.trip.id : null);
+            }
+            
             if (!data.points || data.points.length === 0) {
-                showNoData();
+                // Keep selector visible if there are multiple trips
+                showNoData(data.trips && data.trips.length > 1);
+                // Dispatch event for fuel consumption
+                window.dispatchEvent(new CustomEvent('mobileTripsDataLoaded', {
+                    detail: { trips: data.trips || [], date: date }
+                }));
                 return;
             }
             
@@ -425,6 +437,11 @@
             showMap();
             drawTrack(data.points, data.trip);
             updateTripInfo(data.trip);
+            
+            // Dispatch event for fuel consumption
+            window.dispatchEvent(new CustomEvent('mobileTripsDataLoaded', {
+                detail: { trips: data.trips, date: date }
+            }));
             
         } catch (error) {
             console.error('Error loading track:', error);

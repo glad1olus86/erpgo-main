@@ -5211,5 +5211,12 @@
     "Sat": "So",
     "Sun": "Ne",
     "Shifts": "Směny",
-    "Посещаемость": "Docházka"
+    "Посещаемость": "Docházka",
+    "Fuel Consumption": "Spotřeba paliva",
+    "Distance": "Vzdálenost",
+    "Fuel": "Palivo",
+    "Trips": "Cesty",
+    "with data": "s daty",
+    "No trips for this day": "Žádné cesty pro tento den",
+    "Select date on map to see fuel consumption": "Vyberte datum na mapě pro zobrazení spotřeby paliva"
 }
