@@ -241,11 +241,13 @@
         }
     }
 
-    function showNoData() {
+    function showNoData(keepSelector = false) {
         document.getElementById('tracking-map').classList.add('d-none');
         document.getElementById('no-track-data').classList.remove('d-none');
         document.getElementById('track-info').style.display = 'none';
-        document.getElementById('trip-selector').style.display = 'none';
+        if (!keepSelector) {
+            document.getElementById('trip-selector').style.display = 'none';
+        }
         
         // Dispatch event with empty trips for fuel consumption
         window.dispatchEvent(new CustomEvent('tripsDataLoaded', {
@@ -280,9 +282,15 @@
             
             clearTrack();
             
+            // Update trip selector first (even if no points)
+            if (data.trips && data.trips.length > 1) {
+                updateTripSelector(data.trips, data.trip ? data.trip.id : null);
+            }
+            
             if (!data.points || data.points.length === 0) {
                 console.log('No points found');
-                showNoData();
+                // Keep selector visible if there are multiple trips
+                showNoData(data.trips && data.trips.length > 1);
                 return;
             }
             
